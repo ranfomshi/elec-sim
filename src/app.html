@@ -1,0 +1,787 @@
+<header>
+  <h1>⚡ ELECLAB</h1>
+  <span id="hdr-mode-lbl">DC Circuit Simulator</span>
+  <div style="flex:1"></div>
+  <!-- AC/DC auto-detected mode badge + frequency -->
+  <span id="ac-mode-badge" style="font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid #30363d;color:#8b949e;white-space:nowrap;background:#21262d" title="Simulation mode — auto-detected from sources in the circuit">DC</span>
+  <button id="flow-toggle-btn" onclick="toggleFlow()"
+    style="font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid #30363d;background:#21262d;color:#8b949e;cursor:pointer;white-space:nowrap"
+    title="Show current flow direction along wires">Flow</button>
+  <div id="ac-freq-wrap" style="display:none;align-items:center;gap:4px">
+    <label style="font-size:10px;color:#8b949e;white-space:nowrap">f =</label>
+    <input id="ac-freq" type="number" value="50" min="0.001" step="1"
+      style="width:58px;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;
+             padding:3px 5px;font-family:inherit;font-size:11px;border-radius:3px"
+      title="AC frequency (Hz)" onchange="onFreqChange()"/>
+    <span style="font-size:10px;color:#8b949e">Hz</span>
+  </div>
+  <button id="undo-btn" class="btn" onclick="undo()" style="width:auto;margin:0" disabled title="Undo (Ctrl+Z)">↩ Undo</button>
+  <button id="redo-btn" class="btn" onclick="redo()" style="width:auto;margin:0" disabled title="Redo (Ctrl+Y)">↪ Redo</button>
+  <div style="display:flex;gap:2px;align-items:center">
+    <button class="btn" onclick="zoomOut()" style="width:auto;margin:0;padding:5px 10px;font-size:14px;line-height:1" title="Zoom out">−</button>
+    <button id="zoom-pct" class="btn" onclick="zoomReset()" style="width:52px;margin:0;font-size:9px" title="Reset zoom (100%)">100%</button>
+    <button class="btn" onclick="zoomIn()" style="width:auto;margin:0;padding:5px 10px;font-size:14px;line-height:1" title="Zoom in">+</button>
+  </div>
+  <button class="btn" onclick="toggleGuide()" style="width:auto;margin:0;font-size:10px" title="Usage guide">? Guide</button>
+  <button class="btn" onclick="toggleCourse()" style="width:auto;margin:0;font-size:10px">📚 Course</button>
+  <button class="btn" onclick="openSchemaModal()" style="width:auto;margin:0">{ } Schema</button>
+  <button class="btn" onclick="clearAll()" style="width:auto;margin:0">Clear All</button>
+</header>
+
+<!-- Schema modal -->
+<div id="schema-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:100;align-items:center;justify-content:center">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5);width:560px;max-height:80vh;display:flex;flex-direction:column;padding:16px;gap:10px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="color:#58a6ff;font-size:13px;font-weight:bold;flex:1">Circuit Schema (JSON)</span>
+      <button class="btn" onclick="copySchema()" style="width:auto;margin:0">Copy</button>
+      <button class="btn" onclick="closeSchemaModal()" style="width:auto;margin:0">Close</button>
+    </div>
+    <textarea id="schema-ta" spellcheck="false"
+      style="flex:1;min-height:300px;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;
+             font-family:'Courier New',monospace;font-size:11px;padding:10px;border-radius:4px;
+             resize:none;outline:none;line-height:1.5"></textarea>
+    <div style="display:flex;gap:6px">
+      <button class="btn primary" onclick="importSchema()" style="margin:0">⬆ Load from textarea</button>
+      <span id="schema-msg" style="font-size:10px;color:#8b949e;align-self:center"></span>
+    </div>
+  </div>
+</div>
+<div id="tab-bar" style="background:#161b22;border-bottom:1px solid #30363d;display:flex;align-items:center;padding:0 8px;height:32px;flex-shrink:0;overflow-x:auto"></div>
+
+<!-- House View overlays: legend + fit button (hidden unless House View tab is active) -->
+<div id="hv-legend" style="display:none;position:fixed;bottom:80px;right:220px;z-index:150;background:rgba(4,10,28,0.96);border:1px solid #2a4a6a;border-radius:6px;padding:8px 12px;font-family:'Courier New',Courier,monospace;user-select:none;box-shadow:0 4px 16px rgba(0,0,0,0.5)">
+  <div style="font-size:9px;color:#7ab8e8;font-weight:bold;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase">Cable Colours</div>
+  <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#b45309;flex-shrink:0"></span>
+    <span style="font-size:9px;color:#7ab8e8">Live (Brown)</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;flex-shrink:0"></span>
+    <span style="font-size:9px;color:#7ab8e8">Neutral (Blue)</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:7px">
+    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#65a30d;flex-shrink:0"></span>
+    <span style="font-size:9px;color:#7ab8e8">Earth (Green/Yellow)</span>
+  </div>
+</div>
+<button id="hv-fit-btn" onclick="hvFitToView()"
+  style="display:none;position:fixed;top:75px;right:220px;z-index:150;background:#21262d;border:1px solid #30363d;color:#8b949e;padding:4px 10px;border-radius:4px;cursor:pointer;font-family:'Courier New',Courier,monospace;font-size:10px;box-shadow:0 2px 8px rgba(0,0,0,0.4)"
+  onmouseover="this.style.background='#30363d';this.style.color='#58a6ff';this.style.borderColor='#58a6ff'"
+  onmouseout="this.style.background='#21262d';this.style.color='#8b949e';this.style.borderColor='#30363d'"
+  title="Fit house view to screen">&#8862; Fit</button>
+
+<div class="main">
+  <div id="course-panel">
+    <div id="course-toggle" onclick="toggleCourse()">▶</div>
+    <div class="course-inner" id="course-inner">
+      <div style="color:#8b949e;font-size:10px;padding:10px">Click ▶ to open course</div>
+    </div>
+  </div>
+  <div class="toolbar" id="toolbar">
+    <div class="toolbar-resize" id="toolbar-resize"></div>
+    <div class="tool-search">
+      <input type="text" id="tool-search-inp" placeholder="🔍 search…" oninput="filterTools(this.value)" autocomplete="off">
+    </div>
+
+    <div class="tool-group">
+      <div class="tool-group-label">Tools</div>
+      <button class="tool-btn active" id="tool-select" onclick="setMode('select')" title="Select / Move (S)">
+        <svg width="22" height="22" viewBox="0 0 22 22"><path d="M4 2 L4 17 L9 13 L12 19 L14 18 L11 12 L17 12 Z" fill="currentColor"/></svg>
+        Select
+      </button>
+      <button class="tool-btn" id="tool-wire" onclick="setMode('wire')" title="Wire (W)">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="2" y1="11" x2="20" y2="11" stroke="#58a6ff" stroke-width="2"/><circle cx="2" cy="11" r="2.5" fill="#58a6ff"/><circle cx="20" cy="11" r="2.5" fill="#58a6ff"/></svg>
+        Wire
+      </button>
+      <button class="tool-btn" id="tool-pan" onclick="setMode('pan')" title="Pan / Scroll canvas (H)">
+        <svg width="22" height="22" viewBox="0 0 22 22"><path d="M11,3 C11,3 11,2 12,2 C13,2 13,3 13,3 L13,10 L14,9 C14,9 14,8 15,8 C16,8 16,9 16,10 L16,15 C16,18 14,20 11,20 C8,20 6,18 6,15 L6,10 C6,9 7,8.5 7.5,9 L8,10 L8,6 C8,5 9,5 9,5 L9,3 C9,3 9,2 10,2 C11,2 11,3 11,3 Z" stroke="currentColor" stroke-width="1.2" fill="rgba(255,255,255,0.08)"/></svg>
+        Pan
+      </button>
+    </div>
+
+    <div class="tool-sep"></div>
+
+    <div class="tool-group">
+      <div class="tool-group-label">Passive</div>
+      <button class="tool-btn" id="tool-R" onclick="setMode('place-R')" title="Resistor">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="11" x2="4" y2="11" stroke="currentColor" stroke-width="1.5"/><rect x="4" y="7" width="14" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="18" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+        Resistor
+      </button>
+      <button class="tool-btn" id="tool-C" onclick="setMode('place-C')" title="Capacitor">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="11" x2="9" y2="11" stroke="currentColor" stroke-width="1.5"/><line x1="9" y1="5" x2="9" y2="17" stroke="currentColor" stroke-width="2.5"/><line x1="13" y1="5" x2="13" y2="17" stroke="currentColor" stroke-width="2.5"/><line x1="13" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+        Capacitor
+      </button>
+      <button class="tool-btn" id="tool-L" onclick="setMode('place-L')" title="Inductor">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="11" x2="4" y2="11" stroke="currentColor" stroke-width="1.5"/><path d="M4,11 Q6,5 8,11 Q10,5 12,11 Q14,5 16,11 Q18,5 20,11" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="20" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+        Inductor
+      </button>
+      <button class="tool-btn" id="tool-bulb" onclick="setMode('place-bulb')" title="Light Bulb">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="11" x2="5" y2="11" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="11" r="6" stroke="#ffd700" stroke-width="1.5" fill="none"/><line x1="8" y1="8" x2="14" y2="14" stroke="#ffd700" stroke-width="1.5"/><line x1="14" y1="8" x2="8" y2="14" stroke="#ffd700" stroke-width="1.5"/><line x1="17" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+        Bulb
+      </button>
+      <button class="tool-btn" id="tool-fuse" onclick="setMode('place-fuse')" title="Fuse">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="11" x2="5" y2="11" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="8" width="12" height="6" rx="3" stroke="#f0a500" stroke-width="1.5" fill="none"/><line x1="17" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+        Fuse
+      </button>
+      <button class="tool-btn" id="tool-pot" onclick="setMode('place-pot')" title="Potentiometer">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="13" x2="4" y2="13" stroke="currentColor" stroke-width="1.5"/><rect x="4" y="9" width="14" height="7" rx="1.5" stroke="#a78bfa" stroke-width="1.5" fill="none"/><line x1="18" y1="13" x2="21" y2="13" stroke="currentColor" stroke-width="1.5"/><line x1="11" y1="9" x2="11" y2="4" stroke="#a78bfa" stroke-width="1.5"/><polygon points="11,9 9,5 13,5" fill="#a78bfa"/></svg>
+        Pot
+      </button>
+    </div>
+
+    <div class="tool-sep"></div>
+
+    <div class="tool-group">
+      <div class="tool-group-label">Sources</div>
+      <button class="tool-btn" id="tool-V" onclick="setMode('place-V')" title="Voltage Source">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="11" x2="6" y2="11" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="11" r="5" stroke="currentColor" stroke-width="1.5" fill="none"/><text x="8" y="10" fill="currentColor" font-size="6" font-family="monospace">+</text><text x="12" y="14" fill="currentColor" font-size="6" font-family="monospace">−</text><line x1="16" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+        V Src
+      </button>
+      <button class="tool-btn" id="tool-I" onclick="setMode('place-I')" title="Current Source">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="11" x2="6" y2="11" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="11" r="5" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="11" y1="7" x2="11" y2="15" stroke="currentColor" stroke-width="1.5"/><polygon points="11,7 9,11 13,11" fill="currentColor"/><line x1="16" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+        I Src
+      </button>
+      <button class="tool-btn" id="tool-3ph" onclick="setMode('place-3ph')" title="3-Phase Source">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="5" y2="11" stroke="#f59e0b" stroke-width="1.5"/>
+          <rect x="5" y="5" width="10" height="12" rx="2" stroke="#f59e0b" stroke-width="1.5" fill="rgba(245,158,11,0.08)"/>
+          <text x="10" y="9.5" text-anchor="middle" fill="#f59e0b" font-size="4" font-family="monospace">A</text>
+          <text x="10" y="13" text-anchor="middle" fill="#f59e0b" font-size="4" font-family="monospace">B</text>
+          <text x="10" y="16.5" text-anchor="middle" fill="#f59e0b" font-size="4" font-family="monospace">C</text>
+          <line x1="15" y1="8" x2="21" y2="8" stroke="#f59e0b" stroke-width="1.2"/>
+          <line x1="15" y1="11" x2="21" y2="11" stroke="#f59e0b" stroke-width="1.2"/>
+          <line x1="15" y1="14" x2="21" y2="14" stroke="#f59e0b" stroke-width="1.2"/>
+        </svg>
+        3Ph Src
+      </button>
+    </div>
+
+    <div class="tool-sep"></div>
+
+    <div class="tool-group">
+      <div class="tool-group-label">Semicon</div>
+      <button class="tool-btn" id="tool-diode" onclick="setMode('place-diode')" title="Diode">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="11" x2="6" y2="11" stroke="currentColor" stroke-width="1.5"/><polygon points="6,7 6,15 14,11" stroke="#f0a500" stroke-width="1.5" fill="rgba(240,165,0,0.15)"/><line x1="14" y1="7" x2="14" y2="15" stroke="#f0a500" stroke-width="2"/><line x1="14" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+        Diode
+      </button>
+      <button class="tool-btn" id="tool-LED" onclick="setMode('place-LED')" title="LED">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="11" x2="6" y2="11" stroke="currentColor" stroke-width="1.5"/><polygon points="6,7 6,15 14,11" stroke="#22d3ee" stroke-width="1.5" fill="rgba(34,211,238,0.18)"/><line x1="14" y1="7" x2="14" y2="15" stroke="#22d3ee" stroke-width="2"/><line x1="14" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/><line x1="15" y1="6" x2="18" y2="3" stroke="#22d3ee" stroke-width="1.2"/><line x1="17" y1="8" x2="20" y2="5" stroke="#22d3ee" stroke-width="1.2"/></svg>
+        LED
+      </button>
+      <button class="tool-btn" id="tool-zener" onclick="setMode('place-zener')" title="Zener Diode">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="11" x2="6" y2="11" stroke="currentColor" stroke-width="1.5"/><polygon points="6,7 6,15 14,11" stroke="#fb923c" stroke-width="1.5" fill="rgba(251,146,60,0.15)"/><line x1="12" y1="7" x2="14" y2="7" stroke="#fb923c" stroke-width="2"/><line x1="14" y1="15" x2="16" y2="15" stroke="#fb923c" stroke-width="2"/><line x1="14" y1="7" x2="14" y2="15" stroke="#fb923c" stroke-width="2"/><line x1="14" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+        Zener
+      </button>
+    </div>
+
+    <div class="tool-sep"></div>
+
+    <div class="tool-group">
+      <div class="tool-group-label">Active</div>
+      <button class="tool-btn" id="tool-sw" onclick="setMode('place-sw')" title="Switch (click to toggle open/closed)">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="11" x2="7" y2="11" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="11" r="1.5" fill="currentColor"/><line x1="7" y1="11" x2="15" y2="6" stroke="currentColor" stroke-width="1.5"/><circle cx="15" cy="11" r="1.5" fill="currentColor"/><line x1="15" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+        Switch
+      </button>
+      <button class="tool-btn" id="tool-sw2" onclick="setMode('place-sw2')" title="Two-Way Switch (SPDT)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="6" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="6" cy="11" r="1.5" fill="#60a5fa"/>
+          <line x1="6" y1="11" x2="16" y2="6" stroke="#60a5fa" stroke-width="1.5"/>
+          <circle cx="16" cy="6" r="1.5" fill="#60a5fa"/>
+          <circle cx="16" cy="16" r="1.5" fill="#60a5fa" opacity="0.4"/>
+          <line x1="16" y1="16" x2="21" y2="16" stroke="currentColor" stroke-width="1.5" opacity="0.4"/>
+          <line x1="16" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        2-Way Sw
+      </button>
+      <button class="tool-btn" id="tool-buzzer" onclick="setMode('place-buzzer')" title="Buzzer">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="11" x2="6" y2="11" stroke="currentColor" stroke-width="1.5"/><rect x="6" y="8" width="5" height="6" fill="rgba(250,204,21,0.2)" stroke="#facc15" stroke-width="1.5"/><path d="M11,6 Q17,11 11,16" stroke="#facc15" stroke-width="1.5" fill="none"/><path d="M13,4 Q21,11 13,18" stroke="#facc15" stroke-width="1" fill="none" opacity="0.5"/><line x1="11" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+        Buzzer
+      </button>
+      <button class="tool-btn" id="tool-seg7" onclick="setMode('place-seg7')" title="7-Segment Display">
+        <svg width="22" height="22" viewBox="0 0 22 22"><rect x="3" y="2" width="16" height="19" rx="2" fill="#0d1117" stroke="#30363d" stroke-width="1"/><rect x="5" y="3.5" width="12" height="2" rx="1" fill="#0891b2"/><rect x="5" y="10.5" width="12" height="2" rx="1" fill="#0891b2"/><rect x="5" y="17.5" width="12" height="2" rx="1" fill="#0891b2"/><rect x="5" y="3.5" width="2" height="9" rx="1" fill="#0891b2"/><rect x="15" y="3.5" width="2" height="9" rx="1" fill="#0891b2"/><rect x="5" y="10.5" width="2" height="9" rx="1" fill="#0891b2"/><rect x="15" y="10.5" width="2" height="9" rx="1" fill="#0891b2"/></svg>
+        7-Seg
+      </button>
+    </div>
+
+    <div class="tool-sep"></div>
+
+    <div class="tool-group">
+      <div class="tool-group-label">Logic</div>
+      <button class="tool-btn" id="tool-AND" onclick="setMode('place-AND')" title="AND Gate">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="8" x2="7" y2="8" stroke="#6ee7b7" stroke-width="1.5"/><line x1="1" y1="14" x2="7" y2="14" stroke="#6ee7b7" stroke-width="1.5"/><line x1="18" y1="11" x2="21" y2="11" stroke="#6ee7b7" stroke-width="1.5"/><path d="M7,5 L7,17 Q18,17 18,11 Q18,5 7,5 Z" stroke="#6ee7b7" stroke-width="1.5" fill="rgba(110,231,183,0.08)"/></svg>
+        AND
+      </button>
+      <button class="tool-btn" id="tool-OR" onclick="setMode('place-OR')" title="OR Gate">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="8" x2="7" y2="8" stroke="#6ee7b7" stroke-width="1.5"/><line x1="1" y1="14" x2="7" y2="14" stroke="#6ee7b7" stroke-width="1.5"/><line x1="18" y1="11" x2="21" y2="11" stroke="#6ee7b7" stroke-width="1.5"/><path d="M5,5 Q9,11 5,17 Q12,15 18,11 Q12,7 5,5 Z" stroke="#6ee7b7" stroke-width="1.5" fill="rgba(110,231,183,0.08)"/></svg>
+        OR
+      </button>
+      <button class="tool-btn" id="tool-NOT" onclick="setMode('place-NOT')" title="NOT Gate">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="1" y1="11" x2="5" y2="11" stroke="#6ee7b7" stroke-width="1.5"/><line x1="19" y1="11" x2="21" y2="11" stroke="#6ee7b7" stroke-width="1.5"/><path d="M5,5 L5,17 L17,11 Z" stroke="#6ee7b7" stroke-width="1.5" fill="rgba(110,231,183,0.08)"/><circle cx="18" cy="11" r="1.5" stroke="#6ee7b7" stroke-width="1.5" fill="none"/></svg>
+        NOT
+      </button>
+      <button class="tool-btn" id="tool-nmos" onclick="setMode('place-nmos')" title="N-MOSFET">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="11" y1="2" x2="11" y2="9" stroke="#a78bfa" stroke-width="1.5"/><line x1="11" y1="13" x2="11" y2="20" stroke="#a78bfa" stroke-width="1.5"/><line x1="8" y1="7" x2="8" y2="15" stroke="#a78bfa" stroke-width="2.5"/><line x1="8" y1="11" x2="3" y2="11" stroke="#a78bfa" stroke-width="1.5"/><line x1="11" y1="9" x2="8" y2="9" stroke="#a78bfa" stroke-width="1.5"/><line x1="11" y1="13" x2="8" y2="13" stroke="#a78bfa" stroke-width="1.5"/></svg>
+        nMOS
+      </button>
+    </div>
+
+    <div class="tool-sep"></div>
+
+    <div class="tool-group">
+      <div class="tool-group-label">Measure</div>
+      <button class="tool-btn" id="tool-GND" onclick="setMode('place-GND')" title="Ground">
+        <svg width="22" height="22" viewBox="0 0 22 22"><line x1="11" y1="3" x2="11" y2="10" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="10" x2="18" y2="10" stroke="currentColor" stroke-width="2.5"/><line x1="7" y1="14" x2="15" y2="14" stroke="currentColor" stroke-width="1.5"/><line x1="10" y1="18" x2="12" y2="18" stroke="currentColor" stroke-width="1"/></svg>
+        GND
+      </button>
+      <button class="tool-btn" id="tool-probe" onclick="setMode('place-probe')" title="Voltmeter Probe">
+        <svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="10" r="7" stroke="#3fb950" stroke-width="1.5" fill="none"/><text x="8" y="14" fill="#3fb950" font-size="8" font-family="monospace">V</text><line x1="11" y1="17" x2="11" y2="21" stroke="#3fb950" stroke-width="1.5"/></svg>
+        Probe
+      </button>
+    </div>
+
+    <div class="tool-sep"></div>
+
+    <div class="tool-group">
+      <div class="tool-group-label">Building</div>
+      <button class="tool-btn" id="tool-motor" onclick="setMode('place-motor')" title="AC Motor (W)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="5" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="11" cy="11" r="6" stroke="#a78bfa" stroke-width="1.5" fill="rgba(167,139,250,0.08)"/>
+          <text x="11" y="14" text-anchor="middle" fill="#a78bfa" font-size="7" font-family="monospace">M</text>
+          <line x1="17" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Motor
+      </button>
+      <button class="tool-btn" id="tool-xfmr" onclick="setMode('place-xfmr')" title="Transformer (ratio)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="8" x2="5" y2="8" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="1" y1="14" x2="5" y2="14" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M5,6 Q7,8 5,10 Q7,12 5,14" stroke="#60a5fa" stroke-width="1.5" fill="none"/>
+          <line x1="10" y1="5" x2="10" y2="17" stroke="#64748b" stroke-width="2"/>
+          <path d="M17,6 Q15,8 17,10 Q15,12 17,14" stroke="#60a5fa" stroke-width="1.5" fill="none"/>
+          <line x1="17" y1="8" x2="21" y2="8" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="17" y1="14" x2="21" y2="14" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Xfmr
+      </button>
+      <button class="tool-btn" id="tool-load3" onclick="setMode('place-load3')" title="3-Phase Load (W)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="5" y2="11" stroke="#f59e0b" stroke-width="1.5"/>
+          <rect x="5" y="7" width="12" height="8" rx="2" stroke="#f59e0b" stroke-width="1.5" fill="rgba(245,158,11,0.08)"/>
+          <text x="11" y="14" text-anchor="middle" fill="#f59e0b" font-size="6" font-family="monospace">3∅</text>
+          <line x1="17" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        3Ph Load
+      </button>
+    </div>
+
+    <div class="tool-sep"></div>
+
+    <div class="tool-group">
+      <div class="tool-group-label">UK House</div>
+      <button class="tool-btn" id="tool-cunit" onclick="setMode('place-cunit')" title="Consumer Unit enclosure box — visual container for supply, DP, RCD, MCBs. Slots configurable 1–12.">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <rect x="1" y="4" width="20" height="14" rx="2" fill="#0d1a2e" stroke="#58a6ff" stroke-width="1.5"/>
+          <rect x="1" y="4" width="20" height="4" rx="2" fill="rgba(88,166,255,0.15)" stroke="none"/>
+          <text x="11" y="9" text-anchor="middle" fill="#58a6ff" font-size="4" font-family="sans-serif" font-weight="bold">CU</text>
+          <rect x="3" y="10" width="4" height="6" rx="1" fill="#1a1a2e" stroke="#3b82f6" stroke-width="0.8"/>
+          <rect x="8" y="10" width="4" height="6" rx="1" fill="#1a1a2e" stroke="#3b82f6" stroke-width="0.8"/>
+          <rect x="13" y="10" width="4" height="6" rx="1" fill="#1a1a2e" stroke="#3b82f6" stroke-width="0.8"/>
+        </svg>
+        C. Unit
+      </button>
+      <button class="tool-btn" id="tool-mcb" onclick="setMode('place-mcb')" title="MCB / Circuit Breaker (A rating)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="5" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="5" y="6" width="12" height="10" rx="1.5" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+          <rect x="6" y="7" width="6" height="5" rx="1" fill="#2244cc"/>
+          <text x="13" y="14" text-anchor="middle" fill="#fff" font-size="5" font-family="monospace" font-weight="bold">B6</text>
+          <line x1="17" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        MCB
+      </button>
+      <button class="tool-btn" id="tool-switch_uk" onclick="setMode('place-switch_uk')" title="UK Plate Switch (BS EN 60669)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="4" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="4" y="4" width="14" height="14" rx="2" stroke="#c0c0c0" stroke-width="1.5" fill="#f5f5f5"/>
+          <rect x="6" y="6" width="10" height="10" rx="1.5" fill="#e8e8e8" stroke="#b0b0b0" stroke-width="0.8"/>
+          <line x1="6" y1="11" x2="16" y2="11" stroke="#aaa" stroke-width="0.7"/>
+          <circle cx="14.5" cy="8" r="1.5" fill="#d1d5db"/>
+          <line x1="18" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Plate Sw
+      </button>
+      <button class="tool-btn" id="tool-socket_uk" onclick="setMode('place-socket_uk')" title="UK Socket Outlet BS 1363 (load in Ω)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="3" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="3" y="3" width="16" height="16" rx="2" stroke="#e0e0e0" stroke-width="1.5" fill="#f8f8f8"/>
+          <rect x="9" y="5" width="4" height="6" rx="0.8" fill="#333"/>
+          <rect x="4" y="12" width="6" height="4" rx="0.8" fill="#333"/>
+          <rect x="12" y="12" width="6" height="4" rx="0.8" fill="#333"/>
+          <line x1="19" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Socket
+      </button>
+      <button class="tool-btn" id="tool-plug" onclick="setMode('place-plug')" title="UK Plug BS 1363 — place on top of a socket to connect">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="8" x2="5" y2="8" stroke="#b45309" stroke-width="1.5" stroke-dasharray="2,1.5"/>
+          <line x1="1" y1="14" x2="5" y2="14" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="2,1.5"/>
+          <rect x="5" y="5" width="12" height="12" rx="2" stroke="#a0a0a0" stroke-width="1.5" fill="#f5f5f5"/>
+          <circle cx="8" cy="8" r="2" fill="#b45309"/>
+          <circle cx="8" cy="14" r="2" fill="#2563eb"/>
+          <line x1="17" y1="8" x2="21" y2="8" stroke="#b45309" stroke-width="1" stroke-dasharray="2,1.5"/>
+          <line x1="17" y1="14" x2="21" y2="14" stroke="#2563eb" stroke-width="1" stroke-dasharray="2,1.5"/>
+        </svg>
+        Plug
+      </button>
+      <button class="tool-btn" id="tool-crose" onclick="setMode('place-crose')" title="Ceiling Rose / Light Point (Ω)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="5" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="11" cy="11" r="6" stroke="#e5c07b" stroke-width="1.5" fill="rgba(229,192,123,0.1)"/>
+          <circle cx="11" cy="11" r="2.5" fill="rgba(255,215,0,0.4)"/>
+          <line x1="11" y1="17" x2="11" y2="19" stroke="#888" stroke-width="1"/>
+          <circle cx="11" cy="20.5" r="1.5" fill="#ffe" stroke="#ccc" stroke-width="0.8"/>
+          <line x1="17" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        C. Rose
+      </button>
+      <button class="tool-btn" id="tool-supply" onclick="setMode('place-supply')" title="Single-Phase Mains Supply 230V AC 50Hz">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="4" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="4" y="4" width="14" height="14" rx="2" fill="#1a0800" stroke="#f97316" stroke-width="1.5"/>
+          <path d="M 7,11 C 8,7 10,7 11,11 C 12,15 14,15 15,11" stroke="#fb923c" stroke-width="1.5" fill="none"/>
+          <line x1="18" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        1-Ph Supply
+      </button>
+      <button class="tool-btn" id="tool-rcd" onclick="setMode('place-rcd')" title="RCD / Residual Current Device">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="4" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="4" y="4" width="14" height="14" rx="2" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="11" y="13" text-anchor="middle" fill="#f59e0b" font-size="5" font-family="monospace" font-weight="bold">RCD</text>
+          <line x1="18" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        RCD
+      </button>
+      <button class="tool-btn" id="tool-dpswitch" onclick="setMode('place-dpswitch')" title="Double-Pole Switch (main isolator)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="8" x2="5" y2="8" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="1" y1="14" x2="5" y2="14" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="5" cy="8" r="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="5" cy="14" r="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="6" y1="8" x2="12" y2="6" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="6" y1="14" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="13" cy="8" r="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="13" cy="14" r="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="14" y1="8" x2="21" y2="8" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="14" y1="14" x2="21" y2="14" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        DP Switch
+      </button>
+      <button class="tool-btn" id="tool-meter" onclick="setMode('place-meter')" title="Energy Meter (kWh)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="4" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="4" y="4" width="14" height="14" rx="2" fill="#f0fdf4" stroke="#22c55e" stroke-width="1.5"/>
+          <text x="11" y="10" text-anchor="middle" fill="#16a34a" font-size="4" font-family="sans-serif">kWh</text>
+          <rect x="6" y="11" width="10" height="5" rx="1" fill="#14532d"/>
+          <text x="11" y="15" text-anchor="middle" fill="#3fb950" font-size="4" font-family="monospace">0000</text>
+          <line x1="18" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Meter
+      </button>
+      <button class="tool-btn" id="tool-intswitch" onclick="setMode('place-intswitch')" title="Intermediate Switch (2-way crossing)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="8" x2="5" y2="8" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="1" y1="14" x2="5" y2="14" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="5" cy="8" r="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="5" cy="14" r="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="6" y1="8" x2="16" y2="8" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="6" y1="14" x2="16" y2="14" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="6" y1="8" x2="16" y2="14" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+          <line x1="6" y1="14" x2="16" y2="8" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+          <circle cx="17" cy="8" r="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="17" cy="14" r="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="18" y1="8" x2="21" y2="8" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="18" y1="14" x2="21" y2="14" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Int. Switch
+      </button>
+      <button class="tool-btn" id="tool-switch2_uk" onclick="setMode('place-switch2_uk')" title="UK 2-Way Plate Switch (COM/L1/L2) — for staircase switching">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="4" y2="11" stroke="#b45309" stroke-width="1.5"/>
+          <rect x="4" y="4" width="14" height="14" rx="2" stroke="#c0c0c0" stroke-width="1.5" fill="#f5f5f5"/>
+          <rect x="6" y="6" width="10" height="10" rx="1.5" fill="#e8e8e8" stroke="#b0b0b0" stroke-width="0.8"/>
+          <circle cx="7" cy="11" r="1.8" fill="#b45309"/>
+          <text x="7" y="9" text-anchor="middle" fill="#888" font-size="4" font-family="monospace">COM</text>
+          <line x1="9" y1="11" x2="15" y2="8" stroke="#1e40af" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="15" cy="8" r="1.8" fill="#1e40af"/>
+          <line x1="15" y1="8" x2="18" y2="8" stroke="#1e40af" stroke-width="1.5"/>
+          <circle cx="15" cy="14" r="1.8" fill="#6b7280"/>
+          <line x1="15" y1="14" x2="18" y2="14" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="2,1.5"/>
+          <text x="16" y="7.5" text-anchor="start" fill="#888" font-size="4" font-family="monospace">L1</text>
+          <text x="16" y="17" text-anchor="start" fill="#888" font-size="4" font-family="monospace">L2</text>
+        </svg>
+        2-Way Sw
+      </button>
+      <button class="tool-btn" id="tool-switchint_uk" onclick="setMode('place-switchint_uk')" title="UK Intermediate Plate Switch (L1/L2 crossing) — for 3+ point switching">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="7" x2="4" y2="7" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="1" y1="15" x2="4" y2="15" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="4" y="3" width="14" height="16" rx="2" stroke="#c0c0c0" stroke-width="1.5" fill="#f5f5f5"/>
+          <rect x="6" y="5" width="10" height="12" rx="1.5" fill="#e8e8e8" stroke="#b0b0b0" stroke-width="0.8"/>
+          <circle cx="5" cy="7" r="1.5" fill="#6b7280"/>
+          <circle cx="5" cy="15" r="1.5" fill="#6b7280"/>
+          <circle cx="17" cy="7" r="1.5" fill="#6b7280"/>
+          <circle cx="17" cy="15" r="1.5" fill="#6b7280"/>
+          <line x1="6" y1="7" x2="16" y2="7" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="6" y1="15" x2="16" y2="15" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="18" y1="7" x2="21" y2="7" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="18" y1="15" x2="21" y2="15" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Int. Sw (UK)
+      </button>
+      <button class="tool-btn" id="tool-switch2g_uk" onclick="setMode('place-switch2g_uk')" title="UK 2-Gang Plate Switch — two independent on/off switches on one plate">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="8" x2="4" y2="8" stroke="#60a5fa" stroke-width="1.5"/>
+          <line x1="1" y1="14" x2="4" y2="14" stroke="#60a5fa" stroke-width="1.5"/>
+          <rect x="4" y="3" width="14" height="16" rx="2" stroke="#60a5fa" stroke-width="1.5" fill="#f5f5f5"/>
+          <rect x="6" y="5" width="10" height="5" rx="1" fill="#e8e8e8" stroke="#b0b0b0" stroke-width="0.8"/>
+          <rect x="6" y="12" width="10" height="5" rx="1" fill="#e8e8e8" stroke="#b0b0b0" stroke-width="0.8"/>
+          <circle cx="14" cy="7" r="1.5" fill="#60a5fa"/>
+          <circle cx="14" cy="14" r="1.5" fill="#60a5fa"/>
+          <line x1="18" y1="8" x2="21" y2="8" stroke="#60a5fa" stroke-width="1.5"/>
+          <line x1="18" y1="14" x2="21" y2="14" stroke="#60a5fa" stroke-width="1.5"/>
+        </svg>
+        2-Gang Sw
+      </button>
+      <button class="tool-btn" id="tool-switch3g_uk" onclick="setMode('place-switch3g_uk')" title="UK 3-Gang Plate Switch — three independent on/off switches on one plate">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="5" x2="4" y2="5" stroke="#60a5fa" stroke-width="1.2"/>
+          <line x1="1" y1="11" x2="4" y2="11" stroke="#60a5fa" stroke-width="1.2"/>
+          <line x1="1" y1="17" x2="4" y2="17" stroke="#60a5fa" stroke-width="1.2"/>
+          <rect x="4" y="2" width="14" height="18" rx="2" stroke="#60a5fa" stroke-width="1.5" fill="#f5f5f5"/>
+          <rect x="6" y="4" width="10" height="4" rx="1" fill="#e8e8e8" stroke="#b0b0b0" stroke-width="0.7"/>
+          <rect x="6" y="9" width="10" height="4" rx="1" fill="#e8e8e8" stroke="#b0b0b0" stroke-width="0.7"/>
+          <rect x="6" y="14" width="10" height="4" rx="1" fill="#e8e8e8" stroke="#b0b0b0" stroke-width="0.7"/>
+          <circle cx="14" cy="6" r="1.2" fill="#60a5fa"/>
+          <circle cx="14" cy="11" r="1.2" fill="#60a5fa"/>
+          <circle cx="14" cy="16" r="1.2" fill="#60a5fa"/>
+          <line x1="18" y1="5" x2="21" y2="5" stroke="#60a5fa" stroke-width="1.2"/>
+          <line x1="18" y1="11" x2="21" y2="11" stroke="#60a5fa" stroke-width="1.2"/>
+          <line x1="18" y1="17" x2="21" y2="17" stroke="#60a5fa" stroke-width="1.2"/>
+        </svg>
+        3-Gang Sw
+      </button>
+      <button class="tool-btn" id="tool-shower" onclick="setMode('place-shower')" title="Electric Shower (kW load)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="4" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="4" y="4" width="14" height="14" rx="2" fill="#f0f9ff" stroke="#38bdf8" stroke-width="1.5"/>
+          <circle cx="11" cy="9" r="3" fill="none" stroke="#38bdf8" stroke-width="1.2"/>
+          <line x1="9" y1="13" x2="9" y2="16" stroke="#38bdf8" stroke-width="1"/>
+          <line x1="11" y1="13" x2="11" y2="16" stroke="#38bdf8" stroke-width="1"/>
+          <line x1="13" y1="13" x2="13" y2="16" stroke="#38bdf8" stroke-width="1"/>
+          <line x1="18" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Shower
+      </button>
+      <button class="tool-btn" id="tool-cooker" onclick="setMode('place-cooker')" title="Cooker / Hob (kW load)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="4" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="4" y="4" width="14" height="14" rx="2" fill="#1a0d0d" stroke="#ef4444" stroke-width="1.5"/>
+          <circle cx="8" cy="8" r="2" fill="none" stroke="#ef4444" stroke-width="1"/>
+          <circle cx="14" cy="8" r="2" fill="none" stroke="#ef4444" stroke-width="1"/>
+          <circle cx="8" cy="14" r="2" fill="none" stroke="#ef4444" stroke-width="1"/>
+          <circle cx="14" cy="14" r="2" fill="none" stroke="#ef4444" stroke-width="1"/>
+          <line x1="18" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Cooker
+      </button>
+      <button class="tool-btn" id="tool-kettle" onclick="setMode('place-kettle')" title="Kettle (3kW load — plugs into socket)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="4" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M4,7 Q4,4 7,4 L15,4 Q18,4 18,7 L18,17 Q18,18 17,18 L5,18 Q4,18 4,17 Z" fill="#21262d" stroke="#a0c8e8" stroke-width="1.4"/>
+          <path d="M18,8 Q21,9 21,11 Q21,13 18,14" fill="none" stroke="#a0c8e8" stroke-width="1.2"/>
+          <line x1="7" y1="4" x2="7" y2="2" stroke="#a0c8e8" stroke-width="1.2"/>
+          <line x1="11" y1="4" x2="11" y2="2" stroke="#a0c8e8" stroke-width="1"/>
+          <line x1="15" y1="4" x2="15" y2="2" stroke="#a0c8e8" stroke-width="1.2"/>
+        </svg>
+        Kettle
+      </button>
+      <button class="tool-btn" id="tool-toaster" onclick="setMode('place-toaster')" title="Toaster (1kW load — plugs into socket)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="4" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="4" y="9" width="14" height="9" rx="1.5" fill="#fffbeb" stroke="#d97706" stroke-width="1.4"/>
+          <rect x="7" y="5" width="3" height="6" rx="1" fill="#fde68a" stroke="#d97706" stroke-width="1"/>
+          <rect x="12" y="5" width="3" height="6" rx="1" fill="#fde68a" stroke="#d97706" stroke-width="1"/>
+          <line x1="18" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Toaster
+      </button>
+      <button class="tool-btn" id="tool-tv" onclick="setMode('place-tv')" title="TV / Monitor (100W load — plugs into socket)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="4" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="4" y="5" width="14" height="10" rx="1.5" fill="#0d1117" stroke="#60a5fa" stroke-width="1.4"/>
+          <rect x="5.5" y="6.5" width="11" height="7" rx="0.8" fill="#0a1929" opacity="0.8"/>
+          <line x1="9" y1="15" x2="8" y2="19" stroke="#60a5fa" stroke-width="1.2"/>
+          <line x1="13" y1="15" x2="14" y2="19" stroke="#60a5fa" stroke-width="1.2"/>
+          <line x1="7" y1="19" x2="15" y2="19" stroke="#60a5fa" stroke-width="1"/>
+          <line x1="18" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        TV
+      </button>
+      <button class="tool-btn" id="tool-fridge" onclick="setMode('place-fridge')" title="Fridge / Freezer (150W load — plugs into socket)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="4" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="6" y="2" width="10" height="18" rx="1.5" fill="#f0f9ff" stroke="#67e8f9" stroke-width="1.4"/>
+          <line x1="6" y1="10" x2="16" y2="10" stroke="#67e8f9" stroke-width="1"/>
+          <line x1="10" y1="6" x2="10" y2="8.5" stroke="#67e8f9" stroke-width="1.2"/>
+          <line x1="10" y1="12" x2="10" y2="16" stroke="#67e8f9" stroke-width="1.2"/>
+          <line x1="18" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Fridge
+      </button>
+      <button class="tool-btn" id="tool-fan" onclick="setMode('place-fan')" title="Bathroom/kitchen extractor fan (W)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="4" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="11" cy="11" r="7" stroke="#a0c8e8" stroke-width="1.5" fill="rgba(160,200,232,0.08)"/>
+          <path d="M11,11 Q14,8 14,5" stroke="#a0c8e8" stroke-width="1.3" fill="none"/>
+          <path d="M11,11 Q7,9 5,12" stroke="#a0c8e8" stroke-width="1.3" fill="none"/>
+          <path d="M11,11 Q12,15 9,17" stroke="#a0c8e8" stroke-width="1.3" fill="none"/>
+          <circle cx="11" cy="11" r="1.5" fill="#a0c8e8"/>
+          <line x1="18" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Fan
+      </button>
+      <button class="tool-btn" id="tool-fcu" onclick="setMode('place-fcu')" title="Fused Connection Unit — spur outlet with integrated fuse (A rating)">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="3" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="3" y="5" width="16" height="12" rx="2" stroke="#60a5fa" stroke-width="1.5" fill="#f5f5f5"/>
+          <rect x="8" y="8" width="6" height="6" rx="3" stroke="#f0a500" stroke-width="1.2" fill="none"/>
+          <text x="11" y="19" text-anchor="middle" fill="#60a5fa" font-size="4" font-family="monospace" font-weight="bold">FCU</text>
+          <line x1="19" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        FCU
+      </button>
+      <button class="tool-btn" id="tool-pullcord" onclick="setMode('place-pullcord')" title="Bathroom pull-cord switch — toggle open/closed">
+        <svg width="22" height="22" viewBox="0 0 22 22">
+          <line x1="1" y1="11" x2="4" y2="11" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="4" y="4" width="14" height="14" rx="2" stroke="#60a5fa" stroke-width="1.5" fill="#f5f5f5"/>
+          <line x1="11" y1="18" x2="11" y2="21" stroke="#60a5fa" stroke-width="1.3"/>
+          <circle cx="11" cy="21" r="1.5" fill="#60a5fa" stroke="#1e40af" stroke-width="0.6"/>
+          <text x="11" y="13" text-anchor="middle" fill="#6b7280" font-size="4" font-family="monospace" font-weight="bold">PULL</text>
+          <line x1="18" y1="11" x2="21" y2="11" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Pull-Cord
+      </button>
+    </div>
+
+  </div>
+
+  <div class="canvas-wrap">
+    <svg id="circuit-svg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Circuit canvas — place and connect electrical components">
+      <defs>
+        <pattern id="sg" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M40 0L0 0 0 40" fill="none" stroke="#161b22" stroke-width="0.8"/>
+        </pattern>
+        <pattern id="lg" width="200" height="200" patternUnits="userSpaceOnUse">
+          <rect width="200" height="200" fill="url(#sg)"/>
+          <path d="M200 0L0 0 0 200" fill="none" stroke="#21262d" stroke-width="1"/>
+        </pattern>
+        <filter id="bulb-blur" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="6"/>
+        </filter>
+        <filter id="smoke-blur" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="3"/>
+        </filter>
+        <filter id="dmg-glow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="led-glow" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="5"/>
+        </filter>
+        <filter id="buzzer-glow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="3"/>
+        </filter>
+      </defs>
+      <g id="viewport-g">
+      <rect x="-4000" y="-4000" width="16000" height="16000" fill="url(#lg)"/>
+      <g id="floorplan-g" style="pointer-events:none"></g>
+      <g id="annot-g" style="pointer-events:none"></g>
+      <g id="wires-g"></g>
+      <g id="crossings-g"></g>
+      <g id="flow-g" style="pointer-events:none"></g>
+      <g id="comps-g"></g>
+      <g id="nodes-g"></g>
+      <g id="damage-g"></g>
+      <g id="ghost-g"></g>
+      <g id="probe-g"></g>
+      </g>
+    </svg>
+  </div>
+
+  <div class="panel">
+    <div class="panel-sec">
+      <h3>Properties</h3>
+      <div id="props"></div>
+    </div>
+    <div class="panel-sec" style="padding-bottom:0">
+      <h3>Results</h3>
+      <div id="sim-err" class="err" role="alert" aria-live="assertive" style="display:none"></div>
+    </div>
+    <div class="results-list" id="results"></div>
+  </div>
+</div>
+<div class="status-bar" role="status" aria-live="polite">
+  <span id="status-msg">Select a tool to begin. Keyboard: S=select W=wire R=rotate Del=delete</span>
+  <span id="coords"></span>
+</div>
+
+<!-- Multimeter widget -->
+<div id="ohm-widget">
+  <div id="ohm-header"><span>△ V = I × R</span><button class="tool-mini-btn" onclick="toggleToolMini('ohm')" id="ohm-mini-btn" title="Minimise">−</button></div>
+  <div class="ohm-body">
+    <div class="ohm-tri-wrap">
+      <!-- SVG: triangle outline + dividers only, no text (text is HTML overlay) -->
+      <svg width="190" height="140" viewBox="0 0 190 140" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="95,6 6,134 184,134" fill="none" stroke="#9333ea" stroke-width="1.5"/>
+        <line x1="95" y1="134" x2="95" y2="72" stroke="#9333ea" stroke-width="1" stroke-dasharray="3,2"/>
+        <line x1="95" y1="72" x2="6" y2="134" stroke="#9333ea" stroke-width="0" opacity="0"/>
+      </svg>
+      <!-- V section (top half of triangle) -->
+      <div class="ohm-sec" id="ohm-sec-V" onclick="ohmSelect('V')">
+        <div class="ohm-sec-lbl" style="color:#f0abfc">V — volts</div>
+        <div class="ohm-sec-formula" id="ohm-formula-V">tap to calculate</div>
+        <input id="ohm-in-V" type="number" placeholder="enter V" oninput="ohmRun()" onclick="event.stopPropagation()" style="display:none;border-color:#f0abfc66;color:#f0abfc">
+        <div class="ohm-sec-result" id="ohm-res-V" style="display:none;color:#f0abfc"></div>
+        <div class="ohm-sec-unit" id="ohm-unit-V" style="display:none;color:#f0abfc">V</div>
+      </div>
+      <!-- I section (bottom-left) -->
+      <div class="ohm-sec" id="ohm-sec-I" onclick="ohmSelect('I')">
+        <div class="ohm-sec-lbl" style="color:#60a5fa">I — amps</div>
+        <div class="ohm-sec-formula" id="ohm-formula-I">tap to calculate</div>
+        <input id="ohm-in-I" type="number" placeholder="enter A" oninput="ohmRun()" onclick="event.stopPropagation()" style="display:none;border-color:#60a5fa66;color:#60a5fa">
+        <div class="ohm-sec-result" id="ohm-res-I" style="display:none;color:#60a5fa"></div>
+        <div class="ohm-sec-unit" id="ohm-unit-I" style="display:none;color:#60a5fa">A</div>
+      </div>
+      <!-- R section (bottom-right) -->
+      <div class="ohm-sec" id="ohm-sec-R" onclick="ohmSelect('R')">
+        <div class="ohm-sec-lbl" style="color:#4ade80">R — ohms</div>
+        <div class="ohm-sec-formula" id="ohm-formula-R">tap to calculate</div>
+        <input id="ohm-in-R" type="number" placeholder="enter Ω" oninput="ohmRun()" onclick="event.stopPropagation()" style="display:none;border-color:#4ade8066;color:#4ade80">
+        <div class="ohm-sec-result" id="ohm-res-R" style="display:none;color:#4ade80"></div>
+        <div class="ohm-sec-unit" id="ohm-unit-R" style="display:none;color:#4ade80">Ω</div>
+      </div>
+    </div>
+    <div class="ohm-power" id="ohm-power"></div>
+    <div class="ohm-hint" id="ohm-hint">Tap a section to calculate it</div>
+    <button class="ohm-clear" onclick="ohmClear()">✕ Clear</button>
+  </div>
+</div>
+
+<div id="mm-widget">
+  <div id="mm-header">
+    <span>🔌 Multimeter</span><button class="tool-mini-btn" onclick="toggleToolMini('mm')" id="mm-mini-btn" title="Minimise">−</button>
+  </div>
+  <div id="mm-display">
+    <div id="mm-reading">---</div>
+    <div id="mm-unit"></div>
+  </div>
+  <div class="mm-modes">
+    <button class="mm-mode-btn active" data-mode="V" onclick="setMMMode('V')">V</button>
+    <button class="mm-mode-btn" data-mode="A" onclick="setMMMode('A')">A</button>
+    <button class="mm-mode-btn" data-mode="Ω" onclick="setMMMode('Ω')">Ω</button>
+    <button class="mm-mode-btn" data-mode="≋" onclick="setMMMode('≋')">≋</button>
+  </div>
+  <div class="mm-probes">
+    <button class="mm-probe-btn mm-red-btn" onclick="activateProbe('red')">🔴 Red</button>
+    <button class="mm-probe-btn mm-black-btn" onclick="activateProbe('black')">⚫ Black</button>
+  </div>
+  <button class="mm-reset" onclick="resetProbes()">Reset probes</button>
+</div>
+
+<!-- Explainer modal -->
+<div id="guide-modal">
+  <div class="guide-card">
+    <button class="guide-close" onclick="toggleGuide()">✕</button>
+    <h2>CONSUMER UNIT GUIDE</h2>
+    <div class="guide-sub">How to build and wire a CU in ElecLab</div>
+
+    <h3>1 — Place the Consumer Unit</h3>
+    <p>Find <strong>Consumer Unit</strong> in the UK House Wiring section of the toolbar and click anywhere on the canvas to place it. The box shows a supply section on the left and MCB slots to the right.</p>
+
+    <h3>2 — Configure in the Properties Panel</h3>
+    <p>Click the CU to select it. The right-hand panel becomes a CU Configurator:</p>
+    <ul>
+      <li>Toggle <strong>DP Isolator</strong>, <strong>RCD</strong> (choose sensitivity: 10 / 30 / 100 / 300 mA), and <strong>SPD</strong> (surge protection)</li>
+      <li>Each row in the MCB list has an <strong>amperage selector</strong> (6–63 A) and a <strong>circuit label</strong></li>
+      <li>Use <strong>+ Add MCB Circuit</strong> to add slots, <strong>✕</strong> to remove them</li>
+      <li>Hit <strong>✓ Apply Configuration</strong> when done — this locks in the terminal dots</li>
+    </ul>
+
+    <h3>3 — Understand the Terminals</h3>
+    <p>After applying, three types of coloured dots appear on the CU edges:</p>
+    <ul>
+      <li><span class="term-chip tc-red">L</span> <strong>Red dot</strong> — left edge, mid-height. This is the <strong>Live input</strong>. Wire your mains supply's L terminal here.</li>
+      <li><span class="term-chip tc-blue">N</span> <strong>Blue dot</strong> — bottom of the supply section. This is the <strong>Neutral bar</strong>. Wire the supply's N here, and all circuit N-returns here too.</li>
+      <li><span class="term-chip tc-green">L1 L2…</span> <strong>Green dots</strong> — one per MCB, along the bottom edge. These are the <strong>circuit outputs</strong>. Wire each to the live side of its circuit.</li>
+    </ul>
+    <div class="note-box">The CU distributes power — it does not generate it. You must wire a <strong>Supply</strong> component to the L and N terminals for any current to flow.</div>
+
+    <h3>4 — Wire Your Circuits</h3>
+    <p>Press <strong>W</strong> or click the Wire tool, then click terminal dot → component → next component. A typical lighting circuit looks like:</p>
+    <p style="font-size:10px;color:#8b949e;line-height:2">
+      Supply L → CU L-in &nbsp;|&nbsp; Supply N → CU N-bar → GND<br>
+      CU MCB L1 → Switch → Ceiling Rose → back to CU N-bar
+    </p>
+
+    <h3>5 — Simulate</h3>
+    <p>Click <strong>Simulate</strong> (or press <strong>Enter</strong> from the canvas). The solver runs Modified Nodal Analysis on your circuit and shows voltages, currents, and power in the Results panel.</p>
+    <p>If a circuit draws more current than the MCB's rated amps, that MCB <strong>trips</strong> — its terminal dot turns red and the properties panel shows <span class="term-chip tc-red">TRIP</span> next to it.</p>
+
+    <h3>6 — Reset Tripped MCBs</h3>
+    <p>Fix the fault (reduce load, increase MCB rating, or fix a short circuit), then click <strong>Reset Tripped MCBs</strong> in the properties panel and run Simulate again.</p>
+
+    <h3>Tips</h3>
+    <ul>
+      <li>Press <strong>R</strong> while placing a component to rotate it</li>
+      <li>Press <strong>S</strong> to switch to Select mode, <strong>W</strong> for Wire mode, <strong>H</strong> to pan</li>
+      <li>Hold <strong>Space</strong> and drag to pan; scroll wheel to zoom</li>
+      <li>Select a component and press <strong>Delete</strong> to remove it</li>
+      <li><strong>Ctrl+Z</strong> undoes the last action</li>
+      <li>Add a <strong>GND</strong> component — the simulator needs a ground reference to solve</li>
+    </ul>
+
+    <div style="text-align:right;margin-top:20px">
+      <button onclick="toggleGuide()" style="background:#58a6ff;color:#0d1117;border:1px solid #1f6feb;padding:8px 22px;border-radius:5px;cursor:pointer;font-size:12px;font-family:inherit;">Got it</button>
+    </div>
+  </div>
+</div>
+
+<div id="explainer-modal">
+  <div class="explainer-card" style="position:relative">
+    <button onclick="document.getElementById('explainer-modal').classList.remove('show')" style="position:absolute;top:10px;right:14px;cursor:pointer;font-size:18px;color:#8b949e;background:none;border:none">&#215;</button>
+    <div class="explainer-title" id="explainer-title"></div>
+    <div class="explainer-body" id="explainer-body"></div>
+    <div class="explainer-takeaway">
+      <strong>Key Takeaway</strong>
+      <p id="explainer-takeaway-text"></p>
+    </div>
+    <button class="explainer-continue" onclick="closeExplainer()">Continue →</button>
+  </div>
+</div>
+
+<!-- Welcome modal — placed before the script block so getElementById works at init time -->
+<div id="welcome-modal" style="display:none;position:fixed;inset:0;background:rgba(1,4,9,0.75);z-index:400;align-items:center;justify-content:center;">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.6);width:460px;max-width:90vw;padding:32px 36px;box-sizing:border-box;text-align:center;position:relative;">
+    <div style="font-size:28px;margin-bottom:10px;">⚡</div>
+    <h2 style="font-size:20px;color:#58a6ff;letter-spacing:2px;font-weight:700;margin-bottom:10px;">ElecLab</h2>
+    <p style="font-size:12px;color:#8b949e;line-height:1.7;margin-bottom:28px;">An interactive UK electrical circuit simulator for learning domestic wiring.</p>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button id="welcome-start-btn" style="background:#58a6ff;color:#0d1117;border:1px solid #1f6feb;padding:10px 22px;border-radius:6px;font-family:inherit;font-size:13px;font-weight:bold;cursor:pointer;box-shadow:0 1px 6px rgba(88,166,255,0.35);">Start Course →</button>
+      <button id="welcome-free-btn" style="background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:10px 22px;border-radius:6px;font-family:inherit;font-size:13px;cursor:pointer;">Explore Freely</button>
+    </div>
+  </div>
+</div>
+
