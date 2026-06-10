@@ -201,7 +201,7 @@ function loadHouseView() {
   ac('mcb', 6, 42, 0, 32);   // B32 LR Sockets → output (9,42)
 
   // ── Neutral bar ──────────────────────────────────────────────────────────
-  aw(3,54, 56,54);               // horizontal neutral bar y=54, x=3..56
+  aw(3,54, 57,54);               // horizontal neutral bar y=54, x=3..57 (57 reaches the toaster's neutral riser)
 
   // ── Circuit 1: Downstairs lighting (B6, MCB output (9,34)) ───────────────
   aw(9,34, 8,34); aw(8,34, 8,6);  // step west from MCB, north to ceiling at y=6
@@ -369,6 +369,30 @@ function loadHouseView() {
   aw(42,5, 42,20);                 // south to the cooker L terminal
   ac('cooker', 42, 20, 0, 6000);     // L=(42,20) N=(45,20)
   aw(45,20, 45,54);                   // cooker N south to neutral bar
+
+  // ── Wire crossings: mark as "hops" (no electrical connection) ───────────
+  // The routes above can't avoid crossing each other (proven by exhaustive
+  // search — see comments on Circuits 4/5), but buildNodeMap() treats every
+  // point a wire passes through as a connection unless it's in `jumpPoints`.
+  // Left unmarked, these crossings short circuits 1/3/4/5's lives together
+  // (and bypass two switches), which is what was tripping the B6 DL-lights
+  // MCB by default. In real life these are just cables crossing in the wall
+  // cavity with no junction box, so mark each crossing a hop:
+  [
+    [8,11],   // Circuit 1 live riser × Circuit 1 LR-switch L1 run (bypassed the LR switch)
+    [8,12],   // Circuit 1 live riser × Circuit 3 socket spine (B6 ↔ B32 sockets short)
+    [12,6],   // Circuit 5 cooker feed × Circuit 1 ceiling spine (B40 ↔ B6 short)
+    [11,11],  // Circuit 4 kitchen feed × Circuit 1 LR-switch L1 run (B32 kitchen ↔ B6 short)
+    [12,11],  // Circuit 5 cooker feed × Circuit 1 LR-switch L1 run (B40 ↔ B6 short)
+    [20,12],  // Circuit 1 LR rose drop × Circuit 3 socket spine (B6 ↔ B32 sockets short)
+    [40,8],   // Circuit 1 kitchen-light feed × Circuit 4 socket spine (B6 ↔ B32 kitchen short)
+    [46,9],   // Circuit 4 fridge L drop × Circuit 1 kitchen-light L1 run (B32 kitchen ↔ B6 short)
+    [44,71],  // Circuit 2 bedroom-2 switch drop × its own L1-to-rose run (bypassed the bedroom-2 switch)
+    [11,12],  // Circuit 4 kitchen feed × Circuit 3 socket spine (B32 kitchen ↔ B32 sockets short)
+    [12,12],  // Circuit 5 cooker feed × Circuit 3 socket spine (B40 ↔ B32 sockets short)
+    [12,9],   // Circuit 5 cooker feed × Circuit 4 kitchen corridor (B40 ↔ B32 kitchen short)
+    [42,8],   // Circuit 5 cooker drop × Circuit 4 socket spine (B40 ↔ B32 kitchen short)
+  ].forEach(([gx,gy]) => jumpPoints.add(nk(gx*G, gy*G)));
 
   saveCurrentCircuit();
 }
