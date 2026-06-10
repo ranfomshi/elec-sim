@@ -431,6 +431,7 @@ function toSchema() {
       if(c.maxRating!=null) o.maxRating=c.maxRating;
       if(c.type==='LED') o.ledColor=c.ledColor||'red';
       if(c.type==='sw'||c.type==='switch_uk'||c.type==='pullcord') o.closed=c.closed||false;
+      if(c.type==='shower'||c.type==='cooker'||c.type==='kettle'||c.type==='toaster'||c.type==='tv'||c.type==='fridge'||c.type==='fan') o.on=c.on!==false;
       if(c.type==='fcu') o.blown=c.blown||false;
       if((c.type==='socket_uk'||c.type==='switch_uk')&&c.x3!=null){o.x3=c.x3/G;o.y3=c.y3/G;}
       if(c.type==='plug'&&c.x3!=null){o.x3=c.x3/G;o.y3=c.y3/G;o.x4=c.x4/G;o.y4=c.y4/G;}
@@ -479,6 +480,7 @@ function fromSchema(schema) {
     }
     if(c.type==='LED') comp.ledColor=c.ledColor||'red';
     if(c.type==='sw'||c.type==='switch_uk'||c.type==='pullcord') comp.closed=c.closed||false;
+    if(c.type==='shower'||c.type==='cooker'||c.type==='kettle'||c.type==='toaster'||c.type==='tv'||c.type==='fridge'||c.type==='fan') comp.on=c.on!==false;
     if(c.type==='fcu') comp.blown=c.blown||false;
     if(c.type==='socket_uk'||c.type==='switch_uk'){
       if(c.x3!=null){comp.x3=c.x3*G;comp.y3=c.y3*G;}

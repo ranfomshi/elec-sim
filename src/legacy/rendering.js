@@ -1561,6 +1561,9 @@ function renderComps(){
   comps.forEach(c=>{
     const g=mk('g',{'data-id':c.id});
     g.style.cursor=mode==='select'?'pointer':'default';
+    if((c.type==='shower'||c.type==='cooker'||c.type==='kettle'||c.type==='toaster'||c.type==='tv'||c.type==='fridge'||c.type==='fan')&&c.on===false){
+      g.style.opacity='0.4';
+    }
     drawSymbol(g,c.type,c.x1,c.y1,c.x2,c.y2,{pos:c.pos??0.5,ledColor:c.ledColor,closed:c.closed,x3:c.x3,y3:c.y3,x4:c.x4,y4:c.y4,x5:c.x5,y5:c.y5,x6:c.x6,y6:c.y6,segVal:c.segVal??0,sw2pos:c.sw2pos,intpos:c.intpos??0,gang1:c.gang1??0,gang2:c.gang2??0,gang3:c.gang3??0,simPower:c.simPower,blown:c.blown,tripped:c.tripped,ratingLabel:c.value,slots:c.slots??6,cuDP:c.cuDP??true,cuRCD:c.cuRCD??true,cuRCDma:c.cuRCDma??30,cuSPD:c.cuSPD??false,cuMCBs:c.cuMCBs??[],cuMCBTerms:c.mcbTerms??[],mosfetOn:c.mosfetOn??false});
 
     // Hit region — large enough to grab without hovering on thin drawn lines
@@ -1605,7 +1608,7 @@ function renderComps(){
       g.appendChild(dg);
     }
 
-    g.addEventListener('click',e=>{e.stopPropagation();if(mode==='select'){if(_tryStartWireFromTerminal(svgPt(e)))return;selectComp(c.id);}});
+    g.addEventListener('click',e=>{e.stopPropagation();if(mode==='select'){if(_tryStartWireFromTerminal(svgPt(e),false))return;selectComp(c.id);}});
     g.addEventListener('mousedown',e=>{if(mode==='select'&&e.button===0){pushHistory();const p=svgPt(e);dragging=c.id;_dragMoved=false;dragOff={x:p.x-c.px,y:p.y-c.py};_dragTermOld=_getTerminals(c);e.preventDefault();}});
     layer.appendChild(g);
 
@@ -1659,7 +1662,7 @@ function renderComps(){
         g.innerHTML='';
         drawSymbol(g,c.type,c.x1,c.y1,c.x2,c.y2,{segVal:c.segVal??0});
         g.style.cursor=mode==='select'?'pointer':'default';
-        g.addEventListener('click',e=>{e.stopPropagation();if(mode==='select'){if(_tryStartWireFromTerminal(svgPt(e)))return;selectComp(c.id);}});
+        g.addEventListener('click',e=>{e.stopPropagation();if(mode==='select'){if(_tryStartWireFromTerminal(svgPt(e),false))return;selectComp(c.id);}});
         g.addEventListener('mousedown',e=>{if(mode==='select'&&e.button===0){pushHistory();const p=svgPt(e);dragging=c.id;_dragMoved=false;dragOff={x:p.x-c.px,y:p.y-c.py};_dragTermOld=_getTerminals(c);e.preventDefault();}});
         const t=mk('text',{x:c.x1+14,y:c.y1+58,'text-anchor':'middle',class:'rt',style:'font-size:9px'});
         t.textContent=fmtVal(c.simV,'V'); layer.appendChild(t);
@@ -1739,7 +1742,11 @@ function renderComps(){
         const p1=lp(1);
         const t=mk('text',{x:p1.x,y:p1.y,'text-anchor':p1.a,class:'rt'});
         t.textContent=fmtV; layer.appendChild(t);
-        if(c.simPower!=null&&c.simPower>1){
+        if(c.on===false){
+          const p2=lp(2);
+          const t2=mk('text',{x:p2.x,y:p2.y,'text-anchor':p2.a,class:'rt',style:'fill:#6e7681;font-size:9px'});
+          t2.textContent='OFF'; layer.appendChild(t2);
+        } else if(c.simPower!=null&&c.simPower>1){
           const p2=lp(2);
           const t2=mk('text',{x:p2.x,y:p2.y,'text-anchor':p2.a,class:'rt',style:'fill:#d29922'});
           t2.textContent=fmtVal(c.simPower,'W'); layer.appendChild(t2);
@@ -1978,7 +1985,7 @@ function nearestSnapPoint(px, py, radius=20) {
   return nearestTerminal(px,py,radius) || nearestWireEndpoint(px,py,radius);
 }
 
-function _tryStartWireFromTerminal(rawP) {
+function _tryStartWireFromTerminal(rawP, allowSpur=true) {
   const term = nearestTerminal(rawP.x, rawP.y, 22);
   if (term && wireCountAt(term.x, term.y) === 0) {
     setMode('wire');
@@ -1986,6 +1993,7 @@ function _tryStartWireFromTerminal(rawP) {
     setStatus(`Wire started — click end point. Esc to cancel.`);
     return true;
   }
+  if (!allowSpur) return false;
   // Tap off any existing wire — its endpoint, a corner/T-junction, or a plain
   // mid-span point — to start a new spur from there.
   const wirePt = nearestWirePoint(rawP.x, rawP.y, 22);

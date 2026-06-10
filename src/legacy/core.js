@@ -511,6 +511,7 @@ function placeComp(type, px, py, r=0, extra={}) {
   if(type==='LED') c.ledColor='red';
   if(type==='sw')  c.closed=false;
   if(type==='switch_uk') c.closed=false;
+  if(type==='shower'||type==='cooker'||type==='kettle'||type==='toaster'||type==='tv'||type==='fridge'||type==='fan') c.on=true;
   if(type==='sw2'){
     // 3-terminal SPDT: COM=(x1,y1), L1=(x2,y2), L2=(x3,y3)
     if(r===0){c.x3=px+3*G; c.y3=py+G;}
@@ -917,10 +918,14 @@ function showProps(id) {
   if(c.type==='shower'||c.type==='cooker'||c.type==='kettle'||c.type==='toaster'||c.type==='tv'||c.type==='fridge'||c.type==='fan'){
     const tags={shower:'Electric Shower',cooker:'Cooker / Range',kettle:'Kettle',toaster:'Toaster',tv:'TV / Monitor',fridge:'Fridge / Freezer',fan:'Extractor Fan'};
     const tag=tags[c.type]||c.type;
+    const isOn=c.on!==false;
+    const oncol=isOn?'#3fb950':'#6e7681';
     el.innerHTML=`<div style="color:#8b949e;font-size:10px">${tag}</div>
     <div class="prop-row"><label>Power (W)</label><input type="number" id="pv" value="${c.value}" step="${c.type==='tv'||c.type==='fridge'||c.type==='fan'?10:100}"/></div>
-    ${c.simPower!=null?`<div style="color:#ffd700;font-size:11px;margin-bottom:4px">P = ${fmtVal(c.simPower,'W')}</div>`:''}
-    ${c.simI!=null?`<div style="color:#d29922;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
+    <div style="color:${oncol};font-size:13px;font-weight:bold;margin:6px 0">${isOn?'ON':'OFF'}</div>
+    <button class="btn" onclick="toggleSwitch('${id}')" style="border-color:${oncol};color:${oncol};margin-bottom:4px">${isOn?'Turn off':'Turn on'}</button>
+    ${isOn&&c.simPower!=null?`<div style="color:#ffd700;font-size:11px;margin-bottom:4px">P = ${fmtVal(c.simPower,'W')}</div>`:''}
+    ${isOn&&c.simI!=null?`<div style="color:#d29922;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
     document.getElementById('pv').addEventListener('input', ()=>applyProp(id));
     return;
@@ -1144,6 +1149,12 @@ function showProps(id) {
 
 function toggleSwitch(id){
   const c=comps.find(x=>x.id===id); if(!c) return;
+  if(c.type==='shower'||c.type==='cooker'||c.type==='kettle'||c.type==='toaster'||c.type==='tv'||c.type==='fridge'||c.type==='fan'){
+    pushHistory();
+    c.on=c.on===false?true:false;
+    clearSim(); render(); simulate(); showProps(id);
+    return;
+  }
   if(c.type==='sw2'||c.type==='switch2_uk'){
     pushHistory();
     c.sw2pos=c.sw2pos===0?1:0;

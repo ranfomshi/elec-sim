@@ -528,8 +528,12 @@ function simulate(){
           if(ne2>=0&&nf2>=0){A[ne2][ne2]+=g9;A[nf2][nf2]+=g9;A[ne2][nf2]-=g9;A[nf2][ne2]-=g9;}
         }
       } else if(c.type==='shower'||c.type==='cooker'||c.type==='kettle'||c.type==='toaster'||c.type==='tv'||c.type==='fridge'||c.type==='fan'){
-        const P=Math.max(c.value,1);
-        stamp(P/(230*230));
+        if(c.on===false){
+          stamp(1e-9);
+        } else {
+          const P=Math.max(c.value,1);
+          stamp(P/(230*230));
+        }
       } else if(c.type==='fcu'){
         if(!c.blown){
           const k=fsrcOff+fsrcs.indexOf(c);
@@ -866,12 +870,12 @@ function simulate(){
       resArr.push({label:`${numG}-Gang Plate Sw (${stateStr})`,v:vd});
     } else if(c.type==='shower'||c.type==='cooker'||c.type==='kettle'||c.type==='toaster'||c.type==='tv'||c.type==='fridge'||c.type==='fan'){
       const P=Math.max(c.value,1);
-      const R=230*230/P;
+      const R=c.on===false?1/1e-9:230*230/P;
       c.simV=vd; c.simI=vd/R; c.simPower=Math.abs(vd*c.simI);
       const mr=c.type==='fan'?MAX_RATINGS.fan:null;
       if(mr&&c.simPower>(c.maxRating??mr.def)) c.damaged=true;
       const tags={shower:'Shower',cooker:'Cooker',kettle:'Kettle',toaster:'Toaster',tv:'TV',fridge:'Fridge',fan:'Fan'};
-      resArr.push({label:`${tags[c.type]||c.type} ${fmtVal(c.value,'W')}`,v:vd,i:c.simI,p:c.simPower});
+      resArr.push({label:`${tags[c.type]||c.type} ${fmtVal(c.value,'W')}${c.on===false?' (off)':''}`,v:vd,i:c.simI,p:c.simPower});
     } else if(c.type==='fcu'){
       // fcu modelled as fuse — find its current from the voltage source row
       const vsrcs2=comps.filter(cc=>cc.type==='V'||cc.type==='supply');
@@ -1165,8 +1169,12 @@ function simulateAC(){
         stampC(Cmk(1e9))(ne2,nf2);
       }
     } else if(c.type==='shower'||c.type==='cooker'||c.type==='kettle'||c.type==='toaster'||c.type==='tv'||c.type==='fridge'||c.type==='fan'){
-      const P=Math.max(c.value,1);
-      stampC(Cmk(P/(230*230)))(na,nb);
+      if(c.on===false){
+        stampC(Cmk(1e-9))(na,nb);
+      } else {
+        const P=Math.max(c.value,1);
+        stampC(Cmk(P/(230*230)))(na,nb);
+      }
     } else if(c.type==='fcu'){
       // fcu in AC: near-zero resistance when intact, open when blown
       const R=c.blown?1e9:0.001;
@@ -1342,10 +1350,10 @@ function simulateAC(){
       const stateStr=gangs.map((s,i)=>`G${i+1}:${s?'closed':'open'}`).join(' ');
       resArr.push({label:`${numG}-Gang Plate Sw (${stateStr})`,acV:mag,acVph:ph});
     } else if(c.type==='shower'||c.type==='cooker'||c.type==='kettle'||c.type==='toaster'||c.type==='tv'||c.type==='fridge'||c.type==='fan'){
-      const P=Math.max(c.value,1), R=230*230/P;
+      const P=Math.max(c.value,1), R=c.on===false?1/1e-9:230*230/P;
       c.acV=mag; c.simV=mag; c.acI=mag/R; c.simI=c.acI; c.simPower=mag*c.acI*0.5;
       const tags={shower:'Shower',cooker:'Cooker',kettle:'Kettle',toaster:'Toaster',tv:'TV',fridge:'Fridge',fan:'Fan'};
-      resArr.push({label:`${tags[c.type]||c.type} ${fmtVal(c.value,'W')}`,acV:mag,acVph:ph,acI:c.acI,acIph:ph,p:c.simPower});
+      resArr.push({label:`${tags[c.type]||c.type} ${fmtVal(c.value,'W')}${c.on===false?' (off)':''}`,acV:mag,acVph:ph,acI:c.acI,acIph:ph,p:c.simPower});
     } else if(c.type==='fcu'){
       const fuseIAC=mag/0.001;
       c.acV=mag; c.simV=mag; c.simI=fuseIAC;
