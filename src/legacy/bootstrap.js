@@ -153,7 +153,7 @@ function loadHouseView() {
   //   Master Bedroom: x=2..32, y=60..84   Bedroom 2: x=32..60, y=60..84
   //   Landing: x=2..44, y=84..100         Bathroom: x=44..60, y=84..100
   //
-  // Consumer unit sits in under-stairs/CU area (x=6..9, y=34..42).
+  // Consumer unit sits in under-stairs/CU area (x=6..9, y=34..44).
   // Neutral bar at y=54: x=3..56.
   // UL riser at x=2 (outside neutral bar which starts at x=3).
 
@@ -199,6 +199,7 @@ function loadHouseView() {
   ac('mcb', 6, 38, 0, 32);   // B32 Kitchen    → output (9,38)
   ac('mcb', 6, 40, 0, 40);   // B40 Cooker     → output (9,40)
   ac('mcb', 6, 42, 0, 32);   // B32 LR Sockets → output (9,42)
+  ac('mcb', 6, 44, 0, 32);   // B32 US Sockets → output (9,44)
 
   // ── Neutral bar ──────────────────────────────────────────────────────────
   aw(3,54, 57,54);               // horizontal neutral bar y=54, x=3..57 (57 reaches the toaster's neutral riser)
@@ -370,6 +371,39 @@ function loadHouseView() {
   ac('cooker', 42, 20, 0, 6000);     // L=(42,20) N=(45,20)
   aw(45,20, 45,54);                   // cooker N south to neutral bar
 
+  // ── Circuit 6: Upstairs sockets (B32, MCB output (9,44)) ─────────────────
+  // The under-stairs corridor x=10..27, y=44..59 carries no other circuit's
+  // conductors, so the live feed runs straight up to a first-floor socket
+  // spine at y=62 (just below Circuit 2's lighting ceiling spine at y=60),
+  // crossing only the neutral bar (y=54) and that ceiling spine — both
+  // single-point hops, marked below.
+  aw(9,44, 20,44);                  // step east from MCB output, clear corridor
+  aw(20,44, 20,62);                 // north to first-floor socket spine (hops at (20,54) neutral bar and (20,60) ceiling spine)
+  aw(10,62, 50,62);                 // first-floor socket spine at y=62 (hop at (44,62): Circuit 2 bedroom-2 switch drop)
+
+  // Master bedroom sockets
+  ac('socket_uk', 10, 66, 0, 0);   // Socket M1: L=(10,66) N=(13,66)
+  ac('socket_uk', 24, 66, 0, 0);   // Socket M2: L=(24,66) N=(27,66)
+  aw(10,62, 10,66);                 // M1 drop (spine's west end)
+  aw(24,62, 24,66);                 // M2 drop
+  ac('tv', 10, 70, 0, 100);          // bedroom TV plugged into M1
+  aw(10,66, 10,70); aw(13,66, 13,70); // TV plug lead
+
+  // Bedroom 2 sockets
+  ac('socket_uk', 36, 66, 0, 0);   // Socket B1: L=(36,66) N=(39,66)
+  ac('socket_uk', 50, 66, 0, 0);   // Socket B2: L=(50,66) N=(53,66)
+  aw(36,62, 36,66);                 // B1 drop
+  aw(50,62, 50,66);                 // B2 drop (spine's east end)
+  ac('tv', 36, 70, 0, 100);          // bedroom TV plugged into B1
+  aw(36,66, 36,70); aw(39,66, 39,70); // TV plug lead
+
+  // Socket neutrals: straight risers up to the neutral bar at y=54, each
+  // crossing Circuit 2's ceiling spine once at y=60 (hops)
+  aw(13,66, 13,54);   // M1 N to bar
+  aw(27,66, 27,54);   // M2 N to bar
+  aw(39,66, 39,54);   // B1 N to bar
+  aw(53,66, 53,54);   // B2 N to bar (joins kitchen socket neutral riser at (53,54))
+
   // ── Wire crossings: mark as "hops" (no electrical connection) ───────────
   // The routes above can't avoid crossing each other (proven by exhaustive
   // search — see comments on Circuits 4/5), but buildNodeMap() treats every
@@ -392,6 +426,17 @@ function loadHouseView() {
     [12,12],  // Circuit 5 cooker feed × Circuit 3 socket spine (B40 ↔ B32 sockets short)
     [12,9],   // Circuit 5 cooker feed × Circuit 4 kitchen corridor (B40 ↔ B32 kitchen short)
     [42,8],   // Circuit 5 cooker drop × Circuit 4 socket spine (B40 ↔ B32 kitchen short)
+    [20,54],  // Circuit 6 live riser × neutral bar
+    [20,60],  // Circuit 6 live riser × Circuit 2 ceiling spine (B32 US ↔ B6 UL short)
+    [44,62],  // Circuit 6 socket spine × Circuit 2 bedroom-2 switch drop (B32 US ↔ B6 UL short)
+    [13,60],  // Socket M1 neutral riser × Circuit 2 ceiling spine
+    [13,62],  // Socket M1 neutral riser × Circuit 6's own live socket spine (would short B32 US live to neutral)
+    [27,60],  // Socket M2 neutral riser × Circuit 2 ceiling spine
+    [27,62],  // Socket M2 neutral riser × Circuit 6's own live socket spine
+    [39,60],  // Socket B1 neutral riser × Circuit 2 ceiling spine
+    [39,62],  // Socket B1 neutral riser × Circuit 6's own live socket spine
+    [53,60],  // Socket B2 neutral riser × Circuit 2 ceiling spine
+    [53,62],  // Socket B2 neutral riser × Circuit 6's own live socket spine
   ].forEach(([gx,gy]) => jumpPoints.add(nk(gx*G, gy*G)));
 
   saveCurrentCircuit();
