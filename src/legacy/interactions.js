@@ -83,15 +83,16 @@ SVG.addEventListener('mousemove',e=>{
         else{c.x3=nx+2*G;c.y3=ny+4*G;c.x4=nx+2*G;c.y4=ny;}
       }
       if(c.type==='cunit') computeCUnitTerms(c);
-      // Stretch connected wires to follow moved terminals
+      // Stretch only the wires captured at drag start — re-matching by
+      // coordinate every move would adopt foreign wires whose nodes the
+      // dragged terminals merely pass over. Connection happens on drop.
       if(_dragTermOld){
         const newT=_getTerminals(c);
-        wires.forEach(w=>{
-          _dragTermOld.forEach((old,i)=>{
-            const nu=newT[i];
-            if(w.x1===old.x&&w.y1===old.y){w.x1=nu.x;w.y1=nu.y;}
-            if(w.x2===old.x&&w.y2===old.y){w.x2=nu.x;w.y2=nu.y;}
-          });
+        if(_dragWireBinds) _dragWireBinds.forEach(b=>{
+          const nu=newT[b.ti];
+          if(!nu) return;
+          if(b.end===1){b.w.x1=nu.x;b.w.y1=nu.y;}
+          else{b.w.x2=nu.x;b.w.y2=nu.y;}
         });
         _dragTermOld=newT;
       }
@@ -142,7 +143,7 @@ SVG.addEventListener('mouseup',e=>{
   if(_panning&&(e.button===1||e.button===2||(e.button===0&&mode==='pan'))){
     _panning=false;SVG.style.cursor=mode==='pan'?'grab':'default';return;
   }
-  if(dragging){const moved=_dragMoved;dragging=null;_dragTermOld=null;_dragMoved=false;if(moved)markDirty();}
+  if(dragging){const moved=_dragMoved;dragging=null;_dragTermOld=null;_dragWireBinds=null;_dragMoved=false;if(moved)markDirty();}
 });
 SVG.addEventListener('wheel',e=>{
   e.preventDefault();

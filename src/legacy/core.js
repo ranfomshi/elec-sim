@@ -14,13 +14,26 @@ let mode = 'select', comps = [], wires = [], sel = null;
 // rendered as a hop/jump instead of a junction dot. Default (absent) = real connection.
 let jumpPoints = new Set();
 let wireStart = null, rot = 0, uid = 1;
-let dragging = null, dragOff = {x:0,y:0}, _dragTermOld = null, _dragMoved = false;
+let dragging = null, dragOff = {x:0,y:0}, _dragTermOld = null, _dragMoved = false, _dragWireBinds = null;
 function _getTerminals(c){
   const t=[{x:c.x1,y:c.y1},{x:c.x2,y:c.y2}];
   if(c.type==='cunit'&&c.mcbTerms) c.mcbTerms.forEach(mt=>t.push({x:mt.x,y:mt.y}));
   if(c.x3!=null)t.push({x:c.x3,y:c.y3});
   if(c.x4!=null)t.push({x:c.x4,y:c.y4});
   return t;
+}
+// Snapshot which wire endpoints sit on the given terminals at drag start.
+// Only these endpoints follow the drag — wires merely passed over mid-drag
+// must not be adopted; they connect on drop (node merge by coordinates).
+function captureWireBinds(terms){
+  const binds=[];
+  wires.forEach(w=>{
+    terms.forEach((t,i)=>{
+      if(w.x1===t.x&&w.y1===t.y) binds.push({w,end:1,ti:i});
+      if(w.x2===t.x&&w.y2===t.y) binds.push({w,end:2,ti:i});
+    });
+  });
+  return binds;
 }
 function filterTools(q){
   const lq=q.toLowerCase().trim();
@@ -312,8 +325,16 @@ function saveCurrentCircuit() {
     uid, sel,
     history: JSON.parse(JSON.stringify(_history)),
     acFreq: _acFreq,
+    view: { zoom: _zoom, panX: _pan.x, panY: _pan.y },
   };
   if (prev.background) _circuits[_currentIdx].background = prev.background;
+}
+
+// Each tab keeps its own camera — restore it (or the default) on switch.
+function restoreView(ct) {
+  if (ct && ct.view) { _zoom = ct.view.zoom; _pan = { x: ct.view.panX, y: ct.view.panY }; }
+  else { _zoom = 1; _pan = { x: 0, y: 0 }; }
+  updateViewport();
 }
 
 function loadCircuit(idx) {
@@ -326,6 +347,7 @@ function loadCircuit(idx) {
   uid = ct.uid; sel = ct.sel;
   _history = JSON.parse(JSON.stringify(ct.history));
   if(ct.acFreq) _acFreq = ct.acFreq;
+  restoreView(ct);
   clearSim(); syncACMode(); render(); showProps(sel);
   updateUndoBtn(); updateTabBar(); updateACUI(); markDirty();
   setMode('select');
@@ -338,6 +360,7 @@ function addCircuit() {
   _currentIdx = _circuits.length - 1;
   comps=[]; wires=[]; uid=1; sel=null; _history=[]; _acMode=false; _acFreq=50;
   jumpPoints = new Set();
+  restoreView(null);
   clearSim(); syncACMode(); render(); showProps(null);
   updateUndoBtn(); updateTabBar(); updateACUI(); markClean();
   setMode('select');
@@ -356,6 +379,7 @@ function deleteCircuit(idx) {
   uid = ct.uid; sel = ct.sel;
   _history = JSON.parse(JSON.stringify(ct.history));
   if(ct.acFreq) _acFreq = ct.acFreq;
+  restoreView(ct);
   clearSim(); syncACMode(); render(); showProps(sel);
   updateUndoBtn(); updateTabBar(); updateACUI(); markDirty();
 }
