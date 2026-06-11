@@ -366,17 +366,13 @@ function updateTabBar(editIdx=-1) {
   _circuits.forEach((ct, i) => {
     const tab = document.createElement('div');
     const active = i === _currentIdx;
-    tab.style.cssText = `display:flex;align-items:center;gap:4px;padding:0 10px;height:32px;cursor:pointer;` +
-      `border-bottom:2px solid ${active?'#58a6ff':'transparent'};` +
-      `color:${active?'#c9d1d9':'#6e7681'};font-size:11px;font-family:inherit;` +
-      `white-space:nowrap;user-select:none;flex-shrink:0`;
+    tab.className = active ? 'tab active' : 'tab';
     tab.onclick = () => { if (i !== _currentIdx) loadCircuit(i); };
 
     if (editIdx === i) {
       const inp = document.createElement('input');
       inp.value = ct.name;
-      inp.style.cssText = `width:90px;background:#0d1117;border:1px solid #58a6ff;color:#c9d1d9;` +
-        `font-family:inherit;font-size:11px;padding:1px 4px;border-radius:3px;outline:none`;
+      inp.className = 'tab-rename';
       inp.onclick = e => e.stopPropagation();
       const commit = () => { const n=inp.value.trim()||ct.name; _circuits[i].name=n; updateTabBar(); };
       inp.addEventListener('blur', commit);
@@ -394,9 +390,7 @@ function updateTabBar(editIdx=-1) {
       if (_circuits.length > 1) {
         const x = document.createElement('span');
         x.textContent = '×';
-        x.style.cssText = `color:#6e7681;font-size:13px;margin-left:2px;padding:1px 3px;border-radius:3px;cursor:pointer`;
-        x.onmouseover = () => { x.style.color='#dc2626'; x.style.background='rgba(220,38,38,0.08)'; };
-        x.onmouseout = () => { x.style.color='#6e7681'; x.style.background=''; };
+        x.className = 'tab-close';
         x.onclick = ev => { ev.stopPropagation(); deleteCircuit(i); };
         tab.appendChild(x);
       }
@@ -405,11 +399,7 @@ function updateTabBar(editIdx=-1) {
   });
   const addBtn = document.createElement('button');
   addBtn.textContent = '+ New';
-  addBtn.style.cssText = `background:#21262d;border:1px solid #30363d;color:#58a6ff;padding:2px 8px;` +
-    `border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;margin-left:6px;` +
-    `height:22px;flex-shrink:0`;
-  addBtn.onmouseover = () => { addBtn.style.borderColor='#58a6ff'; addBtn.style.background='#1c2740'; };
-  addBtn.onmouseout = () => { addBtn.style.borderColor='#30363d'; addBtn.style.background='#21262d'; };
+  addBtn.className = 'tab-add';
   addBtn.onclick = addCircuit;
   bar.appendChild(addBtn);
 }
@@ -424,7 +414,7 @@ function updateACUI() {
     wrap.style.display='flex'; lbl.textContent='AC Phasor Simulator'; lbl.style.color='#fbbf24';
     freqInp.value=_acFreq;
   } else {
-    badge.textContent='DC'; badge.style.color='#8b949e'; badge.style.borderColor='#30363d';
+    badge.textContent='DC'; badge.style.color='#8e9cb8'; badge.style.borderColor='#28324a';
     wrap.style.display='none'; lbl.textContent='DC Circuit Simulator'; lbl.style.color='';
   }
 }
@@ -781,15 +771,15 @@ function selectWire(id){sel=id;render();showWireProps(id);}
 
 function showProps(id) {
   const el=document.getElementById('props');
-  if(!id){el.innerHTML='<div style="color:#8b949e;font-size:10px">Select a component.</div>';return;}
+  if(!id){el.innerHTML='<div style="color:#8e9cb8;font-size:10px">Select a component.</div>';return;}
   const c=comps.find(x=>x.id===id);
   if(!c){el.innerHTML='';return;}
   const d=DEFS[c.type];
   if(c.type==='GND'||c.type==='probe'||c.type==='seg7'){
-    const vStr=c.simV!=null?`<div style="color:#3fb950;font-size:11px;margin-bottom:4px">${fmtVal(c.simV,'V')}</div>`:'';
+    const vStr=c.simV!=null?`<div style="color:#34d399;font-size:11px;margin-bottom:4px">${fmtVal(c.simV,'V')}</div>`:'';
     const extra=c.type==='seg7'&&c.simV!=null?`<div style="color:#0891b2;font-size:10px">Digit: ${c.segVal??0}</div>`:
-                c.type==='buzzer'&&c.simV!=null?`<div style="color:${c.buzzerOn?'#facc15':'#6e7681'};font-size:10px">${c.buzzerOn?'BUZZING':'silent'}</div>`:'';
-    el.innerHTML=`<div style="color:#8b949e;font-size:10px">${d.label}</div>
+                c.type==='buzzer'&&c.simV!=null?`<div style="color:${c.buzzerOn?'#facc15':'#5d6a85'};font-size:10px">${c.buzzerOn?'BUZZING':'silent'}</div>`:'';
+    el.innerHTML=`<div style="color:#8e9cb8;font-size:10px">${d.label}</div>
     ${c.type==='buzzer'?`<div class="prop-row"><label>Threshold (V)</label><input type="number" id="pv" value="${c.value}" step="any"/></div>`:''}
     ${vStr}${extra}
     <button class="btn danger" onclick="delComp('${id}')" style="margin-top:4px">Delete</button>`;
@@ -800,38 +790,38 @@ function showProps(id) {
   if(c.type==='AND'||c.type==='OR'||c.type==='NOT'){
     const outV=c.gateOut!=null?c.gateOut:null;
     const stateStr=outV!=null?(outV>2.5?'HIGH (5V)':'LOW (0V)'):'(not simulated)';
-    const col=outV!=null?(outV>2.5?'#4ade80':'#6e7681'):'#6e7681';
-    el.innerHTML=`<div style="color:#8b949e;font-size:10px">${d.label}</div>
+    const col=outV!=null?(outV>2.5?'#4ade80':'#5d6a85'):'#5d6a85';
+    el.innerHTML=`<div style="color:#8e9cb8;font-size:10px">${d.label}</div>
     <div style="color:${col};font-size:12px;font-weight:bold;margin:6px 0">Output: ${stateStr}</div>
-    <div style="color:#8b949e;font-size:9px;margin-bottom:4px">Threshold: 2.5V. HIGH=5V, LOW=0V.</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:4px">Threshold: 2.5V. HIGH=5V, LOW=0V.</div>
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
     return;
   }
   if(c.type==='sw'||c.type==='switch_uk'){
-    const col=c.closed?'#3fb950':'#6e7681';
+    const col=c.closed?'#34d399':'#5d6a85';
     const lbl=c.closed?'CLOSED':'OPEN';
     const swLabel=c.type==='switch_uk'?'UK Plate Switch':'Switch';
-    el.innerHTML=`<div style="color:#8b949e;font-size:10px">${swLabel}</div>
+    el.innerHTML=`<div style="color:#8e9cb8;font-size:10px">${swLabel}</div>
     <div style="color:${col};font-size:13px;font-weight:bold;margin:6px 0">${lbl}</div>
     <button class="btn" onclick="toggleSwitch('${id}')" style="border-color:${col};color:${col};margin-bottom:4px">${c.closed?'Open switch':'Close switch'}</button>
-    ${c.simI!=null?`<div style="color:#d29922;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
+    ${c.simI!=null?`<div style="color:#e3ad33;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
     return;
   }
   if(c.type==='dpswitch'){
-    const dpcol=c.closed?'#3fb950':'#6e7681';
-    el.innerHTML=`<div style="color:#8b949e;font-size:10px">DP Isolator (Double-Pole Switch)</div>
-    <div style="color:#8b949e;font-size:9px;margin-bottom:6px">Isolates both Live and Neutral simultaneously.</div>
+    const dpcol=c.closed?'#34d399':'#5d6a85';
+    el.innerHTML=`<div style="color:#8e9cb8;font-size:10px">DP Isolator (Double-Pole Switch)</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:6px">Isolates both Live and Neutral simultaneously.</div>
     <div style="color:${dpcol};font-size:13px;font-weight:bold;margin:6px 0">${c.closed?'CLOSED':'OPEN'}</div>
     <button class="btn" onclick="toggleSwitch('${id}')" style="border-color:${dpcol};color:${dpcol};margin-bottom:4px">${c.closed?'Open (isolate)':'Close (connect)'}</button>
-    ${c.simI!=null?`<div style="color:#d29922;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
+    ${c.simI!=null?`<div style="color:#e3ad33;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
     return;
   }
   if(c.type==='rcd'){
-    const rcdcol=c.tripped?'#ef4444':'#3fb950';
-    el.innerHTML=`<div style="color:#8b949e;font-size:10px">RCD — Residual Current Device</div>
-    <div style="color:#8b949e;font-size:9px;margin-bottom:6px">Trips on earth fault &gt; ${c.value}mA. Protects against electric shock.</div>
+    const rcdcol=c.tripped?'#ef4444':'#34d399';
+    el.innerHTML=`<div style="color:#8e9cb8;font-size:10px">RCD — Residual Current Device</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:6px">Trips on earth fault &gt; ${c.value}mA. Protects against electric shock.</div>
     <div style="color:${rcdcol};font-size:13px;font-weight:bold;margin:6px 0">${c.tripped?'TRIPPED':'OK'}</div>
     <button class="btn" onclick="toggleSwitch('${id}')" style="border-color:${rcdcol};color:${rcdcol};margin-bottom:4px">${c.tripped?'Reset RCD':'Trip RCD'}</button>
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
@@ -841,7 +831,7 @@ function showProps(id) {
     const ipos=c.intpos??0;
     el.innerHTML=`<div class="prop-row"><label>Intermediate Switch</label></div>
     <div style="color:#a78bfa;font-size:11px;font-weight:bold;margin-bottom:6px">${ipos===0?'STRAIGHT (→)':'CROSSED (×)'}</div>
-    <div style="font-size:9px;color:#8b949e;margin-bottom:8px;line-height:1.5">
+    <div style="font-size:9px;color:#8e9cb8;margin-bottom:8px;line-height:1.5">
       4-terminal for 3-switch staircase wiring.<br>
       Straight: top↔top, bottom↔bottom<br>
       Crossed: top-L↔bottom-R, top-R↔bottom-L
@@ -851,9 +841,9 @@ function showProps(id) {
     return;
   }
   if(c.type==='meter'){
-    el.innerHTML=`<div style="color:#8b949e;font-size:10px">Electricity Meter</div>
-    <div style="color:#8b949e;font-size:9px;margin-bottom:6px">Records energy (kWh). Models as 0.001Ω pass-through.</div>
-    ${c.simI!=null?`<div style="color:#3fb950;font-size:11px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
+    el.innerHTML=`<div style="color:#8e9cb8;font-size:10px">Electricity Meter</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:6px">Records energy (kWh). Models as 0.001Ω pass-through.</div>
+    ${c.simI!=null?`<div style="color:#34d399;font-size:11px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
     return;
   }
@@ -868,23 +858,23 @@ function showProps(id) {
       const mt=c.mcbTerms?.[i];
       const blown2=mt?.blown??false;
       const simI2=mt?.simI!=null?` — ${fmtVal(mt.simI,'A')}`:'';
-      const statusStyle=blown2?'color:#dc2626;font-size:8px':'color:#16a34a;font-size:8px';
+      const statusStyle=blown2?'color:#ef4d4d;font-size:8px':'color:#16a34a;font-size:8px';
       const statusText=blown2?'TRIPPED':(mt?.simI!=null?simI2:'');
       return `<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
-        <select onchange="updateCUnitMCB('${id}',${i},'A',this.value)" style="background:#0d1117;border:1px solid ${blown2?'#f85149':'#30363d'};color:#c9d1d9;padding:2px 3px;font-family:inherit;font-size:10px;border-radius:3px;width:52px">
+        <select onchange="updateCUnitMCB('${id}',${i},'A',this.value)" style="background:#090c14;border:1px solid ${blown2?'#ff6166':'#28324a'};color:#dce4f2;padding:2px 3px;font-family:inherit;font-size:10px;border-radius:3px;width:52px">
           ${[6,10,16,20,25,32,40,50,63].map(a=>`<option value="${a}"${m.A==a?' selected':''}>${a}A</option>`).join('')}
         </select>
         <input type="text" value="${m.label||''}" placeholder="Label" maxlength="16"
           onchange="updateCUnitMCB('${id}',${i},'label',this.value)"
-          style="flex:1;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:2px 4px;font-family:inherit;font-size:10px;border-radius:3px;min-width:0"/>
+          style="flex:1;background:#090c14;border:1px solid #28324a;color:#dce4f2;padding:2px 4px;font-family:inherit;font-size:10px;border-radius:3px;min-width:0"/>
         ${blown2?`<span style="${statusStyle}">TRIP</span>`:(mt?.simI!=null?`<span style="${statusStyle}">${fmtVal(mt.simI,'A')}</span>`:'')}
-        <button onclick="removeCUnitMCB('${id}',${i})" style="background:#fef2f2;border:1px solid #fca5a5;color:#dc2626;padding:1px 5px;cursor:pointer;border-radius:3px;font-size:10px;flex-shrink:0">&#x2715;</button>
+        <button onclick="removeCUnitMCB('${id}',${i})" style="background:rgba(239,77,77,0.1);border:1px solid rgba(239,77,77,0.35);color:#ff7b78;padding:1px 6px;cursor:pointer;border-radius:5px;font-size:10px;flex-shrink:0">&#x2715;</button>
       </div>`;
     }).join('');
     el.innerHTML=`
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div style="color:#58a6ff;font-size:11px;font-weight:bold;letter-spacing:1px">CONSUMER UNIT BUILDER</div>
-        <button onclick="toggleGuide()" style="background:#0c2040;border:1px solid #1f6feb;color:#58a6ff;font-size:9px;padding:2px 7px;border-radius:3px;cursor:pointer;font-family:inherit" title="Open Consumer Unit guide">? Guide</button>
+        <div style="color:#4da3ff;font-size:11px;font-weight:bold;letter-spacing:1px">CONSUMER UNIT BUILDER</div>
+        <button onclick="toggleGuide()" style="background:#0c2040;border:1px solid #2f7df6;color:#4da3ff;font-size:9px;padding:2px 7px;border-radius:3px;cursor:pointer;font-family:inherit" title="Open Consumer Unit guide">? Guide</button>
       </div>
       <div class="prop-row" style="align-items:center;gap:6px;margin-bottom:4px">
         <input type="checkbox" id="cu-dp" ${c.cuDP?'checked':''} onchange="toggleCUnitProp('${id}','cuDP',this.checked)" style="margin:0;cursor:pointer"/>
@@ -892,8 +882,8 @@ function showProps(id) {
       </div>
       <div class="prop-row" style="align-items:center;gap:6px;margin-bottom:4px">
         <input type="checkbox" id="cu-rcd" ${c.cuRCD?'checked':''} onchange="toggleCUnitProp('${id}','cuRCD',this.checked)" style="margin:0;cursor:pointer"/>
-        <label for="cu-rcd" style="color:#d97706;cursor:pointer;flex:1">RCD</label>
-        <select onchange="toggleCUnitProp('${id}','cuRCDma',+this.value)" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:2px 3px;font-family:inherit;font-size:10px;border-radius:3px;width:60px">
+        <label for="cu-rcd" style="color:#f5a623;cursor:pointer;flex:1">RCD</label>
+        <select onchange="toggleCUnitProp('${id}','cuRCDma',+this.value)" style="background:#090c14;border:1px solid #28324a;color:#dce4f2;padding:2px 3px;font-family:inherit;font-size:10px;border-radius:3px;width:60px">
           ${[10,30,100,300].map(v=>`<option value="${v}"${c.cuRCDma==v?' selected':''}>${v}mA</option>`).join('')}
         </select>
       </div>
@@ -901,17 +891,17 @@ function showProps(id) {
         <input type="checkbox" id="cu-spd" ${c.cuSPD?'checked':''} onchange="toggleCUnitProp('${id}','cuSPD',this.checked)" style="margin:0;cursor:pointer"/>
         <label for="cu-spd" style="color:#ca8a04;cursor:pointer;flex:1">Surge Protection (SPD)</label>
       </div>
-      <div style="color:#8b949e;font-size:9px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">MCB Circuits</div>
-      <div id="cu-mcb-list" style="max-height:200px;overflow-y:auto;border:1px solid #21262d;border-radius:4px;padding:5px;margin-bottom:5px">
+      <div style="color:#8e9cb8;font-size:9px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">MCB Circuits</div>
+      <div id="cu-mcb-list" style="max-height:200px;overflow-y:auto;border:1px solid #19202f;border-radius:4px;padding:5px;margin-bottom:5px">
         ${mcbRows}
       </div>
       <button class="btn" onclick="addCUnitMCB('${id}')" style="margin-bottom:10px;font-size:10px">+ Add MCB Circuit</button>
-      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:5px;padding:8px;margin-bottom:6px">
-        <div style="color:#16a34a;font-size:10px;font-weight:bold;margin-bottom:3px">Apply Configuration</div>
-        <div style="color:#8b949e;font-size:9px;margin-bottom:6px;line-height:1.4">Updates the CU terminals to match the MCB list above. Wire mains L to the red terminal, circuit loads to the green MCB outputs, and circuit N returns to the blue N-bar.</div>
+      <div style="background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.3);border-radius:8px;padding:9px;margin-bottom:6px">
+        <div style="color:#34d399;font-size:10px;font-weight:bold;margin-bottom:3px">Apply Configuration</div>
+        <div style="color:#8e9cb8;font-size:9px;margin-bottom:6px;line-height:1.4">Updates the CU terminals to match the MCB list above. Wire mains L to the red terminal, circuit loads to the green MCB outputs, and circuit N returns to the blue N-bar.</div>
         <button class="btn primary" onclick="applyCUnitConfig('${id}')" style="font-size:10px;margin:0">&#10003; Apply Configuration</button>
       </div>
-      ${c.mcbTerms?.some(m=>m.blown)?`<button class="btn" onclick="resetCUnitMCBs('${id}')" style="font-size:10px;margin-bottom:4px;border-color:#d97706;color:#d97706">&#8635; Reset Tripped MCBs</button><br>`:''}
+      ${c.mcbTerms?.some(m=>m.blown)?`<button class="btn" onclick="resetCUnitMCBs('${id}')" style="font-size:10px;margin-bottom:4px;border-color:#f5a623;color:#f5a623">&#8635; Reset Tripped MCBs</button><br>`:''}
       <button class="btn danger" onclick="delComp('${id}')" style="margin-top:2px">Delete</button>`;
     return;
   }
@@ -919,35 +909,35 @@ function showProps(id) {
     const tags={shower:'Electric Shower',cooker:'Cooker / Range',kettle:'Kettle',toaster:'Toaster',tv:'TV / Monitor',fridge:'Fridge / Freezer',fan:'Extractor Fan'};
     const tag=tags[c.type]||c.type;
     const isOn=c.on!==false;
-    const oncol=isOn?'#3fb950':'#6e7681';
-    el.innerHTML=`<div style="color:#8b949e;font-size:10px">${tag}</div>
+    const oncol=isOn?'#34d399':'#5d6a85';
+    el.innerHTML=`<div style="color:#8e9cb8;font-size:10px">${tag}</div>
     <div class="prop-row"><label>Power (W)</label><input type="number" id="pv" value="${c.value}" step="${c.type==='tv'||c.type==='fridge'||c.type==='fan'?10:100}"/></div>
     <div style="color:${oncol};font-size:13px;font-weight:bold;margin:6px 0">${isOn?'ON':'OFF'}</div>
     <button class="btn" onclick="toggleSwitch('${id}')" style="border-color:${oncol};color:${oncol};margin-bottom:4px">${isOn?'Turn off':'Turn on'}</button>
     ${isOn&&c.simPower!=null?`<div style="color:#ffd700;font-size:11px;margin-bottom:4px">P = ${fmtVal(c.simPower,'W')}</div>`:''}
-    ${isOn&&c.simI!=null?`<div style="color:#d29922;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
+    ${isOn&&c.simI!=null?`<div style="color:#e3ad33;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
     document.getElementById('pv').addEventListener('input', ()=>applyProp(id));
     return;
   }
   if(c.type==='fcu'){
-    const fcucol=c.blown?'#ef4444':'#3fb950';
-    el.innerHTML=`<div style="color:#8b949e;font-size:10px">Fused Connection Unit</div>
-    <div style="color:#8b949e;font-size:9px;margin-bottom:6px">Spur outlet with integrated fuse. Trips if I exceeds rating.</div>
+    const fcucol=c.blown?'#ef4444':'#34d399';
+    el.innerHTML=`<div style="color:#8e9cb8;font-size:10px">Fused Connection Unit</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:6px">Spur outlet with integrated fuse. Trips if I exceeds rating.</div>
     <div style="color:${fcucol};font-size:13px;font-weight:bold;margin:6px 0">${c.blown?'BLOWN':'OK'}</div>
     <div class="prop-row"><label>Fuse rating (A)</label><input type="number" id="pv" value="${c.value}" step="0.5" min="0.5"/></div>
-    ${c.simI!=null?`<div style="color:#d29922;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
+    ${c.simI!=null?`<div style="color:#e3ad33;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
     ${c.blown?`<button class="btn" onclick="resetDamage('${id}')" style="color:#ffd700;border-color:#ffd700;margin-bottom:4px">↺ Replace Fuse</button>`:''}
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
     document.getElementById('pv').addEventListener('input', ()=>applyProp(id));
     return;
   }
   if(c.type==='pullcord'){
-    const pccol=c.closed?'#3fb950':'#6e7681';
-    el.innerHTML=`<div style="color:#8b949e;font-size:10px">Pull-Cord Switch</div>
+    const pccol=c.closed?'#34d399':'#5d6a85';
+    el.innerHTML=`<div style="color:#8e9cb8;font-size:10px">Pull-Cord Switch</div>
     <div style="color:${pccol};font-size:13px;font-weight:bold;margin:6px 0">${c.closed?'CLOSED':'OPEN'}</div>
     <button class="btn" onclick="toggleSwitch('${id}')" style="border-color:${pccol};color:${pccol};margin-bottom:4px">${c.closed?'Open switch':'Close switch'}</button>
-    ${c.simI!=null?`<div style="color:#d29922;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
+    ${c.simI!=null?`<div style="color:#e3ad33;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
     return;
   }
@@ -955,7 +945,7 @@ function showProps(id) {
     const pos=c.sw2pos??0;
     el.innerHTML=`<div class="prop-row"><label>Two-Way Switch (SPDT)</label></div>
     <div style="color:#60a5fa;font-size:11px;font-weight:bold;margin-bottom:6px">COM → ${pos===0?'L1 (active)':'L2 (active)'}</div>
-    <div style="font-size:9px;color:#8b949e;margin-bottom:8px;line-height:1.5">
+    <div style="font-size:9px;color:#8e9cb8;margin-bottom:8px;line-height:1.5">
       COM: Live input terminal<br>
       L1 / L2: alternate switched outputs<br>
       Click switch on canvas to toggle
@@ -968,14 +958,14 @@ function showProps(id) {
     const pos=c.sw2pos??0;
     const stateCol=pos===0?'#22c55e':'#3b82f6';
     el.innerHTML=`<div class="prop-row"><label>UK 2-Way Plate Switch</label></div>
-    <div style="font-size:9px;color:#8b949e;margin-bottom:6px;line-height:1.5">
+    <div style="font-size:9px;color:#8e9cb8;margin-bottom:6px;line-height:1.5">
       <b style="color:#b45309">COM</b> = Live in (Brown)<br>
       <b style="color:#1e40af">L1</b> = Strapper 1 (Blue)<br>
       <b style="color:#6b7280">L2</b> = Strapper 2 (Grey/Black)
     </div>
     <div style="color:${stateCol};font-size:12px;font-weight:bold;margin-bottom:8px">COM → ${pos===0?'L1':'L2'}</div>
     <button class="btn" onclick="toggleSwitch('${id}')" style="border-color:${stateCol};color:${stateCol};margin-bottom:4px">Toggle → ${pos===0?'L2':'L1'}</button>
-    ${c.simI!=null?`<div style="color:#d29922;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
+    ${c.simI!=null?`<div style="color:#e3ad33;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
     return;
   }
@@ -983,7 +973,7 @@ function showProps(id) {
     const ipos=c.intpos??0;
     el.innerHTML=`<div class="prop-row"><label>UK Intermediate Plate Switch</label></div>
     <div style="color:#f97316;font-size:11px;font-weight:bold;margin-bottom:6px">${ipos===0?'STRAIGHT (L1→L1\', L2→L2\')':'CROSSED (L1→L2\', L2→L1\')'}</div>
-    <div style="font-size:9px;color:#8b949e;margin-bottom:8px;line-height:1.5">
+    <div style="font-size:9px;color:#8e9cb8;margin-bottom:8px;line-height:1.5">
       Fitted between two 2-way switches for 3+ point control.<br>
       <b>L1/L2</b>: strapper inputs from one 2-way switch<br>
       <b>L1'/L2'</b>: strapper outputs to the next switch
@@ -994,9 +984,9 @@ function showProps(id) {
   }
   if(c.type==='switch2g_uk'){
     const g1=c.gang1??0, g2=c.gang2??0;
-    const col1=g1?'#3fb950':'#6e7681', col2=g2?'#3fb950':'#6e7681';
+    const col1=g1?'#34d399':'#5d6a85', col2=g2?'#34d399':'#5d6a85';
     el.innerHTML=`<div style="color:#60a5fa;font-size:11px;font-weight:bold;margin-bottom:6px">UK 2-Gang Plate Switch</div>
-    <div style="color:#8b949e;font-size:9px;margin-bottom:8px;line-height:1.5">Two independent on/off switches on one plate.<br>Each gang: COM (left) → SW (right).</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:8px;line-height:1.5">Two independent on/off switches on one plate.<br>Each gang: COM (left) → SW (right).</div>
     <div style="margin-bottom:6px">
       <div style="color:${col1};font-size:11px;font-weight:bold;margin-bottom:3px">Gang 1: ${g1?'CLOSED':'OPEN'}</div>
       <button class="btn" onclick="toggleGang('${id}',1)" style="border-color:${col1};color:${col1};margin-bottom:6px">${g1?'Open Gang 1':'Close Gang 1'}</button>
@@ -1010,9 +1000,9 @@ function showProps(id) {
   }
   if(c.type==='switch3g_uk'){
     const g1=c.gang1??0, g2=c.gang2??0, g3=c.gang3??0;
-    const col1=g1?'#3fb950':'#6e7681', col2=g2?'#3fb950':'#6e7681', col3=g3?'#3fb950':'#6e7681';
+    const col1=g1?'#34d399':'#5d6a85', col2=g2?'#34d399':'#5d6a85', col3=g3?'#34d399':'#5d6a85';
     el.innerHTML=`<div style="color:#60a5fa;font-size:11px;font-weight:bold;margin-bottom:6px">UK 3-Gang Plate Switch</div>
-    <div style="color:#8b949e;font-size:9px;margin-bottom:8px;line-height:1.5">Three independent on/off switches on one plate.<br>Each gang: COM (left) → SW (right).</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:8px;line-height:1.5">Three independent on/off switches on one plate.<br>Each gang: COM (left) → SW (right).</div>
     <div style="margin-bottom:6px">
       <div style="color:${col1};font-size:11px;font-weight:bold;margin-bottom:3px">Gang 1: ${g1?'CLOSED':'OPEN'}</div>
       <button class="btn" onclick="toggleGang('${id}',1)" style="border-color:${col1};color:${col1};margin-bottom:6px">${g1?'Open Gang 1':'Close Gang 1'}</button>
@@ -1031,12 +1021,12 @@ function showProps(id) {
   if(c.type==='LED'){
     const ledCols=['red','green','blue','white'];
     const colorBtns=ledCols.map(col=>`<button class="btn" onclick="setLEDColor('${id}','${col}')"
-      style="width:auto;padding:3px 8px;margin:1px;${c.ledColor===col?'border-color:#58a6ff;color:#58a6ff':''}">${col}</button>`).join('');
+      style="width:auto;padding:3px 8px;margin:1px;${c.ledColor===col?'border-color:#4da3ff;color:#4da3ff':''}">${col}</button>`).join('');
     const onStr=c.ledOn!=null?(c.ledOn?'ON (conducting)':'OFF (below Vf)'):'(not simulated)';
-    const onCol=c.ledOn?'#4ade80':'#6e7681';
-    el.innerHTML=`<div style="color:#8b949e;font-size:10px">${d.label}</div>
+    const onCol=c.ledOn?'#4ade80':'#5d6a85';
+    el.innerHTML=`<div style="color:#8e9cb8;font-size:10px">${d.label}</div>
     <div class="prop-row"><label>Forward V (V)</label><input type="number" id="pv" value="${c.value}" step="0.1"/></div>
-    <div style="font-size:10px;color:#8b949e;margin-bottom:4px">Colour:</div>
+    <div style="font-size:10px;color:#8e9cb8;margin-bottom:4px">Colour:</div>
     <div style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:6px">${colorBtns}</div>
     <div style="color:${onCol};font-size:10px;margin-bottom:4px">${onStr}</div>
     <button class="btn danger" onclick="delComp('${id}')" style="margin-top:4px">Delete</button>`;
@@ -1082,7 +1072,7 @@ function showProps(id) {
   // Per-source AC/DC toggle + phase angle row for V and I sources
   const srcACRow = (c.type==='V'||c.type==='I')
     ? `<div class="prop-row"><label>Mode</label>
-       <button onclick="toggleSourceAC('${c.id}')" style="font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid ${c.isAC?'#fbbf24':'#30363d'};background:${c.isAC?'#1c1609':'#21262d'};color:${c.isAC?'#d97706':'#8b949e'};cursor:pointer" title="Toggle AC / DC for this source">${c.isAC?'AC':'DC'}</button></div>`
+       <button onclick="toggleSourceAC('${c.id}')" style="font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid ${c.isAC?'#fbbf24':'#28324a'};background:${c.isAC?'#1c1609':'#19202f'};color:${c.isAC?'#f5a623':'#8e9cb8'};cursor:pointer" title="Toggle AC / DC for this source">${c.isAC?'AC':'DC'}</button></div>`
     : '';
   const phaseRow = (c.isAC) && (c.type==='V'||c.type==='I')
     ? `<div class="prop-row"><label>Phase (°)</label>
@@ -1094,7 +1084,7 @@ function showProps(id) {
     el.innerHTML=`<div class="prop-row"><label>${d.label}</label></div>
     <div class="prop-row"><label>V L-N RMS (V)</label>
     <input type="number" id="pv" value="${c.value}" step="any"/></div>
-    <div style="color:#8b949e;font-size:9px;margin-bottom:4px">A∠0° · B∠-120° · C∠+120°</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:4px">A∠0° · B∠-120° · C∠+120°</div>
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
     document.getElementById('pv').addEventListener('input', ()=>applyProp(id));
     return;
@@ -1104,19 +1094,19 @@ function showProps(id) {
     el.innerHTML=`<div class="prop-row"><label>${d.label}</label></div>
     <div class="prop-row"><label>Turns ratio n</label>
     <input type="number" id="pv" value="${c.value}" step="0.01" min="0.001"/></div>
-    <div style="color:#8b949e;font-size:9px;margin-bottom:4px">V2 = n × V1</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:4px">V2 = n × V1</div>
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
     document.getElementById('pv').addEventListener('input', ()=>applyProp(id));
     return;
   }
   // Motor props
   if(c.type==='motor'){
-    const vStr=c.simV!=null?`<div style="color:#3fb950;font-size:10px;margin-bottom:3px">V = ${c.acV!=null?fmtPhasorU(c.acV,c.acVph??0,'V'):fmtVal(c.simV,'V')}</div>`:'';
-    const pStr=c.simPower!=null?`<div style="color:#d29922;font-size:10px;margin-bottom:3px">P = ${fmtVal(c.simPower,'W')}</div>`:'';
+    const vStr=c.simV!=null?`<div style="color:#34d399;font-size:10px;margin-bottom:3px">V = ${c.acV!=null?fmtPhasorU(c.acV,c.acVph??0,'V'):fmtVal(c.simV,'V')}</div>`:'';
+    const pStr=c.simPower!=null?`<div style="color:#e3ad33;font-size:10px;margin-bottom:3px">P = ${fmtVal(c.simPower,'W')}</div>`:'';
     el.innerHTML=`<div class="prop-row"><label>${d.label}</label></div>
     <div class="prop-row"><label>Rated Power (W)</label>
     <input type="number" id="pv" value="${c.value}" step="any"/></div>
-    <div style="color:#8b949e;font-size:9px;margin-bottom:4px">Modelled as R = V²/P</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:4px">Modelled as R = V²/P</div>
     ${vStr}${pStr}
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
     document.getElementById('pv').addEventListener('input', ()=>applyProp(id));
@@ -1127,7 +1117,7 @@ function showProps(id) {
     el.innerHTML=`<div class="prop-row"><label>${d.label}</label></div>
     <div class="prop-row"><label>Total Power (W)</label>
     <input type="number" id="pv" value="${c.value}" step="any"/></div>
-    <div style="color:#8b949e;font-size:9px;margin-bottom:4px">Star connection — 3 × R_phase</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:4px">Star connection — 3 × R_phase</div>
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
     document.getElementById('pv').addEventListener('input', ()=>applyProp(id));
     return;
@@ -1206,12 +1196,12 @@ function showWireProps(id){
   const g=w.gauge||'2.5';
   const gauges=['1.5','2.5','4','6','10'];
   const ratings={'1.5':'13A','2.5':'20A','4':'27A','6':'34A','10':'46A'};
-  const btns=gauges.map(v=>`<button onclick="setWireGauge('${id}','${v}')" style="flex:1;padding:3px 0;border-radius:3px;font-size:9px;font-family:inherit;cursor:pointer;border:1px solid ${v===g?'#58a6ff':'#30363d'};background:${v===g?'#58a6ff':'#21262d'};color:${v===g?'#0d1117':'#8b949e'}" title="${ratings[v]}">${v}mm²</button>`).join('');
+  const btns=gauges.map(v=>`<button onclick="setWireGauge('${id}','${v}')" style="flex:1;padding:3px 0;border-radius:3px;font-size:9px;font-family:inherit;cursor:pointer;border:1px solid ${v===g?'#4da3ff':'#28324a'};background:${v===g?'#4da3ff':'#19202f'};color:${v===g?'#090c14':'#8e9cb8'}" title="${ratings[v]}">${v}mm²</button>`).join('');
   document.getElementById('props').innerHTML=`
-  <div style="color:#8b949e;font-size:10px;margin-bottom:6px">Wire</div>
-  <div style="color:#8b949e;font-size:9px;margin-bottom:4px">Cable cross-section (gauge):</div>
+  <div style="color:#8e9cb8;font-size:10px;margin-bottom:6px">Wire</div>
+  <div style="color:#8e9cb8;font-size:9px;margin-bottom:4px">Cable cross-section (gauge):</div>
   <div style="display:flex;gap:2px;margin-bottom:6px;flex-wrap:wrap">${btns}</div>
-  <div style="color:#8b949e;font-size:9px;margin-bottom:6px">Rating: <b style="color:#3fb950">${ratings[g]||'?'}</b> — ${g}mm² cable</div>
+  <div style="color:#8e9cb8;font-size:9px;margin-bottom:6px">Rating: <b style="color:#34d399">${ratings[g]||'?'}</b> — ${g}mm² cable</div>
   <button class="btn danger" onclick="delWire('${id}')">Delete Wire</button>`;
 }
 function setWireGauge(id,gauge){

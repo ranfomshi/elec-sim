@@ -115,15 +115,15 @@ SVG.addEventListener('mousemove',e=>{
         const mid={x:ex,y:wireStart.y};
         layer.appendChild(mk('line',{x1:wireStart.x,y1:wireStart.y,x2:mid.x,y2:mid.y,class:'wl',opacity:0.5}));
         layer.appendChild(mk('line',{x1:mid.x,y1:mid.y,x2:ex,y2:ey,class:'wl',opacity:0.5}));
-        layer.appendChild(mk('circle',{cx:mid.x,cy:mid.y,r:3,fill:'#58a6ff',opacity:0.7}));
+        layer.appendChild(mk('circle',{cx:mid.x,cy:mid.y,r:3,fill:'#4da3ff',opacity:0.7}));
       }
-      layer.appendChild(mk('circle',{cx:wireStart.x,cy:wireStart.y,r:4,fill:'#58a6ff'}));
-      if(snapped) layer.appendChild(mk('circle',{cx:ex,cy:ey,r:8,stroke:'#58a6ff',fill:'rgba(88,166,255,0.12)','stroke-width':1.5}));
+      layer.appendChild(mk('circle',{cx:wireStart.x,cy:wireStart.y,r:4,fill:'#4da3ff'}));
+      if(snapped) layer.appendChild(mk('circle',{cx:ex,cy:ey,r:8,stroke:'#4da3ff',fill:'rgba(77,163,255,0.12)','stroke-width':1.5}));
     } else if(snapped){
       // No wire started yet — just show snap ring at terminal or wire endpoint
       const layer=document.getElementById('ghost-g'); layer.innerHTML='';
       layer.appendChild(mk('circle',{cx:snapped.x,cy:snapped.y,r:8,
-        stroke:'#58a6ff',fill:'rgba(88,166,255,0.12)','stroke-width':1.5,opacity:0.9}));
+        stroke:'#4da3ff',fill:'rgba(77,163,255,0.12)','stroke-width':1.5,opacity:0.9}));
     } else {
       document.getElementById('ghost-g').innerHTML='';
     }
@@ -283,8 +283,8 @@ function toggleFlow() {
   _flowVisible = !_flowVisible;
   const btn = document.getElementById('flow-toggle-btn');
   if(btn) {
-    btn.style.borderColor = _flowVisible ? '#58a6ff' : '#30363d';
-    btn.style.color = _flowVisible ? '#58a6ff' : '#8b949e';
+    btn.style.borderColor = _flowVisible ? '#4da3ff' : '#28324a';
+    btn.style.color = _flowVisible ? '#4da3ff' : '#8e9cb8';
   }
   if(_flowVisible) startBulbAnim(); // ensure tick is running
 }
@@ -405,7 +405,7 @@ function _bulbTick(ts) {
           c.setAttribute('cx', px.toFixed(1));
           c.setAttribute('cy', py.toFixed(1));
           c.setAttribute('r', '3');
-          c.setAttribute('fill', _acMode ? '#f59e0b' : '#58a6ff');
+          c.setAttribute('fill', _acMode ? '#f59e0b' : '#4da3ff');
           c.setAttribute('opacity', '0.75');
           c.setAttribute('pointer-events','none');
           flowLayer.appendChild(c);
@@ -646,7 +646,7 @@ function importSchema(){
     if(!s.components&&!s.wires) throw new Error('Missing components or wires');
     fromSchema(s);
     msg.textContent='Loaded ✓';
-    msg.style.color='#3fb950';
+    msg.style.color='#34d399';
     setTimeout(()=>{msg.textContent='';closeSchemaModal();},800);
   } catch(e){
     msg.textContent='Invalid JSON: '+e.message;

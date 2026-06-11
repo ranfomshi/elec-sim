@@ -742,7 +742,7 @@ const COURSES = [
     title: 'Complete Beginner',
     desc: 'No prior knowledge needed — start from absolute scratch.',
     icon: '🔌',
-    color: '#3fb950',
+    color: '#34d399',
     challenges: [0, 1, 6, 7, 8, 3, 13, 9, 5, 2],
   },
   {
@@ -831,29 +831,29 @@ function renderCourseHome() {
     const allDone = done === total;
     const started = done > 0;
     const btnLabel = allDone ? '✓ Review' : (started ? '▶ Continue' : '▶ Start');
-    const btnColor = allDone ? '#3fb950' : '#58a6ff';
-    const borderColor = allDone ? co.color : '#30363d';
-    return `<div onclick="selectCourse(${ci})" style="cursor:pointer;background:#161b22;border:1px solid ${allDone?co.color:'#30363d'};border-radius:8px;padding:8px 10px;margin-bottom:6px;transition:border-color 0.15s;box-shadow:0 1px 3px rgba(0,0,0,0.3)" onmouseover="this.style.borderColor='${co.color}'" onmouseout="this.style.borderColor='${allDone?co.color:'#30363d'}'">
+    const btnColor = allDone ? '#34d399' : '#4da3ff';
+    const borderColor = allDone ? co.color : '#28324a';
+    return `<div onclick="selectCourse(${ci})" style="cursor:pointer;background:#0f1420;border:1px solid ${allDone?co.color:'#28324a'};border-radius:8px;padding:8px 10px;margin-bottom:6px;transition:border-color 0.15s;box-shadow:0 1px 3px rgba(0,0,0,0.3)" onmouseover="this.style.borderColor='${co.color}'" onmouseout="this.style.borderColor='${allDone?co.color:'#28324a'}'">
       <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
         <span style="font-size:16px">${co.icon}</span>
-        <span style="color:#c9d1d9;font-size:11px;font-weight:bold">${co.title}</span>
+        <span style="color:#dce4f2;font-size:11px;font-weight:bold">${co.title}</span>
         <span style="margin-left:auto;background:${btnColor};color:#fff;font-size:8px;padding:2px 6px;border-radius:3px;font-weight:bold;white-space:nowrap">${btnLabel}</span>
       </div>
-      <div style="color:#8b949e;font-size:9px;margin-bottom:5px">${co.desc}</div>
+      <div style="color:#8e9cb8;font-size:9px;margin-bottom:5px">${co.desc}</div>
       <div style="display:flex;align-items:center;gap:5px">
-        <div style="flex:1;background:#21262d;border-radius:3px;height:4px;overflow:hidden">
+        <div style="flex:1;background:#19202f;border-radius:3px;height:4px;overflow:hidden">
           <div style="background:${co.color};height:4px;width:${pct}%;transition:width 0.3s"></div>
         </div>
-        <span style="color:#8b949e;font-size:9px;white-space:nowrap">${done}/${total}</span>
+        <span style="color:#8e9cb8;font-size:9px;white-space:nowrap">${done}/${total}</span>
       </div>
     </div>`;
   }).join('');
   inner.innerHTML = `
-    <div style="font-size:9px;color:#58a6ff;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">⚡ Choose a Course</div>
+    <div style="font-size:9px;color:#4da3ff;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">⚡ Choose a Course</div>
     ${rows}
-    <div style="color:#6e7681;font-size:9px;margin-top:8px;text-align:center">Click a course to see its lessons</div>
-    <div style="border-top:1px solid #21262d;margin-top:14px;padding-top:10px">
-      <button onclick="resetCourseProgress()" style="background:#fff;border:1px solid #fca5a5;color:#dc2626;font-size:9px;padding:4px 8px;border-radius:3px;cursor:pointer;width:100%;font-family:inherit" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='#fff'">↺ Reset all progress</button>
+    <div style="color:#5d6a85;font-size:9px;margin-top:8px;text-align:center">Click a course to see its lessons</div>
+    <div style="border-top:1px solid #19202f;margin-top:14px;padding-top:10px">
+      <button onclick="resetCourseProgress()" style="background:rgba(239,77,77,0.08);border:1px solid rgba(239,77,77,0.35);color:#ff7b78;font-size:9px;padding:5px 8px;border-radius:99px;cursor:pointer;width:100%;font-family:inherit" onmouseover="this.style.background='rgba(239,77,77,0.18)'" onmouseout="this.style.background='rgba(239,77,77,0.08)'">↺ Reset all progress</button>
     </div>
   `;
 }
@@ -879,10 +879,10 @@ function renderCourseOutline(ci) {
     const ch = CHALLENGES[chIdx];
     const done = _completed.has(chIdx);
     const active = _currentCourse === ci && _currentChallengeIdx === li;
-    return `<div onclick="loadChallenge(${ci},${li})" style="cursor:pointer;display:flex;align-items:flex-start;gap:7px;padding:6px 8px;border-radius:4px;margin-bottom:2px;background:${active?'rgba(88,166,255,0.08)':'transparent'};border:1px solid ${active?'#58a6ff':'transparent'}" onmouseover="this.style.background='rgba(88,166,255,0.05)'" onmouseout="this.style.background='${active?'rgba(88,166,255,0.08)':'transparent'}'">
+    return `<div onclick="loadChallenge(${ci},${li})" style="cursor:pointer;display:flex;align-items:flex-start;gap:7px;padding:6px 8px;border-radius:4px;margin-bottom:2px;background:${active?'rgba(77,163,255,0.08)':'transparent'};border:1px solid ${active?'#4da3ff':'transparent'}" onmouseover="this.style.background='rgba(77,163,255,0.05)'" onmouseout="this.style.background='${active?'rgba(77,163,255,0.08)':'transparent'}'">
       <span style="font-size:12px;margin-top:1px;flex-shrink:0">${done?'✅':'⬜'}</span>
       <div>
-        <div style="color:${done?'#3fb950':'#c9d1d9'};font-size:10px;font-weight:${active?'bold':'normal'}">${li+1}. ${ch.title}</div>
+        <div style="color:${done?'#34d399':'#dce4f2'};font-size:10px;font-weight:${active?'bold':'normal'}">${li+1}. ${ch.title}</div>
       </div>
     </div>`;
   }).join('');
@@ -890,18 +890,18 @@ function renderCourseOutline(ci) {
   const pct = Math.round((done / co.challenges.length) * 100);
   inner.innerHTML = `
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
-      <button onclick="renderCourseHome()" style="background:none;border:none;color:#58a6ff;cursor:pointer;font-size:14px;padding:0;line-height:1" title="Back to courses">←</button>
+      <button onclick="renderCourseHome()" style="background:none;border:none;color:#4da3ff;cursor:pointer;font-size:14px;padding:0;line-height:1" title="Back to courses">←</button>
       <span style="font-size:16px">${co.icon}</span>
-      <span style="color:#c9d1d9;font-size:11px;font-weight:bold;flex:1">${co.title}</span>
+      <span style="color:#dce4f2;font-size:11px;font-weight:bold;flex:1">${co.title}</span>
     </div>
-    <div style="color:#6e7681;font-size:9px;margin-bottom:6px">${co.desc}</div>
+    <div style="color:#5d6a85;font-size:9px;margin-bottom:6px">${co.desc}</div>
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
-      <div style="flex:1;background:#21262d;border-radius:3px;height:5px;overflow:hidden">
+      <div style="flex:1;background:#19202f;border-radius:3px;height:5px;overflow:hidden">
         <div style="background:${co.color};height:5px;width:${pct}%"></div>
       </div>
-      <span style="color:#6e7681;font-size:9px;white-space:nowrap">${done}/${co.challenges.length} done</span>
+      <span style="color:#5d6a85;font-size:9px;white-space:nowrap">${done}/${co.challenges.length} done</span>
     </div>
-    <div style="border-top:1px solid #21262d;padding-top:8px">${lessonRows}</div>
+    <div style="border-top:1px solid #19202f;padding-top:8px">${lessonRows}</div>
   `;
 }
 
@@ -915,16 +915,16 @@ function renderCoursePanel() {
   const lessonList = co.challenges.map((chIdx, li) => {
     const done2 = _completed.has(chIdx);
     const active2 = li === lessonIdx;
-    return `<div onclick="loadChallenge(${_currentCourse},${li})" title="${CHALLENGES[chIdx].title}" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:${active2?co.color:(done2?co.color+'22':'#21262d')};border:2px solid ${active2?co.color:(done2?co.color:'#30363d')};color:${active2?'#0d1117':(done2?co.color:'#6e7681')};font-size:9px;font-weight:bold;flex-shrink:0" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">${done2&&!active2?'✓':(li+1)}</div>`;
+    return `<div onclick="loadChallenge(${_currentCourse},${li})" title="${CHALLENGES[chIdx].title}" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:${active2?co.color:(done2?co.color+'22':'#19202f')};border:2px solid ${active2?co.color:(done2?co.color:'#28324a')};color:${active2?'#090c14':(done2?co.color:'#5d6a85')};font-size:9px;font-weight:bold;flex-shrink:0" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">${done2&&!active2?'✓':(li+1)}</div>`;
   }).join('');
   inner.innerHTML = `
     <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px">
-      <button onclick="renderCourseOutline(${_currentCourse})" style="background:none;border:none;color:#58a6ff;cursor:pointer;font-size:13px;padding:0;line-height:1" title="Back to outline">←</button>
+      <button onclick="renderCourseOutline(${_currentCourse})" style="background:none;border:none;color:#4da3ff;cursor:pointer;font-size:13px;padding:0;line-height:1" title="Back to outline">←</button>
       <span style="font-size:14px">${co.icon}</span>
-      <span style="color:#8b949e;font-size:9px">${co.title}</span>
+      <span style="color:#8e9cb8;font-size:9px">${co.title}</span>
     </div>
     <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;align-items:center">${lessonList}</div>
-    <div style="font-size:9px;color:#6e7681;margin-bottom:8px">Lesson ${lessonIdx+1} of ${totalLessons}</div>
+    <div style="font-size:9px;color:#5d6a85;margin-bottom:8px">Lesson ${lessonIdx+1} of ${totalLessons}</div>
     <div class="ch-title">${ch.title}</div>
     <div class="ch-scenario">${ch.scenario}</div>
     <div id="ch-hints-area"></div>
@@ -981,7 +981,7 @@ function closeExplainer() {
     loadChallenge(_currentCourse, _currentChallengeIdx + 1);
   } else {
     const inner = document.getElementById('course-inner');
-    if (inner) inner.innerHTML = `<div style="text-align:center;padding:20px"><div style="font-size:32px">${co.icon}</div><div style="color:${co.color};font-size:13px;font-weight:bold;margin-top:8px">Course Complete!</div><div style="font-size:10px;color:#8b949e;margin-top:6px">${co.title} — all lessons done.</div><button class="btn" onclick="renderCourseHome()" style="margin-top:12px;font-size:10px">← All Courses</button></div>`;
+    if (inner) inner.innerHTML = `<div style="text-align:center;padding:20px"><div style="font-size:32px">${co.icon}</div><div style="color:${co.color};font-size:13px;font-weight:bold;margin-top:8px">Course Complete!</div><div style="font-size:10px;color:#8e9cb8;margin-top:6px">${co.title} — all lessons done.</div><button class="btn" onclick="renderCourseHome()" style="margin-top:12px;font-size:10px">← All Courses</button></div>`;
   }
 }
 
@@ -1112,12 +1112,12 @@ function renderProbes() {
   layer.innerHTML = '';
   if (_mmRed) {
     layer.appendChild(mk('circle',{cx:_mmRed.x,cy:_mmRed.y,r:7,fill:'#ef4444',stroke:'#fff','stroke-width':1.5,opacity:0.9}));
-    const t=mk('text',{x:_mmRed.x,y:_mmRed.y-10,'text-anchor':'middle',style:'fill:#ef4444;font-size:8px;font-family:Courier New'});
+    const t=mk('text',{x:_mmRed.x,y:_mmRed.y-10,'text-anchor':'middle',style:'fill:#ef4444;font-size:8px;font-family:JetBrains Mono Variable, ui-monospace, monospace'});
     t.textContent='R'; layer.appendChild(t);
   }
   if (_mmBlack) {
     layer.appendChild(mk('circle',{cx:_mmBlack.x,cy:_mmBlack.y,r:7,fill:'#1f2937',stroke:'#9ca3af','stroke-width':1.5,opacity:0.9}));
-    const t=mk('text',{x:_mmBlack.x,y:_mmBlack.y-10,'text-anchor':'middle',style:'fill:#9ca3af;font-size:8px;font-family:Courier New'});
+    const t=mk('text',{x:_mmBlack.x,y:_mmBlack.y-10,'text-anchor':'middle',style:'fill:#9ca3af;font-size:8px;font-family:JetBrains Mono Variable, ui-monospace, monospace'});
     t.textContent='B'; layer.appendChild(t);
   }
 }

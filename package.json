@@ -9,9 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vite": "^7.0.0",
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
-  },
-  "devDependencies": {}
+    "react-dom": "^19.1.0",
+    "vite": "^7.0.0"
+  }
 }

@@ -332,7 +332,7 @@ const WIRE_GAUGE_SW={'1.5':1.5,'2.5':2,'4':2.8,'6':3.5,'10':4.5};
 // Returns {stroke, strokeWidth, dasharray}
 function _wireElecRole(w){
   const simulated=!!(window.simNodeV && window.simVoltages);
-  if(!simulated) return {stroke:'#555',strokeWidth:2,dasharray:null};
+  if(!simulated) return {stroke:'#5d6a85',strokeWidth:2,dasharray:null};
 
   // Build set of GND node IDs once per render — cached on window for this frame.
   // We rebuild it inside this function but it is cheap (few GND comps).
@@ -347,7 +347,7 @@ function _wireElecRole(w){
   const nid1=window.simNodeV[nk(w.x1,w.y1)];
   const nid2=window.simNodeV[nk(w.x2,w.y2)];
   const hasNode=nid1!==undefined||nid2!==undefined;
-  if(!hasNode) return {stroke:'#555',strokeWidth:2,dasharray:null};
+  if(!hasNode) return {stroke:'#5d6a85',strokeWidth:2,dasharray:null};
 
   // Earth: either endpoint is on a GND node
   if((nid1!==undefined&&gndNodeIds.has(nid1))||(nid2!==undefined&&gndNodeIds.has(nid2))){
@@ -366,7 +366,7 @@ function _wireElecRole(w){
   if(bothNearZero) return {stroke:'#3b82f6',strokeWidth:2.5,dasharray:null};
 
   // Ambiguous / low voltage
-  return {stroke:'#555',strokeWidth:2,dasharray:null};
+  return {stroke:'#5d6a85',strokeWidth:2,dasharray:null};
 }
 
 // Builds a path string for a wire that needs to visually "hop" over one or more
@@ -513,9 +513,9 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
   }
   if(type==='probe'){
     g.setAttribute('transform',`translate(${x1},${y1})`);
-    g.appendChild(mk('line',{x1:0,y1:0,x2:0,y2:-6,stroke:'#3fb950','stroke-width':1.5}));
+    g.appendChild(mk('line',{x1:0,y1:0,x2:0,y2:-6,stroke:'#34d399','stroke-width':1.5}));
     g.appendChild(mk('circle',{cx:0,cy:-17,r:10,stroke:'#16a34a',fill:'rgba(22,163,74,0.06)','stroke-width':1.5}));
-    const t=mk('text',{x:-4,y:-14,style:'fill:#3fb950;font-size:9px;font-family:Courier New;font-weight:bold'});
+    const t=mk('text',{x:-4,y:-14,style:'fill:#34d399;font-size:9px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     t.textContent='V'; g.appendChild(t);
     return;
   }
@@ -544,15 +544,15 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     const r=Math.min(bw/2,22);
     g.appendChild(mk('line',{x1:0,y1:0,x2:mid-r,y2:0,class:'cl'}));
     g.appendChild(mk('circle',{cx:mid,cy:0,r,class:'cl'}));
-    const p=mk('text',{x:mid-r*0.52,y:-r*0.1,style:'fill:#c9d1d9;font-size:11px;font-family:monospace'}); p.textContent='+'; g.appendChild(p);
-    const m=mk('text',{x:mid+r*0.1,y:-r*0.1,style:'fill:#c9d1d9;font-size:11px;font-family:monospace'}); m.textContent='−'; g.appendChild(m);
+    const p=mk('text',{x:mid-r*0.52,y:-r*0.1,style:'fill:#dce4f2;font-size:11px;font-family:monospace'}); p.textContent='+'; g.appendChild(p);
+    const m=mk('text',{x:mid+r*0.1,y:-r*0.1,style:'fill:#dce4f2;font-size:11px;font-family:monospace'}); m.textContent='−'; g.appendChild(m);
     g.appendChild(mk('line',{x1:mid+r,y1:0,x2:L,y2:0,class:'cl'}));
   } else if(type==='I'){
     const r=Math.min(bw/2,22), al=r*0.6;
     g.appendChild(mk('line',{x1:0,y1:0,x2:mid-r,y2:0,class:'cl'}));
     g.appendChild(mk('circle',{cx:mid,cy:0,r,class:'cl'}));
-    g.appendChild(mk('line',{x1:mid-al*0.5,y1:0,x2:mid+al*0.4,y2:0,stroke:'#555','stroke-width':1.5}));
-    g.appendChild(mk('polygon',{points:`${mid+al*0.4},0 ${mid+al*0.0},${-al*0.35} ${mid+al*0.0},${al*0.35}`,fill:'#555'}));
+    g.appendChild(mk('line',{x1:mid-al*0.5,y1:0,x2:mid+al*0.4,y2:0,stroke:'#5d6a85','stroke-width':1.5}));
+    g.appendChild(mk('polygon',{points:`${mid+al*0.4},0 ${mid+al*0.0},${-al*0.35} ${mid+al*0.0},${al*0.35}`,fill:'#5d6a85'}));
     g.appendChild(mk('line',{x1:mid+r,y1:0,x2:L,y2:0,class:'cl'}));
   } else if(type==='bulb'){
     const r=Math.min(bw/2,22), cr=r*0.55;
@@ -612,12 +612,12 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     const closed=extra?.closed??false;
     const p1x=L*0.28, p2x=L*0.72;
     g.appendChild(mk('line',{x1:0,y1:0,x2:p1x,y2:0,class:'cl'}));
-    g.appendChild(mk('circle',{cx:p1x,cy:0,r:3,fill:'#555'}));
-    g.appendChild(mk('circle',{cx:p2x,cy:0,r:3,fill:'#555'}));
+    g.appendChild(mk('circle',{cx:p1x,cy:0,r:3,fill:'#5d6a85'}));
+    g.appendChild(mk('circle',{cx:p2x,cy:0,r:3,fill:'#5d6a85'}));
     if(closed){
-      g.appendChild(mk('line',{x1:p1x,y1:0,x2:p2x,y2:0,stroke:'#3fb950','stroke-width':2}));
+      g.appendChild(mk('line',{x1:p1x,y1:0,x2:p2x,y2:0,stroke:'#34d399','stroke-width':2}));
     } else {
-      g.appendChild(mk('line',{x1:p1x,y1:0,x2:p2x-2,y2:-L*0.2,stroke:'#555','stroke-width':1.8}));
+      g.appendChild(mk('line',{x1:p1x,y1:0,x2:p2x-2,y2:-L*0.2,stroke:'#5d6a85','stroke-width':1.8}));
     }
     g.appendChild(mk('line',{x1:p2x,y1:0,x2:L,y2:0,class:'cl'}));
   } else if(type==='sw2'){
@@ -646,7 +646,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     // Inactive arm (dashed, dimmed)
     g.appendChild(mk('line',{x1:x1,y1:y1,x2:inactX,y2:inactY,stroke:col2+'55','stroke-width':1,'stroke-dasharray':'3,3','stroke-linecap':'round'}));
     // Label
-    const lbl2=mk('text',{x:(x1+x2+l2x)/3,y:Math.max(y1,y2,l2y)+16,'text-anchor':'middle',style:`fill:${col2};font-size:8px;font-family:Courier New`});
+    const lbl2=mk('text',{x:(x1+x2+l2x)/3,y:Math.max(y1,y2,l2y)+16,'text-anchor':'middle',style:`fill:${col2};font-size:8px;font-family:JetBrains Mono Variable, ui-monospace, monospace`});
     lbl2.textContent=pos2===0?'2W →L1':'2W →L2'; g.appendChild(lbl2);
     return;
   } else if(type==='intswitch'){
@@ -667,7 +667,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
       g.appendChild(mk('line',{x1:x1,y1:y1,x2:ix4,y2:iy4,stroke:icol,'stroke-width':2,'stroke-linecap':'round'}));
       g.appendChild(mk('line',{x1:ix3,y1:iy3,x2:x2,y2:y2,stroke:icol,'stroke-width':2,'stroke-linecap':'round'}));
     }
-    const ilbl=mk('text',{x:(x1+x2+ix3+ix4)/4,y:Math.max(...iallY)+16,'text-anchor':'middle',style:`fill:${icol};font-size:8px;font-family:Courier New`});
+    const ilbl=mk('text',{x:(x1+x2+ix3+ix4)/4,y:Math.max(...iallY)+16,'text-anchor':'middle',style:`fill:${icol};font-size:8px;font-family:JetBrains Mono Variable, ui-monospace, monospace`});
     ilbl.textContent=ipos===0?'INT →':'INT ×'; g.appendChild(ilbl);
     return;
   } else if(type==='switch2_uk'){
@@ -700,7 +700,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     const lbls2=[[x1,y1,'COM'],[x2,y2,'L1'],[l2x,l2y,'L2']];
     lbls2.forEach(([tx,ty,lbl])=>{
       const ddx=tx-pcx2, ddy=ty-pcy2, len=Math.hypot(ddx,ddy)||1;
-      const t=mk('text',{x:tx+ddx/len*11,y:ty+ddy/len*11+3,'text-anchor':'middle',style:'fill:#6b7280;font-size:6px;font-family:Courier New;font-weight:bold'});
+      const t=mk('text',{x:tx+ddx/len*11,y:ty+ddy/len*11+3,'text-anchor':'middle',style:'fill:#6b7280;font-size:6px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
       t.textContent=lbl; g.appendChild(t);
     });
     return;
@@ -733,11 +733,11 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     [[x1,y1,"L1"],[x2,y2,"L2"],[six3,siy3,"L1'"],[six4,siy4,"L2'"]].forEach(([tx,ty,lbl])=>{
       g.appendChild(mk('circle',{cx:tx,cy:ty,r:4,fill:'#6b7280'}));
       const ddx=tx-sipcx, ddy=ty-sipcy, len=Math.hypot(ddx,ddy)||1;
-      const t=mk('text',{x:tx+ddx/len*11,y:ty+ddy/len*11+3,'text-anchor':'middle',style:'fill:#6b7280;font-size:6px;font-family:Courier New;font-weight:bold'});
+      const t=mk('text',{x:tx+ddx/len*11,y:ty+ddy/len*11+3,'text-anchor':'middle',style:'fill:#6b7280;font-size:6px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
       t.textContent=lbl; g.appendChild(t);
     });
     // State label
-    const silbl=mk('text',{x:(sibxL+sibxR)/2,y:sibyB+14,'text-anchor':'middle',style:'fill:#9ca3af;font-size:7px;font-family:Courier New'});
+    const silbl=mk('text',{x:(sibxL+sibxR)/2,y:sibyB+14,'text-anchor':'middle',style:'fill:#9ca3af;font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace'});
     silbl.textContent=sipos===0?'INT →':'INT ×'; g.appendChild(silbl);
     return;
   } else if(type==='switch2g_uk'||type==='switch3g_uk'){
@@ -789,12 +789,12 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
       g.appendChild(mk('circle',{cx:sx,cy:sy,r:4,fill:'#60a5fa'}));
       // Gang number label near COM terminal
       const lx=cx-ux*10-uy*8, ly=cy-uy*10+ux*8;
-      const gl=mk('text',{x:lx,y:ly,'text-anchor':'middle',style:'fill:#60a5fa;font-size:6px;font-family:Courier New;font-weight:bold'});
+      const gl=mk('text',{x:lx,y:ly,'text-anchor':'middle',style:'fill:#60a5fa;font-size:6px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
       gl.textContent='G'+(gi+1); g.appendChild(gl);
     });
     // Gang plate label
     const midLblX=(platL+platR)/2, midLblY=platB+12;
-    const plbl=mk('text',{x:midLblX,y:midLblY,'text-anchor':'middle',style:'fill:#60a5fa;font-size:7px;font-family:Courier New'});
+    const plbl=mk('text',{x:midLblX,y:midLblY,'text-anchor':'middle',style:'fill:#60a5fa;font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace'});
     plbl.textContent=numGangs+'-gang'; g.appendChild(plbl);
     return;
   } else if(type==='buzzer'){
@@ -819,11 +819,11 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     g.appendChild(mk('line',{x1:x2,y1:y2,x2:mx2+ux*bw/2,y2:my2+uy*bw/2,stroke:bcol,'stroke-width':1,'stroke-dasharray':'3,2'}));
     // Terminal dots
     g.appendChild(mk('circle',{cx:x1,cy:y1,r:3,fill:bcol}));
-    g.appendChild(mk('circle',{cx:x2,cy:y2,r:3,fill:'#555'}));
+    g.appendChild(mk('circle',{cx:x2,cy:y2,r:3,fill:'#5d6a85'}));
     // +/- labels
-    const tp=mk('text',{'text-anchor':'middle',style:`fill:${bcol};font-size:8px;font-family:Courier New`});
+    const tp=mk('text',{'text-anchor':'middle',style:`fill:${bcol};font-size:8px;font-family:JetBrains Mono Variable, ui-monospace, monospace`});
     tp.setAttribute('x', x1-ux*8); tp.setAttribute('y', y1-uy*8+3); tp.textContent='+'; g.appendChild(tp);
-    const tm=mk('text',{'text-anchor':'middle',style:'fill:#6e7681;font-size:8px;font-family:Courier New'});
+    const tm=mk('text',{'text-anchor':'middle',style:'fill:#5d6a85;font-size:8px;font-family:JetBrains Mono Variable, ui-monospace, monospace'});
     tm.setAttribute('x', x2+ux*8); tm.setAttribute('y', y2+uy*8+3); tm.textContent='−'; g.appendChild(tm);
     return;
   } else if(type==='seg7'){
@@ -843,7 +843,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
       6:[1,0,1,1,1,1,1],7:[1,1,1,0,0,0,0],8:[1,1,1,1,1,1,1],9:[1,1,1,1,0,1,1]
     };
     const segs=SEG_MAP[digit]||SEG_MAP[0];
-    g.appendChild(mk('rect',{x:-4,y:-4,width:W+8,height:H+8,rx:3,fill:'#0d1117',stroke:'#30363d','stroke-width':1}));
+    g.appendChild(mk('rect',{x:-4,y:-4,width:W+8,height:H+8,rx:3,fill:'#090c14',stroke:'#28324a','stroke-width':1}));
     // a - top horizontal
     g.appendChild(mk('rect',{x:2,y:0,width:W-4,height:sw,rx:sw/2,fill:segs[0]?seg_on:seg_off}));
     // b - top-right vertical
@@ -885,8 +885,8 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     for(let i=0;i<arcs2;i++){const sx=mid-8-i*aw2;dp2+=` Q ${sx-aw2/2} ${G*0.5+8} ${sx-aw2} ${G*0.5}`;}
     g.appendChild(mk('path',{d:dp2,stroke:'#60a5fa','stroke-width':1.5,fill:'none'}));
     // Core
-    g.appendChild(mk('line',{x1:coreX-3,y1:-G*0.7,x2:coreX-3,y2:G*0.7,stroke:'#8b949e','stroke-width':2.5}));
-    g.appendChild(mk('line',{x1:coreX+3,y1:-G*0.7,x2:coreX+3,y2:G*0.7,stroke:'#8b949e','stroke-width':2.5}));
+    g.appendChild(mk('line',{x1:coreX-3,y1:-G*0.7,x2:coreX-3,y2:G*0.7,stroke:'#8e9cb8','stroke-width':2.5}));
+    g.appendChild(mk('line',{x1:coreX+3,y1:-G*0.7,x2:coreX+3,y2:G*0.7,stroke:'#8e9cb8','stroke-width':2.5}));
     // Secondary coils
     const aw3=(L-mid-8)/arcs2;
     let ds=`M ${mid+8} ${-G*0.5}`;
@@ -898,16 +898,16 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     g.appendChild(mk('line',{x1:L,y1:-G*0.5,x2:mid+8,y2:-G*0.5,class:'cl'}));
     g.appendChild(mk('line',{x1:L,y1:G*0.5,x2:mid+8,y2:G*0.5,class:'cl'}));
     // Terminal dots
-    g.appendChild(mk('circle',{cx:0,cy:-G*0.5,r:2.5,fill:'#555'}));
-    g.appendChild(mk('circle',{cx:0,cy:G*0.5,r:2.5,fill:'#555'}));
-    g.appendChild(mk('circle',{cx:L,cy:-G*0.5,r:2.5,fill:'#555'}));
-    g.appendChild(mk('circle',{cx:L,cy:G*0.5,r:2.5,fill:'#555'}));
+    g.appendChild(mk('circle',{cx:0,cy:-G*0.5,r:2.5,fill:'#5d6a85'}));
+    g.appendChild(mk('circle',{cx:0,cy:G*0.5,r:2.5,fill:'#5d6a85'}));
+    g.appendChild(mk('circle',{cx:L,cy:-G*0.5,r:2.5,fill:'#5d6a85'}));
+    g.appendChild(mk('circle',{cx:L,cy:G*0.5,r:2.5,fill:'#5d6a85'}));
   } else if(type==='load3'){
     // 3-phase load: rectangle with 3∅ label
     const rh=Math.min(16,L*0.25);
     g.appendChild(mk('line',{x1:0,y1:0,x2:pad,y2:0,class:'cl'}));
     g.appendChild(mk('rect',{x:pad,y:-rh/2,width:bw,height:rh,rx:2,stroke:'#f59e0b','stroke-width':1.5,fill:'rgba(245,158,11,0.08)'}));
-    const lt=mk('text',{x:mid,y:4,'text-anchor':'middle',style:'fill:#f59e0b;font-size:10px;font-family:Courier New'});
+    const lt=mk('text',{x:mid,y:4,'text-anchor':'middle',style:'fill:#f59e0b;font-size:10px;font-family:JetBrains Mono Variable, ui-monospace, monospace'});
     lt.textContent='3∅'; g.appendChild(lt);
     g.appendChild(mk('line',{x1:pad+bw,y1:0,x2:L,y2:0,class:'cl'}));
   } else if(type==='3ph'){
@@ -925,14 +925,14 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     // Phase A at y=0, B at y=+G, C at y=-G (matches placeComp terminal layout)
     const phases=[{lbl:'A',dy:0},{lbl:'B',dy:G},{lbl:'C',dy:-G}];
     phases.forEach(({lbl,dy})=>{
-      const t=mk('text',{x:W*0.5,y:dy+4,'text-anchor':'middle',style:'fill:#f59e0b;font-size:9px;font-family:Courier New;font-weight:bold'});
+      const t=mk('text',{x:W*0.5,y:dy+4,'text-anchor':'middle',style:'fill:#f59e0b;font-size:9px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
       t.textContent=lbl; g.appendChild(t);
       // Output line stub at right
       g.appendChild(mk('line',{x1:W-pad3,y1:dy,x2:W,y2:dy,class:'cl'}));
       g.appendChild(mk('circle',{cx:W,cy:dy,r:2.5,fill:'#f59e0b'}));
     });
     // Neutral label + dot
-    const nt=mk('text',{x:pad3+6,y:-bH/2+10,style:'fill:#f59e0b;font-size:7px;font-family:Courier New'});
+    const nt=mk('text',{x:pad3+6,y:-bH/2+10,style:'fill:#f59e0b;font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace'});
     nt.textContent='N'; g.appendChild(nt);
     g.appendChild(mk('circle',{cx:0,cy:0,r:2.5,fill:'#f59e0b'}));
     return; // skip transform wrapper
@@ -955,7 +955,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
       g.appendChild(mk('path',{d:p,stroke:col,'stroke-width':1.5,fill:'rgba(110,231,183,0.10)'}));
     }
     const lx=(midInX+ox)/2, ly=(midInY+oy)/2;
-    const lbl=mk('text',{'text-anchor':'middle','dominant-baseline':'central',fill:col,'font-size':'9','font-family':'Courier New','font-weight':'bold','pointer-events':'none',x:lx,y:ly});
+    const lbl=mk('text',{'text-anchor':'middle','dominant-baseline':'central',fill:col,'font-size':'9','font-family':'JetBrains Mono Variable, ui-monospace, monospace','font-weight':'bold','pointer-events':'none',x:lx,y:ly});
     lbl.textContent=type;
     g.appendChild(lbl);
     return;
@@ -973,7 +973,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     // Output lead
     g.appendChild(mk('line',{x1:start+bodyL+8,y1:0,x2:L,y2:0,class:'cl'}));
     const nlx=start+bodyL*0.42;
-    const notLbl=mk('text',{'text-anchor':'middle','dominant-baseline':'central',fill:col,'font-size':'8','font-family':'Courier New','font-weight':'bold','pointer-events':'none',x:nlx,y:1,transform:`rotate(${-ang},${nlx},1)`});
+    const notLbl=mk('text',{'text-anchor':'middle','dominant-baseline':'central',fill:col,'font-size':'8','font-family':'JetBrains Mono Variable, ui-monospace, monospace','font-weight':'bold','pointer-events':'none',x:nlx,y:1,transform:`rotate(${-ang},${nlx},1)`});
     notLbl.textContent='NOT';
     g.appendChild(notLbl);
   } else if(type==='nmos'){
@@ -1020,11 +1020,11 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     g.appendChild(mk('line',{'x1':insx1,'y1':insy1,'x2':insx2,'y2':insy2,stroke:col,'stroke-width':2.5}));
     g.appendChild(mk('line',{'x1':glx,'y1':gly,'x2':gx,'y2':gy,stroke:col,'stroke-width':1.5}));
     // Labels
-    const dLbl=mk('text',{'x':x1+(isDV?4:0),'y':y1+(isDV?-4:-10),fill:col,'font-size':8,'font-family':'Courier New'});
+    const dLbl=mk('text',{'x':x1+(isDV?4:0),'y':y1+(isDV?-4:-10),fill:col,'font-size':8,'font-family':'JetBrains Mono Variable, ui-monospace, monospace'});
     dLbl.textContent='D'; g.appendChild(dLbl);
-    const sLbl=mk('text',{'x':x2+(isDV?4:0),'y':y2+(isDV?10:14),fill:col,'font-size':8,'font-family':'Courier New'});
+    const sLbl=mk('text',{'x':x2+(isDV?4:0),'y':y2+(isDV?10:14),fill:col,'font-size':8,'font-family':'JetBrains Mono Variable, ui-monospace, monospace'});
     sLbl.textContent='S'; g.appendChild(sLbl);
-    const gLbl=mk('text',{'x':gx,'y':gy+(isDV?-4:0),fill:col,'font-size':8,'font-family':'Courier New','text-anchor':(isDV?'end':'middle')});
+    const gLbl=mk('text',{'x':gx,'y':gy+(isDV?-4:0),fill:col,'font-size':8,'font-family':'JetBrains Mono Variable, ui-monospace, monospace','text-anchor':(isDV?'end':'middle')});
     gLbl.textContent='G'; g.appendChild(gLbl);
     if(conducting){
       if(isDV) g.appendChild(mk('rect',{'x':chx1-2,'y':chy1,'width':4,'height':chy2-chy1,fill:col,opacity:0.25}));
@@ -1061,7 +1061,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     // Plug body rectangle
     g.appendChild(mk('polygon',{points:`${b1x},${b1y} ${b2x},${b2y} ${b3x},${b3y} ${b4x},${b4y}`,stroke:'#9ca3af','stroke-width':1.5,fill:'#f9fafb'}));
     // "PLUG" label centred in body
-    const plbl=mk('text',{'text-anchor':'middle','dominant-baseline':'central',fill:'#6b7280','font-size':'6','font-family':'Courier New','font-weight':'bold','pointer-events':'none',x:(b1x+b2x+b3x+b4x)/4,y:(b1y+b2y+b3y+b4y)/4});
+    const plbl=mk('text',{'text-anchor':'middle','dominant-baseline':'central',fill:'#6b7280','font-size':'6','font-family':'JetBrains Mono Variable, ui-monospace, monospace','font-weight':'bold','pointer-events':'none',x:(b1x+b2x+b3x+b4x)/4,y:(b1y+b2y+b3y+b4y)/4});
     plbl.textContent='PLUG'; g.appendChild(plbl);
     // Flex cables: dashed lines from body bottom (aligned with pins) to cable terminals
     const fLx=fcx+11.5*tx+(fw+bd)*nrx, fLy=fcy+11.5*ty+(fw+bd)*nry;
@@ -1069,9 +1069,9 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     g.appendChild(mk('line',{x1:fLx,y1:fLy,x2:x1,y2:y1,stroke:'#b45309','stroke-width':1.5,'stroke-dasharray':'4,2'}));
     g.appendChild(mk('line',{x1:fNx,y1:fNy,x2:x2,y2:y2,stroke:'#2563eb','stroke-width':1.5,'stroke-dasharray':'4,2'}));
     // L/N labels on flex cables
-    const lLbl=mk('text',{'text-anchor':'middle','dominant-baseline':'central',fill:'#b45309','font-size':'7','font-family':'Courier New','font-weight':'bold','pointer-events':'none',x:(fLx+x1)/2,y:(fLy+y1)/2});
+    const lLbl=mk('text',{'text-anchor':'middle','dominant-baseline':'central',fill:'#b45309','font-size':'7','font-family':'JetBrains Mono Variable, ui-monospace, monospace','font-weight':'bold','pointer-events':'none',x:(fLx+x1)/2,y:(fLy+y1)/2});
     lLbl.textContent='L'; g.appendChild(lLbl);
-    const nLbl=mk('text',{'text-anchor':'middle','dominant-baseline':'central',fill:'#2563eb','font-size':'7','font-family':'Courier New','font-weight':'bold','pointer-events':'none',x:(fNx+x2)/2,y:(fNy+y2)/2});
+    const nLbl=mk('text',{'text-anchor':'middle','dominant-baseline':'central',fill:'#2563eb','font-size':'7','font-family':'JetBrains Mono Variable, ui-monospace, monospace','font-weight':'bold','pointer-events':'none',x:(fNx+x2)/2,y:(fNy+y2)/2});
     nLbl.textContent='N'; g.appendChild(nLbl);
     return;
   } else if(type==='socket_uk'){
@@ -1095,15 +1095,15 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     // Live slot — bottom right
     g.appendChild(mk('rect',{x:px0+pw-17,y:py0+ph-11,width:13,height:7,rx:0,fill:'#f59e0b',opacity:0.8}));
     // Terminal labels
-    const tE2=mk('text',{x:smid,y:py0+18,'text-anchor':'middle',style:'fill:#22c55e;font-size:5.5px;font-family:Courier New;font-weight:bold'});
+    const tE2=mk('text',{x:smid,y:py0+18,'text-anchor':'middle',style:'fill:#22c55e;font-size:5.5px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     tE2.textContent='E'; g.appendChild(tE2);
-    const tN2=mk('text',{x:px0+10,y:py0+ph-1,'text-anchor':'middle',style:'fill:#60a5fa;font-size:5.5px;font-family:Courier New;font-weight:bold'});
+    const tN2=mk('text',{x:px0+10,y:py0+ph-1,'text-anchor':'middle',style:'fill:#60a5fa;font-size:5.5px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     tN2.textContent='N'; g.appendChild(tN2);
-    const tL2=mk('text',{x:px0+pw-10,y:py0+ph-1,'text-anchor':'middle',style:'fill:#f59e0b;font-size:5.5px;font-family:Courier New;font-weight:bold'});
+    const tL2=mk('text',{x:px0+pw-10,y:py0+ph-1,'text-anchor':'middle',style:'fill:#f59e0b;font-size:5.5px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     tL2.textContent='L'; g.appendChild(tL2);
     // Earth terminal dot (on the back/wall side, opposite the plug face)
     g.appendChild(mk('circle',{cx:smid,cy:earthLy,r:4,fill:'#22c55e'}));
-    const tEext=mk('text',{x:smid+8,y:earthLy-4,'text-anchor':'start',style:'fill:#22c55e;font-size:6px;font-family:Courier New;font-weight:bold'});
+    const tEext=mk('text',{x:smid+8,y:earthLy-4,'text-anchor':'start',style:'fill:#22c55e;font-size:6px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     tEext.textContent='E'; g.appendChild(tEext);
   } else if(type==='switch_uk'){
     // UK plate switch — 3 terminals: COM (x1), L1 (x2), E (x3/extra)
@@ -1126,13 +1126,13 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     // ON indicator dot
     g.appendChild(mk('circle',{cx:G*2.3,cy:-8,r:2,fill:closed?'#22c55e':'#d1d5db'}));
     // Terminal labels on plate
-    const tCOM=mk('text',{x:G*0.9,y:13,'text-anchor':'middle',style:'fill:#8b949e;font-size:5px;font-family:Courier New;font-weight:bold'});
+    const tCOM=mk('text',{x:G*0.9,y:13,'text-anchor':'middle',style:'fill:#8e9cb8;font-size:5px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     tCOM.textContent='COM'; g.appendChild(tCOM);
-    const tL1=mk('text',{x:G*2.1,y:13,'text-anchor':'middle',style:'fill:#8b949e;font-size:5px;font-family:Courier New;font-weight:bold'});
+    const tL1=mk('text',{x:G*2.1,y:13,'text-anchor':'middle',style:'fill:#8e9cb8;font-size:5px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     tL1.textContent='L1'; g.appendChild(tL1);
     // Earth terminal dot + label (back/wall side)
     g.appendChild(mk('circle',{cx:smid2,cy:earthLy2,r:4,fill:'#22c55e'}));
-    const tEsw=mk('text',{x:smid2+8,y:earthLy2-4,'text-anchor':'start',style:'fill:#22c55e;font-size:6px;font-family:Courier New;font-weight:bold'});
+    const tEsw=mk('text',{x:smid2+8,y:earthLy2-4,'text-anchor':'start',style:'fill:#22c55e;font-size:6px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     tEsw.textContent='E'; g.appendChild(tEsw);
   } else if(type==='crose'){
     // Ceiling rose / light point
@@ -1161,7 +1161,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     const toggleFill=blown?'#ef4444':'#3b82f6';
     g.appendChild(mk('rect',{x:mx+G*0.2,y:-10,width:G*1.2,height:10,rx:1,fill:toggleFill}));
     // Rating label
-    const mt=mk('text',{x:mid,y:8,'text-anchor':'middle',style:'fill:#fff;font-size:7px;font-family:Courier New;font-weight:bold'});
+    const mt=mk('text',{x:mid,y:8,'text-anchor':'middle',style:'fill:#fff;font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     mt.textContent=blown?'TRIP':`B${extra?.ratingLabel??'?'}`; g.appendChild(mt);
   } else if(type==='cunit'){
     // Consumer unit — LANDSCAPE layout: supply section left, MCB columns right.
@@ -1181,20 +1181,20 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     // Shadow + main body
     g.appendChild(mk('rect',{x:ox+3,y:oy+3,width:cuW,height:cuH,rx:6,fill:'rgba(0,0,0,0.08)'}));
     g.appendChild(mk('rect',{x:ox,y:oy,width:cuW,height:cuH,rx:6,fill:'#0d1a2e',
-      stroke:'#58a6ff','stroke-width':2,'stroke-dasharray':'6,3'}));
+      stroke:'#4da3ff','stroke-width':2,'stroke-dasharray':'6,3'}));
 
     // Header strip (full width, top G*0.62)
     const hh=G*0.62;
-    g.appendChild(mk('rect',{x:ox,y:oy,width:cuW,height:hh,rx:6,fill:'rgba(88,166,255,0.12)',stroke:'none'}));
+    g.appendChild(mk('rect',{x:ox,y:oy,width:cuW,height:hh,rx:6,fill:'rgba(77,163,255,0.12)',stroke:'none'}));
     const hdrlbl=mk('text',{x:ox+cuW/2,y:oy+hh*0.76,'text-anchor':'middle',
-      style:'fill:#58a6ff;font-size:8px;font-family:inherit;font-weight:bold;letter-spacing:2px'});
+      style:'fill:#4da3ff;font-size:8px;font-family:inherit;font-weight:bold;letter-spacing:2px'});
     hdrlbl.textContent='CONSUMER UNIT'; g.appendChild(hdrlbl);
 
     // ── Supply section (left 2G, below header) ──────────────────────────────
     const supY=oy+hh;
     const supH=cuH-hh;
     const svtlbl=mk('text',{x:ox+G,y:supY+G*0.18,'text-anchor':'middle',
-      style:'fill:#6e7681;font-size:5px;font-family:inherit;letter-spacing:1px'});
+      style:'fill:#5d6a85;font-size:5px;font-family:inherit;letter-spacing:1px'});
     svtlbl.textContent='SUPPLY'; g.appendChild(svtlbl);
 
     // DP block (left half of supply section)
@@ -1210,7 +1210,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
       const rcdx=ox+G*1.14, rcdy=supY+G*0.28, rcdw=G*0.75, rcdh=supH*0.42;
       g.appendChild(mk('rect',{x:rcdx,y:rcdy,width:rcdw,height:rcdh,rx:2,fill:'#fffbeb',stroke:'#f59e0b','stroke-width':1}));
       const rcdt=mk('text',{x:rcdx+rcdw/2,y:rcdy+rcdh*0.42,'text-anchor':'middle',
-        style:'fill:#d97706;font-size:5px;font-family:inherit;font-weight:bold'});
+        style:'fill:#f5a623;font-size:5px;font-family:inherit;font-weight:bold'});
       rcdt.textContent='RCD'; g.appendChild(rcdt);
       const rcdma=mk('text',{x:rcdx+rcdw/2,y:rcdy+rcdh*0.42+8,'text-anchor':'middle',
         style:'fill:#92400e;font-size:4px;font-family:inherit'});
@@ -1228,7 +1228,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     // ── MCB rail (right of divX) — only when MCBs are configured ────────────
     if(numMCBs>0){
       const divX=ox+2*G;
-      g.appendChild(mk('line',{x1:divX,y1:oy+hh,x2:divX,y2:oy+cuH,stroke:'#30363d','stroke-width':1.5}));
+      g.appendChild(mk('line',{x1:divX,y1:oy+hh,x2:divX,y2:oy+cuH,stroke:'#28324a','stroke-width':1.5}));
       // Live bus bar: horizontal red line near top of MCB area
       const busY=oy+hh+G*0.32;
       g.appendChild(mk('line',{x1:divX+4,y1:busY,x2:ox+cuW-4,y2:busY,stroke:'#ef4444','stroke-width':3,'stroke-linecap':'round'}));
@@ -1258,7 +1258,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
         const scx=sx+G*0.5;      // centre x of slot
         // Slot body
         g.appendChild(mk('rect',{x:sx+G*0.08,y:slotBodyY,width:G*0.84,height:slotBodyH,
-          rx:2,fill:'#1a1a2e',stroke:'#30363d','stroke-width':1}));
+          rx:2,fill:'#1a1a2e',stroke:'#28324a','stroke-width':1}));
         // Rocker toggle
         g.appendChild(mk('rect',{x:sx+G*0.12,y:slotBodyY+3,width:G*0.4,height:slotBodyH*0.38,
           rx:1,fill:'#3b82f6'}));
@@ -1268,7 +1268,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
         ratingT.textContent='B'+mcb.A; g.appendChild(ratingT);
         // Circuit label — bottom of slot (truncated 6 chars to fit 1G width)
         const circT=mk('text',{x:scx,y:slotBodyY+slotBodyH*0.72,'text-anchor':'middle',
-          style:'fill:#8b949e;font-size:4px;font-family:inherit'});
+          style:'fill:#8e9cb8;font-size:4px;font-family:inherit'});
         circT.textContent=(mcb.label||'').slice(0,6); g.appendChild(circT);
         // Red dot on bus bar (internal indicator)
         g.appendChild(mk('circle',{cx:scx,cy:busY,r:2.5,fill:'#ef4444',stroke:'#ffffff','stroke-width':0.8}));
@@ -1286,7 +1286,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
 
     // L-in terminal dot (external wire connection — mains Live input)
     g.appendChild(mk('circle',{cx:ox,cy:oy+2*G,r:5,fill:'#ef4444',stroke:'#ffffff','stroke-width':1.2}));
-    const tLin=mk('text',{x:ox-8,y:oy+2*G+3,'text-anchor':'end',style:'fill:#dc2626;font-size:6px;font-family:inherit;font-weight:bold'});
+    const tLin=mk('text',{x:ox-8,y:oy+2*G+3,'text-anchor':'end',style:'fill:#ef4d4d;font-size:6px;font-family:inherit;font-weight:bold'});
     tLin.textContent='L'; g.appendChild(tLin);
     // N-bar terminal dot (external wire connection — Neutral bar input)
     g.appendChild(mk('circle',{cx:ox+G,cy:oy+cuH,r:5,fill:'#3b82f6',stroke:'#ffffff','stroke-width':1.2}));
@@ -1301,14 +1301,14 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     // AC sine wave symbol
     const scx=sx2+sbw*0.38;
     g.appendChild(mk('path',{d:`M ${scx-8},0 C ${scx-4},-10 ${scx+4},-10 ${scx+8},0 C ${scx+4},10 ${scx-4},10 ${scx-8},0`,stroke:'#fb923c','stroke-width':1.5,fill:'none'}));
-    const svt1=mk('text',{x:sx2+sbw*0.78,y:-6,'text-anchor':'middle',style:'fill:#f97316;font-size:7px;font-family:Courier New;font-weight:bold'});
+    const svt1=mk('text',{x:sx2+sbw*0.78,y:-6,'text-anchor':'middle',style:'fill:#f97316;font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     svt1.textContent='230V'; g.appendChild(svt1);
-    const svt2=mk('text',{x:sx2+sbw*0.78,y:4,'text-anchor':'middle',style:'fill:#fb923c;font-size:6px;font-family:Courier New'});
+    const svt2=mk('text',{x:sx2+sbw*0.78,y:4,'text-anchor':'middle',style:'fill:#fb923c;font-size:6px;font-family:JetBrains Mono Variable, ui-monospace, monospace'});
     svt2.textContent='50Hz'; g.appendChild(svt2);
     // L / N terminal labels
-    const lt=mk('text',{x:sx2-2,y:14,'text-anchor':'end',style:'fill:#f87171;font-size:7px;font-family:Courier New;font-weight:bold'});
+    const lt=mk('text',{x:sx2-2,y:14,'text-anchor':'end',style:'fill:#f87171;font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     lt.textContent='L'; g.appendChild(lt);
-    const nt=mk('text',{x:sx2+sbw+2,y:14,'text-anchor':'start',style:'fill:#60a5fa;font-size:7px;font-family:Courier New;font-weight:bold'});
+    const nt=mk('text',{x:sx2+sbw+2,y:14,'text-anchor':'start',style:'fill:#60a5fa;font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     nt.textContent='N'; g.appendChild(nt);
     g.appendChild(mk('line',{x1:sx2+sbw,y1:0,x2:L,y2:0,class:'cl'}));
   } else if(type==='dpswitch'){
@@ -1337,19 +1337,19 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     const gmx=(dpx1+dpx2)/2;
     g.appendChild(mk('line',{x1:gmx,y1:dpclosed?-5:-10,x2:gmx,y2:dpclosed?G+5:G,'stroke':col,'stroke-width':1.5,'stroke-dasharray':'2,3'}));
     // L / N terminal labels
-    const llt=mk('text',{x:dpL-2,y:3,'text-anchor':'end',style:'fill:#f87171;font-size:7px;font-family:Courier New;font-weight:bold'});
+    const llt=mk('text',{x:dpL-2,y:3,'text-anchor':'end',style:'fill:#f87171;font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     llt.textContent='L'; g.appendChild(llt);
-    const nlt=mk('text',{x:dpL-2,y:G+3,'text-anchor':'end',style:'fill:#60a5fa;font-size:7px;font-family:Courier New;font-weight:bold'});
+    const nlt=mk('text',{x:dpL-2,y:G+3,'text-anchor':'end',style:'fill:#60a5fa;font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     nlt.textContent='N'; g.appendChild(nlt);
-    const dpt=mk('text',{x:G*1.5,y:G/2+4,'text-anchor':'middle',style:'fill:#666;font-size:7px;font-family:Courier New;font-weight:bold'});
+    const dpt=mk('text',{x:G*1.5,y:G/2+4,'text-anchor':'middle',style:'fill:#5d6a85;font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     dpt.textContent='DP'; g.appendChild(dpt);
   } else if(type==='rcd'){
     const rcdTripped=extra?.tripped??false;
     const rcdbw=bw*0.8, rcdx=(L-rcdbw)/2;
     g.appendChild(mk('line',{x1:0,y1:0,x2:rcdx,y2:0,class:'cl'}));
     g.appendChild(mk('rect',{x:rcdx,y:-14,width:rcdbw,height:28,rx:3,fill:'#fffbeb',stroke:rcdTripped?'#ef4444':'#f59e0b','stroke-width':1.5}));
-    g.appendChild(mk('circle',{cx:rcdx+rcdbw*0.75,cy:-5,r:4,fill:rcdTripped?'#ef4444':'#d97706',stroke:'#fff','stroke-width':0.8}));
-    const rcdt=mk('text',{x:rcdx+rcdbw*0.3,y:5,'text-anchor':'middle',style:'fill:#fbbf24;font-size:7px;font-family:Courier New;font-weight:bold'});
+    g.appendChild(mk('circle',{cx:rcdx+rcdbw*0.75,cy:-5,r:4,fill:rcdTripped?'#ef4444':'#f5a623',stroke:'#fff','stroke-width':0.8}));
+    const rcdt=mk('text',{x:rcdx+rcdbw*0.3,y:5,'text-anchor':'middle',style:'fill:#fbbf24;font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     rcdt.textContent=rcdTripped?'TRIP':'RCD'; g.appendChild(rcdt);
     g.appendChild(mk('line',{x1:rcdx+rcdbw,y1:0,x2:L,y2:0,class:'cl'}));
   } else if(type==='meter'){
@@ -1359,7 +1359,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     g.appendChild(mk('rect',{x:metx+3,y:-12,width:metbw-6,height:12,rx:2,fill:'#166534',stroke:'#22c55e','stroke-width':0.8}));
     const mslotW=(metbw-12)/3;
     for(let i=0;i<3;i++) g.appendChild(mk('rect',{x:metx+5+i*(mslotW+1),y:-11,width:mslotW,height:10,rx:1,fill:'#14532d',stroke:'#4ade80','stroke-width':0.5}));
-    const mkwh=mk('text',{x:metx+metbw/2,y:10,'text-anchor':'middle',style:'fill:#6ee7b7;font-size:6px;font-family:Courier New;font-weight:bold'});
+    const mkwh=mk('text',{x:metx+metbw/2,y:10,'text-anchor':'middle',style:'fill:#6ee7b7;font-size:6px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     mkwh.textContent='kWh'; g.appendChild(mkwh);
     g.appendChild(mk('line',{x1:metx+metbw,y1:0,x2:L,y2:0,class:'cl'}));
   } else if(type==='shower'){
@@ -1370,7 +1370,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     g.appendChild(mk('path',{d:`M ${shcx-4},-8 Q ${shcx},-12 ${shcx+4},-8`,stroke:'#60a5fa','stroke-width':1,fill:'none'}));
     g.appendChild(mk('path',{d:`M ${shcx-4},0 Q ${shcx},-4 ${shcx+4},0`,stroke:'#60a5fa','stroke-width':1,fill:'none'}));
     g.appendChild(mk('path',{d:`M ${shcx-4},8 Q ${shcx},4 ${shcx+4},8`,stroke:'#60a5fa','stroke-width':1,fill:'none'}));
-    const sht=mk('text',{x:shx+shbw*0.3,y:4,'text-anchor':'middle',style:'fill:#93c5fd;font-size:6px;font-family:Courier New;font-weight:bold'});
+    const sht=mk('text',{x:shx+shbw*0.3,y:4,'text-anchor':'middle',style:'fill:#93c5fd;font-size:6px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     sht.textContent='kW'; g.appendChild(sht);
     g.appendChild(mk('line',{x1:shx+shbw,y1:0,x2:L,y2:0,class:'cl'}));
   } else if(type==='cooker'){
@@ -1382,7 +1382,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
       g.appendChild(mk('circle',{cx:hx,cy:hy,r:ckrs,fill:'none',stroke:'#fb923c','stroke-width':1.2}));
       g.appendChild(mk('circle',{cx:hx,cy:hy,r:ckrs*0.5,fill:'#fb923c44'}));
     });
-    const ckt=mk('text',{x:ckx+ckbw*0.85,y:14,'text-anchor':'middle',style:'fill:#fb923c;font-size:5px;font-family:Courier New;font-weight:bold'});
+    const ckt=mk('text',{x:ckx+ckbw*0.85,y:14,'text-anchor':'middle',style:'fill:#fb923c;font-size:5px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     ckt.textContent='kW'; g.appendChild(ckt);
     g.appendChild(mk('line',{x1:ckx+ckbw,y1:0,x2:L,y2:0,class:'cl'}));
   } else if(type==='kettle'){
@@ -1400,18 +1400,18 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
       });
     }
     // Rating label
-    const kt=mk('text',{x:kbx+kbw/2,y:8,'text-anchor':'middle',style:'fill:#a0c8e8;font-size:5px;font-family:Courier New;font-weight:bold'});
+    const kt=mk('text',{x:kbx+kbw/2,y:8,'text-anchor':'middle',style:'fill:#a0c8e8;font-size:5px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     kt.textContent='kW'; g.appendChild(kt);
     g.appendChild(mk('line',{x1:kbx+kbw,y1:0,x2:L,y2:0,class:'cl'}));
   } else if(type==='toaster'){
     const tbw=L*0.7, tbx=(L-tbw)/2;
     g.appendChild(mk('line',{x1:0,y1:0,x2:tbx,y2:0,class:'cl'}));
     // Body
-    g.appendChild(mk('rect',{x:tbx,y:-10,width:tbw,height:22,rx:3,fill:'#fffbeb',stroke:'#d97706','stroke-width':1.4}));
+    g.appendChild(mk('rect',{x:tbx,y:-10,width:tbw,height:22,rx:3,fill:'#fffbeb',stroke:'#f5a623','stroke-width':1.4}));
     // Slots
     const sw=tbw*0.22, sh=14, sy=-8;
-    g.appendChild(mk('rect',{x:tbx+tbw*0.18,y:sy,width:sw,height:sh,rx:2,fill:'#fde68a',stroke:'#d97706','stroke-width':0.8}));
-    g.appendChild(mk('rect',{x:tbx+tbw*0.58,y:sy,width:sw,height:sh,rx:2,fill:'#fde68a',stroke:'#d97706','stroke-width':0.8}));
+    g.appendChild(mk('rect',{x:tbx+tbw*0.18,y:sy,width:sw,height:sh,rx:2,fill:'#fde68a',stroke:'#f5a623','stroke-width':0.8}));
+    g.appendChild(mk('rect',{x:tbx+tbw*0.58,y:sy,width:sw,height:sh,rx:2,fill:'#fde68a',stroke:'#f5a623','stroke-width':0.8}));
     // Heat glow in slots when powered
     if(extra?.simPower>10){
       g.appendChild(mk('rect',{x:tbx+tbw*0.18,y:sy,width:sw,height:sh,rx:2,fill:'#f97316',opacity:'0.35'}));
@@ -1422,7 +1422,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     const tvbw=L*0.72, tvbx=(L-tvbw)/2, tvbh=26;
     g.appendChild(mk('line',{x1:0,y1:0,x2:tvbx,y2:0,class:'cl'}));
     // Screen bezel
-    g.appendChild(mk('rect',{x:tvbx,y:-tvbh/2,width:tvbw,height:tvbh,rx:2,fill:'#0d1117',stroke:'#60a5fa','stroke-width':1.4}));
+    g.appendChild(mk('rect',{x:tvbx,y:-tvbh/2,width:tvbw,height:tvbh,rx:2,fill:'#090c14',stroke:'#60a5fa','stroke-width':1.4}));
     // Screen
     const scr_fill=extra?.simPower>0.5?'#1e3a8a':'#0a0a14';
     g.appendChild(mk('rect',{x:tvbx+2,y:-tvbh/2+2,width:tvbw-4,height:tvbh-7,rx:1,fill:scr_fill}));
@@ -1462,7 +1462,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     g.appendChild(mk('path',{d:`M ${mid},0 Q ${mid+fanR*0.1},${fanR*0.75} ${mid-fanR*0.5},${fanR*0.85}`,stroke:'#a0c8e8','stroke-width':1.5,fill:'none'}));
     // Hub dot
     g.appendChild(mk('circle',{cx:mid,cy:0,r:2.5,fill:'#a0c8e8'}));
-    const fanlbl=mk('text',{x:mid,y:fanR+12,'text-anchor':'middle',style:'fill:#a0c8e8;font-size:6px;font-family:Courier New;font-weight:bold'});
+    const fanlbl=mk('text',{x:mid,y:fanR+12,'text-anchor':'middle',style:'fill:#a0c8e8;font-size:6px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     fanlbl.textContent='FAN'; g.appendChild(fanlbl);
     g.appendChild(mk('line',{x1:mid+fanR,y1:0,x2:L,y2:0,class:'cl'}));
   } else if(type==='fcu'){
@@ -1476,7 +1476,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     g.appendChild(mk('line',{x1:fsymx-fsymw/2-4,y1:0,x2:fsymx-fsymw/2,y2:0,stroke:'#60a5fa','stroke-width':1}));
     g.appendChild(mk('line',{x1:fsymx+fsymw/2,y1:0,x2:fsymx+fsymw/2+4,y2:0,stroke:'#60a5fa','stroke-width':1}));
     // FCU label
-    const fculbl=mk('text',{x:fcux+fcubw/2,y:12,'text-anchor':'middle',style:'fill:#60a5fa;font-size:5.5px;font-family:Courier New;font-weight:bold'});
+    const fculbl=mk('text',{x:fcux+fcubw/2,y:12,'text-anchor':'middle',style:'fill:#60a5fa;font-size:5.5px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     fculbl.textContent='FCU'; g.appendChild(fculbl);
     // Blown indicator
     if(extra?.blown){
@@ -1503,7 +1503,7 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     // ON indicator dot
     g.appendChild(mk('circle',{cx:G*1.55,cy:-8,r:2,fill:closed?'#22c55e':'#d1d5db'}));
     // PULL label
-    const plbl=mk('text',{x:smid2,y:4,'text-anchor':'middle',style:'fill:#6b7280;font-size:5px;font-family:Courier New;font-weight:bold'});
+    const plbl=mk('text',{x:smid2,y:4,'text-anchor':'middle',style:'fill:#6b7280;font-size:5px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     plbl.textContent='PULL'; g.appendChild(plbl);
   }
 }
@@ -1519,13 +1519,13 @@ function drawDamagedOverlay(g, type, x1, y1, x2, y2, extra={}) {
     // Draw broken wire gap over the fuse body
     const rw=L*0.7*0.7;
     // Blank out the fuse body (light canvas bg colour)
-    g.appendChild(mk('rect',{x:(L-rw)/2-1,y:-8,width:rw+2,height:16,fill:'#0d1117'}));
+    g.appendChild(mk('rect',{x:(L-rw)/2-1,y:-8,width:rw+2,height:16,fill:'#090c14'}));
     // Broken wire stumps with singed ends
-    g.appendChild(mk('line',{x1:0,y1:0,x2:mid-8,y2:0,stroke:'#555','stroke-width':2}));
-    g.appendChild(mk('line',{x1:mid+8,y1:0,x2:L,y2:0,stroke:'#555','stroke-width':2}));
+    g.appendChild(mk('line',{x1:0,y1:0,x2:mid-8,y2:0,stroke:'#5d6a85','stroke-width':2}));
+    g.appendChild(mk('line',{x1:mid+8,y1:0,x2:L,y2:0,stroke:'#5d6a85','stroke-width':2}));
     // Gap marks (char)
-    g.appendChild(mk('line',{x1:mid-8,y1:-5,x2:mid-4,y2:5,stroke:'#555','stroke-width':1.5}));
-    g.appendChild(mk('line',{x1:mid+8,y1:-5,x2:mid+4,y2:5,stroke:'#555','stroke-width':1.5}));
+    g.appendChild(mk('line',{x1:mid-8,y1:-5,x2:mid-4,y2:5,stroke:'#5d6a85','stroke-width':1.5}));
+    g.appendChild(mk('line',{x1:mid+8,y1:-5,x2:mid+4,y2:5,stroke:'#5d6a85','stroke-width':1.5}));
     // Orange flash dot
     g.appendChild(mk('circle',{cx:mid,cy:0,r:3,fill:'#ff6600',opacity:0.7,filter:'url(#dmg-glow)'}));
     return;
@@ -1545,13 +1545,13 @@ function drawDamagedOverlay(g, type, x1, y1, x2, y2, extra={}) {
       const r=Math.min(bw/2,22), cr=r*0.55;
       g.appendChild(mk('circle',{cx:mid,cy:0,r:r+1,fill:'#0d0a00',stroke:'#3a1500','stroke-width':1.5}));
       // Broken filament (gap in middle)
-      g.appendChild(mk('line',{x1:mid-cr,y1:-cr,x2:mid-cr*0.2,y2:-cr*0.2,stroke:'#555','stroke-width':1.5}));
-      g.appendChild(mk('line',{x1:mid+cr,y1:cr,x2:mid+cr*0.2,y2:cr*0.2,stroke:'#555','stroke-width':1.5}));
-      g.appendChild(mk('line',{x1:mid+cr,y1:-cr,x2:mid+cr*0.2,y2:-cr*0.2,stroke:'#555','stroke-width':1.5}));
-      g.appendChild(mk('line',{x1:mid-cr,y1:cr,x2:mid-cr*0.2,y2:cr*0.2,stroke:'#555','stroke-width':1.5}));
+      g.appendChild(mk('line',{x1:mid-cr,y1:-cr,x2:mid-cr*0.2,y2:-cr*0.2,stroke:'#5d6a85','stroke-width':1.5}));
+      g.appendChild(mk('line',{x1:mid+cr,y1:cr,x2:mid+cr*0.2,y2:cr*0.2,stroke:'#5d6a85','stroke-width':1.5}));
+      g.appendChild(mk('line',{x1:mid+cr,y1:-cr,x2:mid+cr*0.2,y2:-cr*0.2,stroke:'#5d6a85','stroke-width':1.5}));
+      g.appendChild(mk('line',{x1:mid-cr,y1:cr,x2:mid-cr*0.2,y2:cr*0.2,stroke:'#5d6a85','stroke-width':1.5}));
     }
     // Red damaged label
-    const t=mk('text',{x:mid,y:type==='R'?-10:-28,'text-anchor':'middle',style:'fill:#f85149;font-size:9px;font-family:Courier New;font-weight:bold'});
+    const t=mk('text',{x:mid,y:type==='R'?-10:-28,'text-anchor':'middle',style:'fill:#ff6166;font-size:9px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     t.textContent='BURNT'; g.appendChild(t);
   }
 }
@@ -1656,7 +1656,7 @@ function renderComps(){
           layer.insertBefore(glow2,g);
         }
         const p1=lp(1);
-        const t=mk('text',{x:p1.x,y:p1.y,'text-anchor':p1.a,class:'rt',style:`fill:${c.ledOn?'#4ade80':'#6e7681'}`});
+        const t=mk('text',{x:p1.x,y:p1.y,'text-anchor':p1.a,class:'rt',style:`fill:${c.ledOn?'#4ade80':'#5d6a85'}`});
         t.textContent=c.ledOn?fmtVal(c.simV,'V'):'off'; layer.appendChild(t);
       } else if(c.type==='seg7'){
         g.innerHTML='';
@@ -1675,36 +1675,36 @@ function renderComps(){
           }
         }
         const t=mk('text',{x:c.x1+7,y:c.y1+26,'text-anchor':'middle',class:'rt',
-          style:`fill:${c.buzzerOn?'#facc15':'#6e7681'};font-size:9px`});
+          style:`fill:${c.buzzerOn?'#facc15':'#5d6a85'};font-size:9px`});
         t.textContent=c.buzzerOn?'BUZZ':'off'; layer.appendChild(t);
       } else if(c.type==='diode'||c.type==='zener'){
-        const stateCol=c.diodeState==='forward'?'#4ade80':c.diodeState==='reverse-breakdown'?'#fb923c':'#6e7681';
+        const stateCol=c.diodeState==='forward'?'#4ade80':c.diodeState==='reverse-breakdown'?'#fb923c':'#5d6a85';
         const stateStr=c.diodeState==='forward'?fmtVal(c.simV,'V'):c.diodeState==='reverse-breakdown'?'BKDN':'off';
         const p1=lp(1);
         const t=mk('text',{x:p1.x,y:p1.y,'text-anchor':p1.a,class:'rt',style:`fill:${stateCol}`});
         t.textContent=stateStr; layer.appendChild(t);
       } else if(c.type==='sw'||c.type==='switch_uk'||c.type==='dpswitch'||c.type==='pullcord'){
         const stateLabel=c.closed?'CLOSED':'OPEN';
-        const stateCol=c.closed?'#3fb950':'#6e7681';
+        const stateCol=c.closed?'#34d399':'#5d6a85';
         const p0=lp(0), p1=lp(1);
         const t=mk('text',{x:p0.x,y:p0.y,'text-anchor':p0.a,class:'rt',style:`fill:${stateCol};font-size:9px`});
         t.textContent=stateLabel; layer.appendChild(t);
         if(c.simI!=null&&c.closed){
-          const t2=mk('text',{x:p1.x,y:p1.y,'text-anchor':p1.a,class:'rt',style:'fill:#d29922'});
+          const t2=mk('text',{x:p1.x,y:p1.y,'text-anchor':p1.a,class:'rt',style:'fill:#e3ad33'});
           t2.textContent=fmtVal(c.simI,'A'); layer.appendChild(t2);
         }
       } else if(c.type==='fcu'){
-        const fcuCol=c.blown?'#ef4444':'#3fb950';
+        const fcuCol=c.blown?'#ef4444':'#34d399';
         const p0=lp(0);
         const t=mk('text',{x:p0.x,y:p0.y,'text-anchor':p0.a,class:'rt',style:`fill:${fcuCol};font-size:9px`});
         t.textContent=c.blown?'BLOWN':'ok'; layer.appendChild(t);
         if(c.simI!=null&&!c.blown){
           const p1=lp(1);
-          const t2=mk('text',{x:p1.x,y:p1.y,'text-anchor':p1.a,class:'rt',style:'fill:#d29922'});
+          const t2=mk('text',{x:p1.x,y:p1.y,'text-anchor':p1.a,class:'rt',style:'fill:#e3ad33'});
           t2.textContent=fmtVal(c.simI,'A'); layer.appendChild(t2);
         }
       } else if(c.type==='rcd'){
-        const rcdCol=c.tripped?'#ef4444':'#3fb950';
+        const rcdCol=c.tripped?'#ef4444':'#34d399';
         const p0=lp(0);
         const t=mk('text',{x:p0.x,y:p0.y,'text-anchor':p0.a,class:'rt',style:`fill:${rcdCol};font-size:9px`});
         t.textContent=c.tripped?'TRIP':'ok'; layer.appendChild(t);
@@ -1736,7 +1736,7 @@ function renderComps(){
           layer.insertBefore(glow,g);
         }
         const p2=lp(2);
-        const t2=mk('text',{x:p2.x,y:p2.y,'text-anchor':p2.a,class:'rt',style:'fill:#d29922'});
+        const t2=mk('text',{x:p2.x,y:p2.y,'text-anchor':p2.a,class:'rt',style:'fill:#e3ad33'});
         t2.textContent=fmtVal(P,'W'); layer.appendChild(t2);
       } else if(c.type==='shower'||c.type==='cooker'||c.type==='kettle'||c.type==='toaster'||c.type==='tv'||c.type==='fridge'||c.type==='fan'){
         const p1=lp(1);
@@ -1744,11 +1744,11 @@ function renderComps(){
         t.textContent=fmtV; layer.appendChild(t);
         if(c.on===false){
           const p2=lp(2);
-          const t2=mk('text',{x:p2.x,y:p2.y,'text-anchor':p2.a,class:'rt',style:'fill:#6e7681;font-size:9px'});
+          const t2=mk('text',{x:p2.x,y:p2.y,'text-anchor':p2.a,class:'rt',style:'fill:#5d6a85;font-size:9px'});
           t2.textContent='OFF'; layer.appendChild(t2);
         } else if(c.simPower!=null&&c.simPower>1){
           const p2=lp(2);
-          const t2=mk('text',{x:p2.x,y:p2.y,'text-anchor':p2.a,class:'rt',style:'fill:#d29922'});
+          const t2=mk('text',{x:p2.x,y:p2.y,'text-anchor':p2.a,class:'rt',style:'fill:#e3ad33'});
           t2.textContent=fmtVal(c.simPower,'W'); layer.appendChild(t2);
         }
       } else if(c.type==='sw2'){
@@ -1758,12 +1758,12 @@ function renderComps(){
         t.textContent=pos2===0?'→L1':'→L2'; layer.appendChild(t);
         if(c.simI!=null&&c.simI>1e-9){
           const p1=lp(1);
-          const t2=mk('text',{x:p1.x,y:p1.y,'text-anchor':p1.a,class:'rt',style:'fill:#d29922'});
+          const t2=mk('text',{x:p1.x,y:p1.y,'text-anchor':p1.a,class:'rt',style:'fill:#e3ad33'});
           t2.textContent=fmtVal(c.simI,'A'); layer.appendChild(t2);
         }
       } else if(c.type==='AND'||c.type==='OR'||c.type==='NOT'){
         const outV=c.gateOut??0;
-        const col=outV>2.5?'#4ade80':'#6e7681';
+        const col=outV>2.5?'#4ade80':'#5d6a85';
         const lbl=outV>2.5?'HIGH':'LOW';
         const t=mk('text',{x:c.x1,y:c.y1-12,'text-anchor':'middle',class:'rt',style:`fill:${col};font-size:9px`});
         t.textContent=lbl; layer.appendChild(t);
@@ -1780,7 +1780,7 @@ function renderComps(){
         const p1=lp(1), p2=lp(2);
         const t1=mk('text',{x:p1.x,y:p1.y,'text-anchor':p1.a,class:'rt'});
         t1.textContent=fmtV; layer.appendChild(t1);
-        const t2=mk('text',{x:p2.x,y:p2.y,'text-anchor':p2.a,class:'rt',style:'fill:#d29922'});
+        const t2=mk('text',{x:p2.x,y:p2.y,'text-anchor':p2.a,class:'rt',style:'fill:#e3ad33'});
         t2.textContent=fmtVal(c.simPower||0,'W'); layer.appendChild(t2);
       } else if(c.type==='motor'||c.type==='load3'||c.type==='3ph'||c.type==='xfmr'){
         const p1=lp(1);
@@ -1788,7 +1788,7 @@ function renderComps(){
         t1.textContent=fmtV; layer.appendChild(t1);
         if(fmtI){
           const p2=lp(2);
-          const t2=mk('text',{x:p2.x,y:p2.y,'text-anchor':p2.a,class:'rt',style:'fill:#d29922'});
+          const t2=mk('text',{x:p2.x,y:p2.y,'text-anchor':p2.a,class:'rt',style:'fill:#e3ad33'});
           t2.textContent=fmtI; layer.appendChild(t2);
         }
       } else {
@@ -1797,7 +1797,7 @@ function renderComps(){
         t1.textContent=fmtV; layer.appendChild(t1);
         if(fmtI){
           const p2=lp(2);
-          const t2=mk('text',{x:p2.x,y:p2.y,'text-anchor':p2.a,class:'rt',style:'fill:#d29922'});
+          const t2=mk('text',{x:p2.x,y:p2.y,'text-anchor':p2.a,class:'rt',style:'fill:#e3ad33'});
           t2.textContent=fmtI; layer.appendChild(t2);
         }
       }
@@ -1884,7 +1884,7 @@ function renderNodes(){
     }
     if(!seenN.has(nid)){
       seenN.add(nid);
-      const t=mk('text',{x:cx+6,y:cy-4,style:'fill:#58a6ff;font-size:9px;font-family:Courier New'});
+      const t=mk('text',{x:cx+6,y:cy-4,style:'fill:#4da3ff;font-size:9px;font-family:JetBrains Mono Variable, ui-monospace, monospace'});
       if(_acMode && window.simVoltagesC){
         const vC=window.simVoltagesC[nid]??{re:0,im:0};
         t.textContent=fmtPhasorU(Cabs(vC),Carg(vC),'V');
@@ -1914,7 +1914,7 @@ function renderNodes(){
         layer.appendChild(mk('circle',{cx:t.x,cy:t.y,r:3,class:'term-dot'}));
       } else {
         // No wire connected: draw a tiny open circle to show terminal location
-        layer.appendChild(mk('circle',{cx:t.x,cy:t.y,r:5,fill:'#f59e0b',stroke:'#d97706',class:'term-open'}));
+        layer.appendChild(mk('circle',{cx:t.x,cy:t.y,r:5,fill:'#f59e0b',stroke:'#f5a623',class:'term-open'}));
       }
     });
   });
@@ -2080,7 +2080,7 @@ function drawGhost(px,py){
   if(x6!=null) pts.push(x6,y6);
   pts.forEach((v,i)=>{
     if(i%2===0){const cx=v,cy=pts[i+1];
-    layer.appendChild(mk('circle',{cx,cy,r:4,fill:'#58a6ff',opacity:0.7}));}
+    layer.appendChild(mk('circle',{cx,cy,r:4,fill:'#4da3ff',opacity:0.7}));}
   });
 }
 

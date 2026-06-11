@@ -143,12 +143,12 @@ function showCrossingMenu(x,y,clientX,clientY){
   const isJump=jumpPoints.has(nk(x,y));
   const menu=document.createElement('div');
   menu.id='xing-menu';
-  menu.style.cssText=`position:fixed;left:${clientX}px;top:${clientY}px;background:#161b22;border:1px solid #30363d;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,0.5);z-index:250;font-family:'Courier New',Courier,monospace;font-size:12px;color:#c9d1d9;overflow:hidden;min-width:190px;`;
+  menu.style.cssText=`position:fixed;left:${clientX}px;top:${clientY}px;background:#0f1420;border:1px solid #28324a;border-radius:10px;box-shadow:0 16px 48px rgba(0,0,0,0.55);z-index:250;font-family:inherit;font-size:12px;color:#dce4f2;overflow:hidden;min-width:190px;`;
   const mkBtn=(label,fn)=>{
     const b=document.createElement('button');
     b.textContent=label;
-    b.style.cssText='display:block;width:100%;text-align:left;padding:8px 12px;background:none;border:none;border-bottom:1px solid #21262d;color:inherit;cursor:pointer;font:inherit;';
-    b.addEventListener('mouseenter',()=>b.style.background='#21262d');
+    b.style.cssText='display:block;width:100%;text-align:left;padding:8px 12px;background:none;border:none;border-bottom:1px solid #19202f;color:inherit;cursor:pointer;font:inherit;';
+    b.addEventListener('mouseenter',()=>b.style.background='#19202f');
     b.addEventListener('mouseleave',()=>b.style.background='none');
     b.addEventListener('click',e=>{e.stopPropagation();_closeCrossingMenu();fn();});
     menu.appendChild(b);
@@ -176,12 +176,12 @@ function showWireTapMenu(wireId,x,y,clientX,clientY){
   _closeWireMenu();
   const menu=document.createElement('div');
   menu.id='wire-tap-menu';
-  menu.style.cssText=`position:fixed;left:${clientX}px;top:${clientY}px;background:#161b22;border:1px solid #30363d;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,0.5);z-index:250;font-family:'Courier New',Courier,monospace;font-size:12px;color:#c9d1d9;overflow:hidden;min-width:190px;`;
+  menu.style.cssText=`position:fixed;left:${clientX}px;top:${clientY}px;background:#0f1420;border:1px solid #28324a;border-radius:10px;box-shadow:0 16px 48px rgba(0,0,0,0.55);z-index:250;font-family:inherit;font-size:12px;color:#dce4f2;overflow:hidden;min-width:190px;`;
   const mkBtn=(label,fn)=>{
     const b=document.createElement('button');
     b.textContent=label;
-    b.style.cssText='display:block;width:100%;text-align:left;padding:8px 12px;background:none;border:none;border-bottom:1px solid #21262d;color:inherit;cursor:pointer;font:inherit;';
-    b.addEventListener('mouseenter',()=>b.style.background='#21262d');
+    b.style.cssText='display:block;width:100%;text-align:left;padding:8px 12px;background:none;border:none;border-bottom:1px solid #19202f;color:inherit;cursor:pointer;font:inherit;';
+    b.addEventListener('mouseenter',()=>b.style.background='#19202f');
     b.addEventListener('mouseleave',()=>b.style.background='none');
     b.addEventListener('click',e=>{e.stopPropagation();_closeWireMenu();fn();});
     menu.appendChild(b);
@@ -344,7 +344,7 @@ function clearSim(){
     delete c.acV; delete c.acI; delete c.acVph; delete c.acIph;
     if(c.type==='cunit'&&c.mcbTerms) c.mcbTerms.forEach(mt=>{mt.blown=false;mt.simI=null;});});
   Object.keys(_flowParticles).forEach(k=>delete _flowParticles[k]);
-  document.getElementById('results').innerHTML='<div style="color:#8b949e;font-size:10px;padding:4px">Run simulation to see results.</div>';
+  document.getElementById('results').innerHTML='<div style="color:#8e9cb8;font-size:10px;padding:4px">Run simulation to see results.</div>';
   document.getElementById('sim-err').style.display='none';
 }
 
@@ -899,15 +899,15 @@ function simulate(){
   // Results panel
   const nodeSet=new Map();
   for(const [pt,nid] of Object.entries(ptMap)) if(!nodeSet.has(nid)) nodeSet.set(nid,pt);
-  let html='<div style="color:#8b949e;font-size:9px;padding:2px 0 4px">NODE VOLTAGES</div>';
+  let html='<div style="color:#8e9cb8;font-size:9px;padding:2px 0 4px">NODE VOLTAGES</div>';
   [...nodeSet.entries()].sort((a,b)=>a[0]-b[0]).forEach(([nid,pt])=>{
     const [cx,cy]=pt.split(',');
     html+=`<div class="ri"><div class="rl">Node ${nid} @ grid (${cx/G},${cy/G})</div>
     <div class="rv">${fmtVal(nodeVoltages[nid]??0,'V')}</div></div>`;
   });
-  html+='<div style="color:#8b949e;font-size:9px;padding:6px 0 4px">COMPONENTS</div>';
+  html+='<div style="color:#8e9cb8;font-size:9px;padding:6px 0 4px">COMPONENTS</div>';
   resArr.forEach(r=>{
-    const col=r.warn?'color:#f85149':'';
+    const col=r.warn?'color:#ff6166':'';
     html+=`<div class="ri" style="${col}"><div class="rl">${r.label}</div>
     <div class="rv" style="${col}">${r.probe?'':fmtVal(r.v,'V')}</div>
     ${r.i!=null?`<div class="ri2">${fmtVal(r.i,'A')}</div>`:''}
@@ -1381,7 +1381,7 @@ function simulateAC(){
     html+=`<div class="ri"><div class="rl">Node ${nid} @ grid (${cx/G},${cy/G})</div>
     <div class="rv">${fmtPhasorU(Cabs(vC),Carg(vC),'V')}</div></div>`;
   });
-  html+='<div style="color:#8b949e;font-size:9px;padding:6px 0 4px">COMPONENTS</div>';
+  html+='<div style="color:#8e9cb8;font-size:9px;padding:6px 0 4px">COMPONENTS</div>';
   resArr.forEach(r=>{
     html+=`<div class="ri"><div class="rl">${r.label}</div>
     ${r.acV!=null&&!r.probe?`<div class="rv">${fmtPhasorU(r.acV,r.acVph??0,'V')}</div>`:''}
