@@ -157,11 +157,11 @@ Important: Always ISOLATE (switch off and lock off) before using continuity mode
   // Ch 3 — Ring Main
   {
     title: 'Ring Main: Two Paths to Every Socket',
-    scenario: 'A UK ring final circuit with two sockets. The Live conductor leaves the supply, loops through the Live terminal of Socket A (top) and Socket B (bottom), and returns — a closed ring, so each socket is fed from two directions. The Neutral rings back the same way on the right-hand side. Use the multimeter in Voltage (V) mode to confirm each socket sits at ~230V.',
+    scenario: 'A UK ring final circuit drawn the textbook way: one closed loop of Live conductor leaves the consumer unit, runs along the top feeding a row of three sockets, comes down the far side and returns along the bottom to the very same terminal — so every socket is fed from two directions. The Neutral returns along the bottom rail; where it crosses the Live ring you can see hop marks (not connected). Use the multimeter in Voltage (V) mode to confirm a socket sits at ~230V.',
     hints: [
       'Set the multimeter to Voltage (V) mode',
-      'Place the Red probe on a socket Live terminal (grid 6,3 or 6,6) and the Black probe on the neutral return rail at the bottom (grid 2,8)',
-      'Trace the Live loop: feed at grid 4,4 splits up to Socket A and down to Socket B, and the two sockets are joined — cut any one leg and every socket is still fed from the other direction',
+      'Place the Red probe on any socket Live terminal (grid 3,4 / 8,4 / 13,4) and the Black probe on the neutral return rail at the bottom (grid 1,8)',
+      'Trace the Live ring with your eye: up from the supply, along the top rail feeding each socket, down the right-hand side and back along the bottom to the supply — cut any one segment and every socket is still fed from the other direction',
     ],
     setup() {
       _acMode = true; _acFreq = 50;
@@ -169,28 +169,33 @@ Important: Always ISOLATE (switch off and lock off) before using continuity mode
       fromSchema({
         acMode: true, acFreq: 50,
         components: [
-          {type:'V',         px:2, py:4, rotation:1, value:230},
-          {type:'socket_uk', px:6, py:3, rotation:0, value:0},
-          {type:'socket_uk', px:6, py:6, rotation:0, value:0},
-          {type:'GND',       px:2, py:7, rotation:0},
+          {type:'V',         px:1,  py:5, rotation:1, value:230},
+          {type:'socket_uk', px:3,  py:4, rotation:0, value:0},
+          {type:'socket_uk', px:8,  py:4, rotation:0, value:0},
+          {type:'socket_uk', px:13, py:4, rotation:0, value:0},
+          {type:'GND',       px:1,  py:8, rotation:0},
         ],
         wires: [
-          // Live ring: feed at (4,4), loop through both socket L terminals
-          {x1:2, y1:4, x2:4, y2:4},
-          {x1:4, y1:3, x2:4, y2:6},
-          {x1:4, y1:3, x2:6, y2:3},
-          {x1:4, y1:6, x2:6, y2:6},
-          {x1:6, y1:3, x2:6, y2:6},
-          // Neutral ring: mirror loop on the right, returning to the supply
-          {x1:9, y1:3, x2:11,y2:3},
-          {x1:9, y1:6, x2:11,y2:6},
-          {x1:11,y1:3, x2:11,y2:6},
-          {x1:9, y1:3, x2:9, y2:6},
-          {x1:9, y1:6, x2:9, y2:8},
-          {x1:2, y1:8, x2:9, y2:8},
-          {x1:2, y1:7, x2:2, y2:8},
+          // Live ring: up the left, along the top, down the right, back along the bottom
+          {x1:1, y1:5, x2:1, y2:1},
+          {x1:1, y1:1, x2:17,y2:1},
+          {x1:17,y1:1, x2:17,y2:7},
+          {x1:17,y1:7, x2:2, y2:7},
+          {x1:2, y1:7, x2:2, y2:5},
+          {x1:2, y1:5, x2:1, y2:5},
+          // Feeds from the top of the ring down into each socket's L terminal
+          {x1:3, y1:1, x2:3, y2:4},
+          {x1:8, y1:1, x2:8, y2:4},
+          {x1:13,y1:1, x2:13,y2:4},
+          // Neutral drops (hop over the live return) down to the bottom rail
+          {x1:6, y1:4, x2:6, y2:8},
+          {x1:11,y1:4, x2:11,y2:8},
+          {x1:16,y1:4, x2:16,y2:8},
+          {x1:1, y1:8, x2:16,y2:8},
         ]
       });
+      // Neutral drops cross the live return at y=7 — mark them as hops (not connected)
+      [[6,7],[11,7],[16,7]].forEach(([gx,gy]) => jumpPoints.add(nk(gx*G, gy*G)));
       simulate();
     },
     validate() {
@@ -690,11 +695,11 @@ Always use a CAT III rated meter and follow safe isolation procedure before touc
   // Ch 13 — Ring Main Plug Load
   {
     title: 'Ring Main: Connect a Plug-in Load',
-    scenario: 'A ring main has two sockets, both empty. Place a UK Plug on Socket A (the top socket) and set its resistance to 1000Ω (a 230V/53W appliance). Verify the socket is live using the multimeter.',
+    scenario: 'The same textbook ring main, three sockets fed from one closed Live loop. A 3kW kettle sits below the leftmost socket, unplugged and dead. Place a UK Plug on the leftmost socket — its pins land on the socket L and N, and its cable ends drop straight onto the kettle terminals, completing the circuit. Click Check once the kettle is drawing power.',
     hints: [
-      'Select the Plug tool from the toolbar and click on Socket A (the top socket, at grid 6,3) to snap it in place',
-      'Select the plug and set its value to 1000 in the properties panel',
-      'Use the multimeter in Voltage mode — Red probe on the socket Live terminal (grid 6,3), Black on the bottom return rail (grid 2,8) — you should read ~230V',
+      'Select the Plug tool from the toolbar and click on the leftmost socket (at grid 3,4) to snap it in place',
+      'The plug pins sit on the socket Live and Neutral; its cable ends drop to grid 3,6 and 6,6 — exactly the kettle terminals',
+      'Once plugged in, the kettle is across 230V: P = 3000W means it draws about 13A through the ring (~6.5A in each leg)',
     ],
     setup() {
       _acMode = true; _acFreq = 50;
@@ -702,34 +707,43 @@ Always use a CAT III rated meter and follow safe isolation procedure before touc
       fromSchema({
         acMode: true, acFreq: 50,
         components: [
-          {type:'V',         px:2, py:4, rotation:1, value:230},
-          {type:'socket_uk', px:6, py:3, rotation:0, value:0},
-          {type:'socket_uk', px:6, py:6, rotation:0, value:0},
-          {type:'GND',       px:2, py:7, rotation:0},
+          {type:'V',         px:1,  py:5, rotation:1, value:230},
+          {type:'socket_uk', px:3,  py:4, rotation:0, value:0},
+          {type:'socket_uk', px:8,  py:4, rotation:0, value:0},
+          {type:'socket_uk', px:13, py:4, rotation:0, value:0},
+          {type:'kettle',    px:3,  py:6, rotation:0, value:3000},
+          {type:'GND',       px:1,  py:8, rotation:0},
         ],
         wires: [
-          {x1:2, y1:4, x2:4, y2:4},
-          {x1:4, y1:3, x2:4, y2:6},
-          {x1:4, y1:3, x2:6, y2:3},
-          {x1:4, y1:6, x2:6, y2:6},
-          {x1:6, y1:3, x2:6, y2:6},
-          {x1:9, y1:3, x2:11,y2:3},
-          {x1:9, y1:6, x2:11,y2:6},
-          {x1:11,y1:3, x2:11,y2:6},
-          {x1:9, y1:3, x2:9, y2:6},
-          {x1:9, y1:6, x2:9, y2:8},
-          {x1:2, y1:8, x2:9, y2:8},
-          {x1:2, y1:7, x2:2, y2:8},
+          // Live ring: up the left, along the top, down the right, back along the bottom
+          {x1:1, y1:5, x2:1, y2:1},
+          {x1:1, y1:1, x2:17,y2:1},
+          {x1:17,y1:1, x2:17,y2:7},
+          {x1:17,y1:7, x2:2, y2:7},
+          {x1:2, y1:7, x2:2, y2:5},
+          {x1:2, y1:5, x2:1, y2:5},
+          // Feeds from the top of the ring down into each socket's L terminal
+          {x1:3, y1:1, x2:3, y2:4},
+          {x1:8, y1:1, x2:8, y2:4},
+          {x1:13,y1:1, x2:13,y2:4},
+          // Neutral drops (hop over the live return) down to the bottom rail
+          {x1:6, y1:4, x2:6, y2:8},
+          {x1:11,y1:4, x2:11,y2:8},
+          {x1:16,y1:4, x2:16,y2:8},
+          {x1:1, y1:8, x2:16,y2:8},
         ]
       });
+      // Neutral drops cross the live return at y=7 — mark them as hops (not connected)
+      [[6,7],[11,7],[16,7]].forEach(([gx,gy]) => jumpPoints.add(nk(gx*G, gy*G)));
       simulate();
     },
     validate() {
-      if (_mmMode !== 'V') return {pass:false, msg:'Set multimeter to Voltage (V) mode.'};
-      if (!_mmRed || !_mmBlack) return {pass:false, msg:'Place both probes.'};
-      if (typeof mmLastReading !== 'number') return {pass:false, msg:'No reading — place probes on a socket node and GND.'};
-      if (Math.abs(mmLastReading) >= 180) return {pass:true, msg:`${Math.abs(mmLastReading).toFixed(1)}V at socket — ring main delivering full voltage!`};
-      return {pass:false, msg:`Reading ${Math.abs(mmLastReading).toFixed(1)}V — place Red probe on a socket Live terminal and Black on GND.`};
+      const plug = comps.find(c => c.type === 'plug');
+      if (!plug) return {pass:false, msg:'Place a UK Plug on the leftmost socket (grid 3,4).'};
+      const kettle = comps.find(c => c.type === 'kettle');
+      if (!kettle || typeof kettle.simV !== 'number' || Math.abs(kettle.simV) < 180)
+        return {pass:false, msg:'The kettle is still dead — the plug pins must sit on the leftmost socket\'s L and N (grid 3,4), so its cable ends land on the kettle terminals.'};
+      return {pass:true, msg:`Kettle energised at ${Math.abs(kettle.simV).toFixed(1)}V, drawing ~13A through the ring — load plugged in!`};
     },
     explainer: {
       title: 'Ring Main: UK Socket Circuit',
