@@ -164,18 +164,7 @@ SVG.addEventListener('wheel',e=>{
 SVG.addEventListener('click',e=>{
   if(dragging) return;
   // Intercept for multimeter probe placement
-  if(typeof _mmActiveProbe !== 'undefined' && _mmActiveProbe) {
-    const p = snapPt(e);
-    if(_mmActiveProbe === 'red') _mmRed = {x:p.x, y:p.y};
-    else _mmBlack = {x:p.x, y:p.y};
-    _mmActiveProbe = null;
-    document.querySelector('.mm-red-btn').classList.remove('active');
-    document.querySelector('.mm-black-btn').classList.remove('active');
-    SVG.style.cursor = '';
-    renderProbes();
-    refreshMMReading();
-    return;
-  }
+  if(tryPlaceProbe(e)) return;
   const p=snapPt(e);
   if(mode==='select'){if(_tryStartWireFromTerminal(svgPt(e)))return;sel=null;showProps(null);render();return;}
   if(mode==='wire'){

@@ -433,6 +433,7 @@ function renderWires(){
     hit.style.cursor='pointer';
     hit.addEventListener('click',e=>{
       e.stopPropagation();
+      if(tryPlaceProbe(e)) return;
       if(mode!=='select') return;
       if(sel===w.id){ sel=null; showProps(null); render(); return; } // click again to deselect
       const p=svgPt(e);
@@ -489,6 +490,7 @@ function renderCrossings(crossings){
       ? 'Wires cross but are NOT connected — click for options'
       : 'Wires cross and connect here (junction) — click for options');
     hit.addEventListener('click',e=>{
+      if(tryPlaceProbe(e)){e.stopPropagation();return;}
       if(mode!=='select') return; // let wire-drawing/other modes handle the click normally
       e.stopPropagation();
       showCrossingMenu(xc.x,xc.y,e.clientX,e.clientY);
@@ -1608,7 +1610,7 @@ function renderComps(){
       g.appendChild(dg);
     }
 
-    g.addEventListener('click',e=>{e.stopPropagation();if(mode==='select'){if(_tryStartWireFromTerminal(svgPt(e),false))return;selectComp(c.id);}});
+    g.addEventListener('click',e=>{e.stopPropagation();if(tryPlaceProbe(e))return;if(mode==='select'){if(_tryStartWireFromTerminal(svgPt(e),false))return;selectComp(c.id);}});
     g.addEventListener('mousedown',e=>{if(mode==='select'&&e.button===0){pushHistory();const p=svgPt(e);dragging=c.id;_dragMoved=false;dragOff={x:p.x-c.px,y:p.y-c.py};_dragTermOld=_getTerminals(c);_dragWireBinds=captureWireBinds(_dragTermOld);_dragXings=snapshotCrossings();e.preventDefault();}});
     layer.appendChild(g);
 
@@ -1662,7 +1664,7 @@ function renderComps(){
         g.innerHTML='';
         drawSymbol(g,c.type,c.x1,c.y1,c.x2,c.y2,{segVal:c.segVal??0});
         g.style.cursor=mode==='select'?'pointer':'default';
-        g.addEventListener('click',e=>{e.stopPropagation();if(mode==='select'){if(_tryStartWireFromTerminal(svgPt(e),false))return;selectComp(c.id);}});
+        g.addEventListener('click',e=>{e.stopPropagation();if(tryPlaceProbe(e))return;if(mode==='select'){if(_tryStartWireFromTerminal(svgPt(e),false))return;selectComp(c.id);}});
         g.addEventListener('mousedown',e=>{if(mode==='select'&&e.button===0){pushHistory();const p=svgPt(e);dragging=c.id;_dragMoved=false;dragOff={x:p.x-c.px,y:p.y-c.py};_dragTermOld=_getTerminals(c);_dragWireBinds=captureWireBinds(_dragTermOld);_dragXings=snapshotCrossings();e.preventDefault();}});
         const t=mk('text',{x:c.x1+14,y:c.y1+58,'text-anchor':'middle',class:'rt',style:'font-size:9px'});
         t.textContent=fmtVal(c.simV,'V'); layer.appendChild(t);

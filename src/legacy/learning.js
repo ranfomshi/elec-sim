@@ -1097,6 +1097,24 @@ function activateProbe(color) {
   SVG.style.cursor = _mmActiveProbe ? 'crosshair' : '';
 }
 
+// Place the armed multimeter probe at the clicked grid point. Returns true if
+// the click was consumed. Element-level click handlers (components, wires,
+// crossings) call this before their own behaviour so probes can be dropped on
+// nodes, not just bare canvas.
+function tryPlaceProbe(e) {
+  if (typeof _mmActiveProbe === 'undefined' || !_mmActiveProbe) return false;
+  const p = snapPt(e);
+  if (_mmActiveProbe === 'red') _mmRed = {x:p.x, y:p.y};
+  else _mmBlack = {x:p.x, y:p.y};
+  _mmActiveProbe = null;
+  document.querySelector('.mm-red-btn').classList.remove('active');
+  document.querySelector('.mm-black-btn').classList.remove('active');
+  SVG.style.cursor = '';
+  renderProbes();
+  refreshMMReading();
+  return true;
+}
+
 function resetProbes() {
   _mmRed = null; _mmBlack = null; _mmActiveProbe = null;
   document.querySelector('.mm-red-btn').classList.remove('active');
