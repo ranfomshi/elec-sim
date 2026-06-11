@@ -253,8 +253,8 @@ The circuit is complete (lamp ON) only when both switches route through the same
 
 Flipping either switch independently moves its COM from one strapper to the other, changing the state of the lamp. This is why you can turn the light on from downstairs and off from upstairs.
 
-Under the 2004 UK cable colour harmonisation: Common wires are Brown, strapper wires are Blue and Grey (historically Black and Red).`,
-      takeaway: 'SPDT two-way switching: lamp is ON when both switches share the same strapper (both L1 or both L2). Either switch independently flips the circuit. COM wires are Brown; strapper wires are Blue and Grey.',
+This is the universal SPDT principle — it applies to any two-way arrangement, from staircase lighting to changeover relays. The UK plate-switch wiring practice (terminal layout and cable colours) is covered in its own lesson.`,
+      takeaway: 'SPDT two-way switching: lamp is ON when both switches share the same strapper (both L1 or both L2). Either switch independently flips the circuit.',
     },
   },
 
@@ -751,7 +751,7 @@ const COURSES = [
     desc: 'One-way, two-way and intermediate switching.',
     icon: '💡',
     color: '#e5c07b',
-    challenges: [0, 6, 4, 10, 11],
+    challenges: [0, 6, 10, 11],
   },
   {
     id: 'advanced',
@@ -759,7 +759,7 @@ const COURSES = [
     desc: 'For qualified or experienced electricians.',
     icon: '⚡',
     color: '#60a5fa',
-    challenges: [3, 5, 8, 9, 10, 11, 4],
+    challenges: [3, 5, 8, 9, 4, 10, 11],
   },
   {
     id: 'faultfinding',
