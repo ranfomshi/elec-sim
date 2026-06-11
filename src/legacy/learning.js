@@ -157,11 +157,11 @@ Important: Always ISOLATE (switch off and lock off) before using continuity mode
   // Ch 3 — Ring Main
   {
     title: 'Ring Main: Two Paths to Every Socket',
-    scenario: 'This is a UK ring main circuit. The consumer unit feeds Socket A and Socket B in a loop, so each socket gets supply from two directions. Use the multimeter in Voltage mode to verify that both sockets measure ~230V.',
+    scenario: 'A UK ring final circuit with two sockets. The Live conductor leaves the supply, loops through the Live terminal of Socket A (top) and Socket B (bottom), and returns — a closed ring, so each socket is fed from two directions. The Neutral rings back the same way on the right-hand side. Use the multimeter in Voltage (V) mode to confirm each socket sits at ~230V.',
     hints: [
-      'Set multimeter to Voltage (V) mode',
-      'Place Red probe on the Socket A node (probe at grid 5,5) and Black on the GND rail (grid 2,8)',
-      'Both sockets get supply from two directions — this is why ring mains are reliable even if one cable is damaged',
+      'Set the multimeter to Voltage (V) mode',
+      'Place the Red probe on a socket Live terminal (grid 6,3 or 6,6) and the Black probe on the neutral return rail at the bottom (grid 2,8)',
+      'Trace the Live loop: feed at grid 4,4 splits up to Socket A and down to Socket B, and the two sockets are joined — cut any one leg and every socket is still fed from the other direction',
     ],
     setup() {
       _acMode = true; _acFreq = 50;
@@ -169,21 +169,26 @@ Important: Always ISOLATE (switch off and lock off) before using continuity mode
       fromSchema({
         acMode: true, acFreq: 50,
         components: [
-          {type:'V',     px:2, py:5, rotation:1, value:230},
-          {type:'probe', px:5, py:5, rotation:0},
-          {type:'probe', px:9, py:5, rotation:0},
-          {type:'R',     px:5, py:6, rotation:1, value:1000, maxRating:1000},
-          {type:'R',     px:9, py:6, rotation:1, value:1000, maxRating:1000},
-          {type:'GND',   px:2, py:8, rotation:0},
+          {type:'V',         px:2, py:4, rotation:1, value:230},
+          {type:'socket_uk', px:6, py:3, rotation:0, value:0},
+          {type:'socket_uk', px:6, py:6, rotation:0, value:0},
+          {type:'GND',       px:2, py:7, rotation:0},
         ],
         wires: [
-          {x1:2,y1:5,x2:5,y2:5},
-          {x1:5,y1:5,x2:9,y2:5},
-          {x1:9,y1:5,x2:12,y2:5},
-          {x1:12,y1:5,x2:12,y2:8},
-          {x1:2,y1:8,x2:12,y2:8},
-          {x1:5,y1:7,x2:5,y2:8},
-          {x1:9,y1:7,x2:9,y2:8},
+          // Live ring: feed at (4,4), loop through both socket L terminals
+          {x1:2, y1:4, x2:4, y2:4},
+          {x1:4, y1:3, x2:4, y2:6},
+          {x1:4, y1:3, x2:6, y2:3},
+          {x1:4, y1:6, x2:6, y2:6},
+          {x1:6, y1:3, x2:6, y2:6},
+          // Neutral ring: mirror loop on the right, returning to the supply
+          {x1:9, y1:3, x2:11,y2:3},
+          {x1:9, y1:6, x2:11,y2:6},
+          {x1:11,y1:3, x2:11,y2:6},
+          {x1:9, y1:3, x2:9, y2:6},
+          {x1:9, y1:6, x2:9, y2:8},
+          {x1:2, y1:8, x2:9, y2:8},
+          {x1:2, y1:7, x2:2, y2:8},
         ]
       });
       simulate();
@@ -685,11 +690,11 @@ Always use a CAT III rated meter and follow safe isolation procedure before touc
   // Ch 13 — Ring Main Plug Load
   {
     title: 'Ring Main: Connect a Plug-in Load',
-    scenario: 'A ring main has two sockets. Place a UK Plug on Socket A and set its resistance to 1000Ω (a 230V/53W appliance). Verify the appliance draws the correct power using the multimeter.',
+    scenario: 'A ring main has two sockets, both empty. Place a UK Plug on Socket A (the top socket) and set its resistance to 1000Ω (a 230V/53W appliance). Verify the socket is live using the multimeter.',
     hints: [
-      'Select the Plug tool from the toolbar and click on Socket A (left socket) to snap it in place',
+      'Select the Plug tool from the toolbar and click on Socket A (the top socket, at grid 6,3) to snap it in place',
       'Select the plug and set its value to 1000 in the properties panel',
-      'Use the multimeter in Voltage mode — Red probe on the socket Live node, Black on GND — you should read ~230V',
+      'Use the multimeter in Voltage mode — Red probe on the socket Live terminal (grid 6,3), Black on the bottom return rail (grid 2,8) — you should read ~230V',
     ],
     setup() {
       _acMode = true; _acFreq = 50;
@@ -697,19 +702,24 @@ Always use a CAT III rated meter and follow safe isolation procedure before touc
       fromSchema({
         acMode: true, acFreq: 50,
         components: [
-          {type:'V',         px:2,  py:5, rotation:1, value:230},
-          {type:'socket_uk', px:5,  py:5, rotation:0, value:2300},
-          {type:'socket_uk', px:9,  py:5, rotation:0, value:2300},
-          {type:'GND',       px:2,  py:8, rotation:0},
+          {type:'V',         px:2, py:4, rotation:1, value:230},
+          {type:'socket_uk', px:6, py:3, rotation:0, value:0},
+          {type:'socket_uk', px:6, py:6, rotation:0, value:0},
+          {type:'GND',       px:2, py:7, rotation:0},
         ],
         wires: [
-          {x1:2, y1:5, x2:5, y2:5},
-          {x1:5, y1:5, x2:9, y2:5},
-          {x1:9, y1:5, x2:12,y2:5},
-          {x1:12,y1:5, x2:12,y2:8},
-          {x1:2, y1:8, x2:12,y2:8},
-          {x1:5, y1:7, x2:5, y2:8},
-          {x1:9, y1:7, x2:9, y2:8},
+          {x1:2, y1:4, x2:4, y2:4},
+          {x1:4, y1:3, x2:4, y2:6},
+          {x1:4, y1:3, x2:6, y2:3},
+          {x1:4, y1:6, x2:6, y2:6},
+          {x1:6, y1:3, x2:6, y2:6},
+          {x1:9, y1:3, x2:11,y2:3},
+          {x1:9, y1:6, x2:11,y2:6},
+          {x1:11,y1:3, x2:11,y2:6},
+          {x1:9, y1:3, x2:9, y2:6},
+          {x1:9, y1:6, x2:9, y2:8},
+          {x1:2, y1:8, x2:9, y2:8},
+          {x1:2, y1:7, x2:2, y2:8},
         ]
       });
       simulate();
