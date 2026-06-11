@@ -88,6 +88,7 @@ const DEFS = {
   OR:   {value:0,    unit:'',  label:'OR Gate'},
   NOT:  {value:0,    unit:'',  label:'NOT Gate'},
   nmos: {value:2.0, unit:'V', label:'N-MOSFET (Vth)'},
+  relay:{value:5.0, unit:'V', label:'Relay (Pull-in V)'},
   // New components
   '3ph':  {value:230, unit:'V', label:'3-Phase Source'},
   motor:  {value:1500,unit:'W', label:'AC Motor'},
@@ -488,6 +489,7 @@ function setMode(m) {
     'place-supply':'Click to place single-phase 230V AC mains supply (L and N terminals). R=rotate.',
     'place-rcd':'Click to place RCD. Acts as wire when not tripped; click to trip/reset. R=rotate.',
     'place-dpswitch':'Click to place double-pole switch (main isolator). Click to open/close. R=rotate.',
+    'place-relay':'Click to place relay. Energise the coil (top pair) past its pull-in voltage and the contact (bottom pair) closes — a tiny signal switching a separate, bigger circuit. R=rotate.',
     'place-meter':'Click to place energy meter (modelled as near-zero resistance). R=rotate.',
     'place-intswitch':'Click to place intermediate switch (4-terminal crossing). Click to toggle. R=rotate.',
     'place-switch2_uk':'Click to place UK 2-way plate switch (COM/L1/L2). Use between two-way pairs for staircase wiring. R=rotate.',
@@ -622,6 +624,14 @@ function placeComp(type, px, py, r=0, extra={}) {
     else if(r===2){c.x3=c.x1; c.y3=c.y1-G; c.x4=c.x2; c.y4=c.y2-G;}
     else{c.x3=c.x1+G; c.y3=c.y1; c.x4=c.x2+G; c.y4=c.y2;}
   }
+  if(type==='relay') {
+    c.relayOn=false;
+    // Coil = x1↔x2, contact = x3↔x4 (same dual-rail geometry as dpswitch)
+    if(r===0){c.x3=c.x1; c.y3=c.y1+G; c.x4=c.x2; c.y4=c.y2+G;}
+    else if(r===1){c.x3=c.x1-G; c.y3=c.y1; c.x4=c.x2-G; c.y4=c.y2;}
+    else if(r===2){c.x3=c.x1; c.y3=c.y1-G; c.x4=c.x2; c.y4=c.y2-G;}
+    else{c.x3=c.x1+G; c.y3=c.y1; c.x4=c.x2+G; c.y4=c.y2;}
+  }
   if(type==='pullcord') c.closed=false;
   if(type==='fcu') c.blown=false;
   // V/I sources: default phaseDeg=0, isAC=false (DC by default)
@@ -718,7 +728,7 @@ function recomputeExtraTerminals(c){
     else if(r===2){c.x3=px+4*G;c.y3=py+2*G;c.x4=px;  c.y4=py+2*G;}
     else{c.x3=px+2*G;c.y3=py+4*G;c.x4=px+2*G;c.y4=py;}
   }
-  if(c.type==='dpswitch'){
+  if(c.type==='dpswitch'||c.type==='relay'){
     if(r===0){c.x3=c.x1;   c.y3=c.y1+G;c.x4=c.x2;   c.y4=c.y2+G;}
     else if(r===1){c.x3=c.x1-G;c.y3=c.y1;  c.x4=c.x2-G;c.y4=c.y2;}
     else if(r===2){c.x3=c.x1;   c.y3=c.y1-G;c.x4=c.x2;   c.y4=c.y2-G;}
@@ -844,6 +854,18 @@ function showProps(id) {
     <button class="btn" onclick="toggleSwitch('${id}')" style="border-color:${dpcol};color:${dpcol};margin-bottom:4px">${c.closed?'Open (isolate)':'Close (connect)'}</button>
     ${c.simI!=null?`<div style="color:#e3ad33;font-size:10px;margin-bottom:4px">I = ${fmtVal(c.simI,'A')}</div>`:''}
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
+    return;
+  }
+  if(c.type==='relay'){
+    const rlcol=c.relayOn?'#34d399':'#5d6a85';
+    el.innerHTML=`<div style="color:#8e9cb8;font-size:10px">Relay (electromechanical)</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:6px">Coil (top pair, ~170Ω winding) at or above the pull-in voltage closes the contact (bottom pair) — a tiny signal switching a separate, bigger circuit.</div>
+    <div style="color:${rlcol};font-size:13px;font-weight:bold;margin:6px 0">${c.relayOn?'ENERGISED — contact closed':'RELEASED — contact open'}</div>
+    <div class="prop-row"><label>Pull-in voltage (V)</label>
+    <input type="number" id="pv" value="${c.value}" step="0.5" min="0.5"/></div>
+    ${c.simV!=null?`<div style="color:#e3ad33;font-size:10px;margin-bottom:4px">Coil V = ${fmtVal(c.simV,'V')}</div>`:''}
+    <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
+    document.getElementById('pv').addEventListener('input', ()=>applyProp(id));
     return;
   }
   if(c.type==='rcd'){

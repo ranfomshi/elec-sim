@@ -245,6 +245,7 @@ function buildNodeMap(){
     if(c.type==='switch2g_uk'&&c.x3!=null){find(nk(c.x3,c.y3));if(c.x4!=null)find(nk(c.x4,c.y4));}
     if(c.type==='switch3g_uk'&&c.x3!=null){find(nk(c.x3,c.y3));if(c.x4!=null)find(nk(c.x4,c.y4));if(c.x5!=null)find(nk(c.x5,c.y5));if(c.x6!=null)find(nk(c.x6,c.y6));}
     if(c.type==='dpswitch'&&c.x3!=null){find(nk(c.x3,c.y3));if(c.x4!=null)find(nk(c.x4,c.y4));}
+    if(c.type==='relay'&&c.x3!=null){find(nk(c.x3,c.y3));if(c.x4!=null)find(nk(c.x4,c.y4));}
     if(c.type==='3ph'&&c.x3!=null){find(nk(c.x3,c.y3));find(nk(c.x4,c.y4));}
     if(c.type==='xfmr'&&c.x3!=null){find(nk(c.x3,c.y3));find(nk(c.x4,c.y4));}
     if(c.type==='plug'&&c.x3!=null){
@@ -281,6 +282,7 @@ function buildNodeMap(){
     if(c.type==='switch2g_uk'&&c.x3!=null){nodeId(nk(c.x3,c.y3));if(c.x4!=null)nodeId(nk(c.x4,c.y4));}
     if(c.type==='switch3g_uk'&&c.x3!=null){nodeId(nk(c.x3,c.y3));if(c.x4!=null)nodeId(nk(c.x4,c.y4));if(c.x5!=null)nodeId(nk(c.x5,c.y5));if(c.x6!=null)nodeId(nk(c.x6,c.y6));}
     if(c.type==='dpswitch'&&c.x3!=null){nodeId(nk(c.x3,c.y3));if(c.x4!=null)nodeId(nk(c.x4,c.y4));}
+    if(c.type==='relay'&&c.x3!=null){nodeId(nk(c.x3,c.y3));if(c.x4!=null)nodeId(nk(c.x4,c.y4));}
     if(c.type==='3ph'&&c.x3!=null){nodeId(nk(c.x3,c.y3));nodeId(nk(c.x4,c.y4));}
     if(c.type==='xfmr'&&c.x3!=null){nodeId(nk(c.x3,c.y3));nodeId(nk(c.x4,c.y4));}
     if(c.type==='plug'&&c.x3!=null){nodeId(nk(c.x3,c.y3));nodeId(nk(c.x4,c.y4));}
@@ -356,6 +358,7 @@ function clearSim(){
   window.simNodeV=null; window.simVoltages=null; window.simVoltagesC=null; window.flowWireDir=null;window.flowWireI=null;
   comps.forEach(c=>{delete c.simV;delete c.simI;delete c.simPower;delete c.damaged;delete c.blown;
     delete c.ledOn; delete c.buzzerOn; delete c.diodeState; delete c.gateOut; delete c.segVal;
+    if(c.type==='relay') c.relayOn=false;
     delete c.acV; delete c.acI; delete c.acVph; delete c.acIph;
     if(c.type==='cunit'&&c.mcbTerms) c.mcbTerms.forEach(mt=>{mt.blown=false;mt.simI=null;});});
   Object.keys(_flowParticles).forEach(k=>delete _flowParticles[k]);
@@ -496,6 +499,17 @@ function simulate(){
           if(nc2>=0&&nd2>=0){A[nc2][nc2]+=g9;A[nd2][nd2]+=g9;A[nc2][nd2]-=g9;A[nd2][nc2]-=g9;}
         }
         // open → both L and N paths isolated (open circuit)
+      } else if(c.type==='relay'){
+        // Coil (x1↔x2): ~170Ω winding. Contact (x3↔x4): closed when the coil
+        // voltage from the previous iteration reached the pull-in threshold —
+        // state is updated after each solve, like the diode states.
+        stamp(1/170);
+        if(c.relayOn){
+          const g9=1e9;
+          const nc2=c.x3!=null?ni(nk(c.x3,c.y3)):-1;
+          const nd2=c.x4!=null?ni(nk(c.x4,c.y4)):-1;
+          if(nc2>=0&&nd2>=0){A[nc2][nc2]+=g9;A[nd2][nd2]+=g9;A[nc2][nd2]-=g9;A[nd2][nc2]-=g9;}
+        }
       } else if(c.type==='sw2'||c.type==='switch2_uk'){
         // Two-way switch: stamp 0V source between COM and active terminal
         const k=sw2Off+sw2srcs.indexOf(c);
@@ -566,12 +580,12 @@ function simulate(){
         const fwdV=c.value||2.0, fwdR=10;
         const st=diodeState[c.id]??'reverse';
         if(st==='forward'){
-          // small series R + voltage source not in fwdDiodes list (LED uses separate logic)
-          // stamp as 1/fwdR conductance
+          // Norton equivalent of fwdV source in series with fwdR (anode→cathode):
+          // conductance 1/fwdR plus injection +fwdV/fwdR at the anode row and
+          // −fwdV/fwdR at the cathode row, so the LED clamps Va−Vb toward fwdV.
           stamp(1/fwdR);
-          // add the forward voltage as a current injection (simplified Thevenin)
-          if(na>=0) b[na]-=fwdV/fwdR;
-          if(nb>=0) b[nb]+=fwdV/fwdR;
+          if(na>=0) b[na]+=fwdV/fwdR;
+          if(nb>=0) b[nb]-=fwdV/fwdR;
         } else {
           // reverse: very high R
           stamp(1e-9);
@@ -699,6 +713,16 @@ function simulate(){
       if(diodeState[c.id]!==newState){ diodeState[c.id]=newState; diodeChanged=true; }
     });
 
+    // Update relay contact states from coil voltages
+    let relayChanged=false;
+    comps.forEach(c=>{
+      if(c.type!=='relay') return;
+      const vA2=nodeVoltages[nodeId(nk(c.x1,c.y1))]??0;
+      const vB2=nodeVoltages[nodeId(nk(c.x2,c.y2))]??0;
+      const on=Math.abs(vA2-vB2)>=(c.value??5)-0.05;
+      if((c.relayOn??false)!==on){ c.relayOn=on; relayChanged=true; }
+    });
+
     // Check fuse currents; blow any that exceed rating
     let anyBlow=false;
     fsrcs.forEach((c,ki)=>{
@@ -711,7 +735,7 @@ function simulate(){
       mt.simI=mcbI;
       if(mcbI>mt.A){ mt.blown=true; anyBlow=true; }
     });
-    if(!anyBlow&&!diodeChanged) break;
+    if(!anyBlow&&!diodeChanged&&!relayChanged) break;
   }
 
   // Build point→nodeId map for rendering
@@ -728,6 +752,7 @@ function simulate(){
     if(c.type==='switch2g_uk'&&c.x3!=null){mapPt(c.x3,c.y3);if(c.x4!=null)mapPt(c.x4,c.y4);}
     if(c.type==='switch3g_uk'&&c.x3!=null){mapPt(c.x3,c.y3);if(c.x4!=null)mapPt(c.x4,c.y4);if(c.x5!=null)mapPt(c.x5,c.y5);if(c.x6!=null)mapPt(c.x6,c.y6);}
     if(c.type==='dpswitch'&&c.x3!=null){mapPt(c.x3,c.y3);if(c.x4!=null)mapPt(c.x4,c.y4);}
+    if(c.type==='relay'&&c.x3!=null){mapPt(c.x3,c.y3);if(c.x4!=null)mapPt(c.x4,c.y4);}
     if(c.type==='3ph'&&c.x3!=null){mapPt(c.x3,c.y3);mapPt(c.x4,c.y4);}
     if(c.type==='xfmr'&&c.x3!=null){mapPt(c.x3,c.y3);mapPt(c.x4,c.y4);}
   });
@@ -809,6 +834,9 @@ function simulate(){
     } else if(c.type==='dpswitch'){
       c.simV=vd;
       resArr.push({label:`DP Isolator (${c.closed?'closed':'open'})`,v:vd});
+    } else if(c.type==='relay'){
+      c.simV=vd; // vd = coil voltage (x1−x2)
+      resArr.push({label:`Relay (${c.relayOn?'energised':'released'})`,v:vd,i:Math.abs(vd)/170});
     } else if(c.type==='sw2'||c.type==='switch2_uk'){
       const si2=sw2srcs2.indexOf(c);
       const sw2Off2=nodeN+vsrcs2.length+fsrcs2.length+swsrcs2.length;
@@ -990,7 +1018,7 @@ function simulate(){
 }
 
 // ── AC Phasor Simulator ────────────────────────────────────────────────────
-function simulateAC(){
+function simulateAC(_acPass){
   stopBulbAnim();
   _stopAllBuzz();
   window.simNodeV=null; window.simVoltages=null; window.simVoltagesC=null; window.flowWireDir=null;window.flowWireI=null;
@@ -1147,6 +1175,14 @@ function simulateAC(){
         const nd2=c.x4!=null?ni(nk(c.x4,c.y4)):-1;
         if(nc2>=0&&nd2>=0) stampC(Cmk(1e9))(nc2,nd2); // N path
       }
+    } else if(c.type==='relay'){
+      // Coil winding ~170Ω; contact closed per current state (re-solved below if it changes)
+      stampC(Cmk(1/170))(na,nb);
+      if(c.relayOn){
+        const nc2=c.x3!=null?ni(nk(c.x3,c.y3)):-1;
+        const nd2=c.x4!=null?ni(nk(c.x4,c.y4)):-1;
+        if(nc2>=0&&nd2>=0) stampC(Cmk(1e9))(nc2,nd2);
+      }
     } else if(c.type==='sw2'||c.type==='switch2_uk'){
       // Two-way switch: short between COM and active terminal
       const pos2=c.sw2pos??0;
@@ -1223,6 +1259,22 @@ function simulateAC(){
   const nodeVoltages={0:0};
   for(let i=1;i<=nodeN;i++) nodeVoltages[i]=Cabs(nodeVoltagesC[i]||C0);
 
+  // Relays: contact state follows the coil voltage magnitude. The phasor solve
+  // is single-pass, so if any relay's state changed, re-run once with the new
+  // contact states (bounded to 3 passes to avoid chatter loops).
+  if((_acPass??0)<3){
+    let relayChangedAC=false;
+    comps.forEach(c=>{
+      if(c.type!=='relay') return;
+      const vaC=nodeVoltagesC[nodeId(nk(c.x1,c.y1))]??C0;
+      const vbC=nodeVoltagesC[nodeId(nk(c.x2,c.y2))]??C0;
+      const coilV=Cabs({re:vaC.re-vbC.re, im:vaC.im-vbC.im});
+      const on=coilV>=(c.value??5)-0.05;
+      if((c.relayOn??false)!==on){ c.relayOn=on; relayChangedAC=true; }
+    });
+    if(relayChangedAC){ simulateAC((_acPass??0)+1); return; }
+  }
+
   // Build ptMap for node display
   const ptMap={};
   const mapPt2=(x2,y2)=>{const k=nk(x2,y2);if(jumpPoints.has(k))return;ptMap[k]=nodeId(k);};
@@ -1236,6 +1288,7 @@ function simulateAC(){
     if(c.type==='switch2g_uk'&&c.x3!=null){mapPt2(c.x3,c.y3);if(c.x4!=null)mapPt2(c.x4,c.y4);}
     if(c.type==='switch3g_uk'&&c.x3!=null){mapPt2(c.x3,c.y3);if(c.x4!=null)mapPt2(c.x4,c.y4);if(c.x5!=null)mapPt2(c.x5,c.y5);if(c.x6!=null)mapPt2(c.x6,c.y6);}
     if(c.type==='dpswitch'&&c.x3!=null){mapPt2(c.x3,c.y3);if(c.x4!=null)mapPt2(c.x4,c.y4);}
+    if(c.type==='relay'&&c.x3!=null){mapPt2(c.x3,c.y3);if(c.x4!=null)mapPt2(c.x4,c.y4);}
     if(c.type==='3ph'&&c.x3!=null){mapPt2(c.x3,c.y3);mapPt2(c.x4,c.y4);}
     if(c.type==='xfmr'&&c.x3!=null){mapPt2(c.x3,c.y3);mapPt2(c.x4,c.y4);}
   });
@@ -1347,6 +1400,9 @@ function simulateAC(){
     } else if(c.type==='dpswitch'){
       c.simV=mag;
       resArr.push({label:`DP Isolator (${c.closed?'closed':'open'})`,acV:mag,acVph:ph});
+    } else if(c.type==='relay'){
+      c.simV=mag;
+      resArr.push({label:`Relay (${c.relayOn?'energised':'released'})`,acV:mag,acVph:ph});
     } else if(c.type==='meter'){
       c.acV=mag; c.simV=mag; c.simI=mag*1000; c.acI=c.simI; c.acIph=ph;
       resArr.push({label:'Meter',acV:mag,acVph:ph,acI:c.acI,acIph:ph});

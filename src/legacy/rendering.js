@@ -1345,6 +1345,33 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     nlt.textContent='N'; g.appendChild(nlt);
     const dpt=mk('text',{x:G*1.5,y:G/2+4,'text-anchor':'middle',style:'fill:#5d6a85;font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold'});
     dpt.textContent='DP'; g.appendChild(dpt);
+  } else if(type==='relay'){
+    const rlOn=extra?.relayOn??false;
+    const rlL=G*0.5, rlR=G*2.5;
+    const accent=rlOn?'#22c55e':'#94a3b8';
+    // Coil leads (y=0)
+    g.appendChild(mk('line',{x1:0,y1:0,x2:rlL,y2:0,class:'cl'}));
+    g.appendChild(mk('line',{x1:rlR,y1:0,x2:L,y2:0,class:'cl'}));
+    // Body spanning coil and contact rails
+    g.appendChild(mk('rect',{x:rlL,y:-14,width:rlR-rlL,height:G+28,rx:3,stroke:'#c0c0c0','stroke-width':1.5,fill:'#f5f5f5'}));
+    // Coil block with winding arcs on the top rail
+    g.appendChild(mk('rect',{x:G*0.7,y:-9,width:G*1.6,height:18,rx:2,fill:rlOn?'#fef3c7':'#e8e8e8',stroke:rlOn?'#f59e0b':'#b0b0b0','stroke-width':1.2}));
+    for(let wi=0;wi<4;wi++){
+      const cx0=G*0.84+wi*G*0.33;
+      g.appendChild(mk('path',{d:`M ${cx0} 0 a ${G*0.165} ${G*0.165} 0 0 1 ${G*0.33} 0`,fill:'none',stroke:rlOn?'#d97706':'#888','stroke-width':1.2}));
+    }
+    // Contact leads (y=G)
+    g.appendChild(mk('line',{x1:0,y1:G,x2:G*0.8,y2:G,class:'cl'}));
+    g.appendChild(mk('line',{x1:G*2.2,y1:G,x2:L,y2:G,class:'cl'}));
+    g.appendChild(mk('circle',{cx:G*0.8,cy:G,r:2.5,fill:'none',stroke:accent,'stroke-width':1.2}));
+    g.appendChild(mk('circle',{cx:G*2.2,cy:G,r:2.5,fill:'none',stroke:accent,'stroke-width':1.2}));
+    // Contact arm: flat when pulled in, lifted when released
+    if(rlOn) g.appendChild(mk('line',{x1:G*0.8,y1:G,x2:G*2.2,y2:G,stroke:accent,'stroke-width':1.8}));
+    else g.appendChild(mk('line',{x1:G*0.8,y1:G,x2:G*2.2,y2:G-12,stroke:accent,'stroke-width':1.8}));
+    // Dashed actuator link from coil to contact arm
+    g.appendChild(mk('line',{x1:G*1.5,y1:9,x2:G*1.5,y2:rlOn?G-4:G-16,stroke:accent,'stroke-width':1.2,'stroke-dasharray':'2,3'}));
+    const rlt=mk('text',{x:G*1.5,y:-17,'text-anchor':'middle',style:`fill:${rlOn?'#d97706':'#5d6a85'};font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold`});
+    rlt.textContent='RELAY'; g.appendChild(rlt);
   } else if(type==='rcd'){
     const rcdTripped=extra?.tripped??false;
     const rcdbw=bw*0.8, rcdx=(L-rcdbw)/2;
@@ -1566,7 +1593,7 @@ function renderComps(){
     if((c.type==='shower'||c.type==='cooker'||c.type==='kettle'||c.type==='toaster'||c.type==='tv'||c.type==='fridge'||c.type==='fan')&&c.on===false){
       g.style.opacity='0.4';
     }
-    drawSymbol(g,c.type,c.x1,c.y1,c.x2,c.y2,{pos:c.pos??0.5,ledColor:c.ledColor,closed:c.closed,x3:c.x3,y3:c.y3,x4:c.x4,y4:c.y4,x5:c.x5,y5:c.y5,x6:c.x6,y6:c.y6,segVal:c.segVal??0,sw2pos:c.sw2pos,intpos:c.intpos??0,gang1:c.gang1??0,gang2:c.gang2??0,gang3:c.gang3??0,simPower:c.simPower,blown:c.blown,tripped:c.tripped,ratingLabel:c.value,slots:c.slots??6,cuDP:c.cuDP??true,cuRCD:c.cuRCD??true,cuRCDma:c.cuRCDma??30,cuSPD:c.cuSPD??false,cuMCBs:c.cuMCBs??[],cuMCBTerms:c.mcbTerms??[],mosfetOn:c.mosfetOn??false});
+    drawSymbol(g,c.type,c.x1,c.y1,c.x2,c.y2,{pos:c.pos??0.5,ledColor:c.ledColor,closed:c.closed,x3:c.x3,y3:c.y3,x4:c.x4,y4:c.y4,x5:c.x5,y5:c.y5,x6:c.x6,y6:c.y6,segVal:c.segVal??0,sw2pos:c.sw2pos,intpos:c.intpos??0,gang1:c.gang1??0,gang2:c.gang2??0,gang3:c.gang3??0,simPower:c.simPower,blown:c.blown,tripped:c.tripped,ratingLabel:c.value,slots:c.slots??6,cuDP:c.cuDP??true,cuRCD:c.cuRCD??true,cuRCDma:c.cuRCDma??30,cuSPD:c.cuSPD??false,cuMCBs:c.cuMCBs??[],cuMCBTerms:c.mcbTerms??[],mosfetOn:c.mosfetOn??false,relayOn:c.relayOn??false});
 
     // Hit region — large enough to grab without hovering on thin drawn lines
     {
@@ -1575,7 +1602,7 @@ function renderComps(){
       const isCUnit=c.type==='cunit';
       const isTall=c.type==='seg7'||c.type==='buzzer';
       const isWide=c.type==='3ph'||c.type==='xfmr';
-      const hasEarth=c.type==='socket_uk'||c.type==='switch_uk'||c.type==='dpswitch';
+      const hasEarth=c.type==='socket_uk'||c.type==='switch_uk'||c.type==='dpswitch'||c.type==='relay';
       const pad=16; // px padding beyond visual bounds on each side
       if(isCUnit){
         // CU: landscape — (numMCBs+2)*G wide, 4*G tall. Box top-left = (c.px, c.py).
@@ -1685,6 +1712,11 @@ function renderComps(){
         const p1=lp(1);
         const t=mk('text',{x:p1.x,y:p1.y,'text-anchor':p1.a,class:'rt',style:`fill:${stateCol}`});
         t.textContent=stateStr; layer.appendChild(t);
+      } else if(c.type==='relay'){
+        const stateCol=c.relayOn?'#34d399':'#5d6a85';
+        const p0=lp(0);
+        const t=mk('text',{x:p0.x,y:p0.y,'text-anchor':p0.a,class:'rt',style:`fill:${stateCol};font-size:9px`});
+        t.textContent=c.relayOn?'ENERGISED':'released'; layer.appendChild(t);
       } else if(c.type==='sw'||c.type==='switch_uk'||c.type==='dpswitch'||c.type==='pullcord'){
         const stateLabel=c.closed?'CLOSED':'OPEN';
         const stateCol=c.closed?'#34d399':'#5d6a85';
@@ -1812,7 +1844,7 @@ function renderComps(){
       const _isCU=c.type==='cunit';
       const _isTall=c.type==='seg7'||c.type==='buzzer';
       const _isWide=c.type==='3ph'||c.type==='xfmr';
-      const _hasE=c.type==='socket_uk'||c.type==='switch_uk'||c.type==='dpswitch';
+      const _hasE=c.type==='socket_uk'||c.type==='switch_uk'||c.type==='dpswitch'||c.type==='relay';
       let sx,sy,sw,sh;
       if(_isCU){
         const cuSlots2=c.slots??6;
@@ -1869,6 +1901,7 @@ function renderNodes(){
     if((c.type==='AND'||c.type==='OR'||c.type==='nmos')&&c.x3!=null) addPt(c.x3,c.y3);
     if((c.type==='sw2'||c.type==='switch2_uk')&&c.x3!=null) addPt(c.x3,c.y3);
     if((c.type==='intswitch'||c.type==='switchint_uk')&&c.x3!=null){addPt(c.x3,c.y3);if(c.x4!=null)addPt(c.x4,c.y4);}
+    if(c.type==='relay'&&c.x3!=null){addPt(c.x3,c.y3);if(c.x4!=null)addPt(c.x4,c.y4);}
     if((c.type==='switch2g_uk')&&c.x3!=null){addPt(c.x3,c.y3);if(c.x4!=null)addPt(c.x4,c.y4);}
     if((c.type==='switch3g_uk')&&c.x3!=null){addPt(c.x3,c.y3);if(c.x4!=null)addPt(c.x4,c.y4);if(c.x5!=null)addPt(c.x5,c.y5);if(c.x6!=null)addPt(c.x6,c.y6);}
     if((c.type==='3ph'||c.type==='xfmr')&&c.x3!=null){addPt(c.x3,c.y3);}
@@ -1902,6 +1935,7 @@ function renderNodes(){
   comps.forEach(c=>{
     const terms=[{x:c.x1,y:c.y1},{x:c.x2,y:c.y2}];
     if((c.type==='sw2'||c.type==='nmos')&&c.x3!=null) terms.push({x:c.x3,y:c.y3});
+    if((c.type==='relay'||c.type==='dpswitch')&&c.x3!=null){terms.push({x:c.x3,y:c.y3});if(c.x4!=null)terms.push({x:c.x4,y:c.y4});}
     if((c.type==='intswitch'||c.type==='switchint_uk'||c.type==='switch2g_uk')&&c.x3!=null){terms.push({x:c.x3,y:c.y3});if(c.x4!=null)terms.push({x:c.x4,y:c.y4});}
     if(c.type==='switch3g_uk'&&c.x3!=null){terms.push({x:c.x3,y:c.y3});if(c.x4!=null)terms.push({x:c.x4,y:c.y4});if(c.x5!=null)terms.push({x:c.x5,y:c.y5});if(c.x6!=null)terms.push({x:c.x6,y:c.y6});}
     const singleTerm=c.type==='GND'||c.type==='probe'||c.type==='seg7';

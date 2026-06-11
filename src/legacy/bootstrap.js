@@ -595,6 +595,188 @@ saveCurrentCircuit();
 loadHouseView();
 // Auto-fit house view on load — will be overridden by loadCircuit(0) below
 
+// ── Electronics Lab tab: bridge rectifier, relay, MOSFET dimmer, zener reg ──
+(function(){
+  _circuits.push({name:'Electronics Lab', comps:[], wires:[], uid:1, history:[], sel:null, acFreq:50});
+  _currentIdx = _circuits.length - 1;
+  comps=[]; wires=[]; jumpPoints=new Set(); uid=1; sel=null; _history=[];
+  const lc = (type, gx, gy, r, value, extra={}) => {
+    const [x1,y1,x2,y2] = terminals(type, gx*G, gy*G, r);
+    const c = {id:'c'+(uid++), type, px:gx*G, py:gy*G, rotation:r,
+               x1, y1, x2, y2, value: value ?? DEFS[type]?.value ?? 0};
+    if(type==='nmos'){
+      if(r===0){c.x3=c.x1-G;c.y3=(c.y1+c.y2)/2;}
+      else if(r===1){c.x3=(c.x1+c.x2)/2;c.y3=c.y1-G;}
+      else if(r===2){c.x3=c.x1+G;c.y3=(c.y1+c.y2)/2;}
+      else{c.x3=(c.x1+c.x2)/2;c.y3=c.y1+G;}
+    }
+    if(type==='relay'){
+      c.relayOn=false;
+      if(r===0){c.x3=c.x1;c.y3=c.y1+G;c.x4=c.x2;c.y4=c.y2+G;}
+      else if(r===1){c.x3=c.x1-G;c.y3=c.y1;c.x4=c.x2-G;c.y4=c.y2;}
+      else if(r===2){c.x3=c.x1;c.y3=c.y1-G;c.x4=c.x2;c.y4=c.y2-G;}
+      else{c.x3=c.x1+G;c.y3=c.y1;c.x4=c.x2+G;c.y4=c.y2;}
+    }
+    if(type==='sw') c.closed = extra.closed ?? false;
+    Object.assign(c, extra);
+    comps.push(c); return c;
+  };
+  const lw = (x1,y1,x2,y2) => {
+    if(x1!==x2||y1!==y2) wires.push({id:'w'+(uid++),x1:x1*G,y1:y1*G,x2:x2*G,y2:y2*G});
+  };
+
+  // ── Demo 1: Bridge rectifier (top-left) ──────────────────────────────────
+  // Four diodes around a central source. Flip the source value to −12 and the
+  // LED stays lit — the bridge always delivers the same output polarity.
+  lc('V',     6, 2, 1, 12);              // source between AC1 (6,2) and AC2 (6,5)
+  lc('diode', 3, 2, 0, 0.7);             // − rail → AC1
+  lc('diode', 6, 2, 0, 0.7);             // AC1 → + rail
+  lc('diode', 3, 5, 0, 0.7);             // − rail → AC2
+  lc('diode', 6, 5, 0, 0.7);             // AC2 → + rail
+  lw(9,2, 9,5);                          // + rail
+  lw(3,2, 3,5);                          // − rail
+  lw(9,5, 9,7);                          // + rail down to the load
+  lc('LED', 9, 7, 0, 2.0, {ledColor:'red'});
+  lc('R',  12, 7, 0, 470);
+  lw(15,7, 15,9);
+  lw(3,9, 15,9);                         // return to − rail
+  lw(3,5, 3,9);
+  lc('GND', 3, 9, 0);
+
+  // ── Demo 2: Relay — 5V signal switching a 120V lamp (top-right) ──────────
+  lc('V',  20, 2, 1, 5);                 // control supply
+  lw(20,2, 22,2);
+  lc('sw', 22, 2, 0, 0, {closed:false}); // close me → coil energises
+  lw(25,2, 27,2);
+  lc('relay', 27, 2, 0, 5);              // coil (27,2)-(30,2), contact (27,3)-(30,3)
+  lw(30,2, 31,2);
+  lw(31,2, 31,5);                        // coil return (hops the contact feed)
+  lw(20,5, 31,5);
+  lc('GND', 20, 5, 0);
+  lw(30,3, 33,3);                        // contact → 120V source
+  lc('V',  33, 3, 1, 120);               // the big circuit the tiny coil controls
+  lw(27,3, 26,3);
+  lw(26,3, 26,6);                        // lamp drop (hops the coil return)
+  lc('bulb', 26, 6, 0, 240);
+  lw(29,6, 33,6);
+  lc('GND', 33, 6, 0);
+
+  // ── Demo 3: Potentiometer driving a MOSFET gate (bottom-left) ────────────
+  // Pot + 1k form a divider on the gate. Slide the pot below ~2.2k and the
+  // MOSFET switches the bulb on.
+  lc('V', 2, 13, 1, 9);
+  lw(2,13, 4,13);
+  lc('pot', 4, 13, 0, 10000, {pos:0.5});
+  lw(7,13, 11,13);                       // gate node rail
+  lc('R', 9, 13, 1, 1000);               // divider lower leg
+  lc('GND', 9, 16, 0);
+  lw(11,13, 11,15);
+  lw(11,15, 12,15);                      // → gate
+  lc('nmos', 12, 14, 0, 2.0);            // D=(13,14) S=(13,16) gate=(12,15)
+  lw(2,13, 2,12);
+  lw(2,12, 10,12);                       // +9V to the bulb
+  lc('bulb', 10, 12, 0, 100);
+  lw(13,12, 13,14);                      // bulb → drain
+  lc('GND', 13, 16, 0);
+  lc('GND', 2, 16, 0);
+
+  // ── Demo 4: Zener regulator feeding an LED (bottom-right) ────────────────
+  // 12V in, rock-steady 5.1V at the zener node no matter the load.
+  lc('V', 20, 14, 1, 12);
+  lw(20,14, 22,14);
+  lc('R', 22, 14, 0, 330);               // series dropper
+  lc('zener', 25, 14, 2, 5.1);           // r=2 → cathode on the regulated node (25,14)
+  lw(28,14, 28,17);                      // zener anode to the 0V rail
+  lw(25,14, 25,12);
+  lc('LED', 25, 12, 0, 2.0, {ledColor:'green'});
+  lc('R', 28, 12, 0, 330);
+  lw(31,12, 31,17);
+  lw(20,17, 31,17);                      // 0V rail
+  lc('GND', 20, 17, 0);
+
+  // Crossings that are hops, not joins (relay demo wiring)
+  [[31,3],[26,5]].forEach(([gx,gy]) => jumpPoints.add(nk(gx*G, gy*G)));
+
+  saveCurrentCircuit();
+})();
+
+// ── AC Power Lab tab: transformer, RC/RL filters, series resonance ─────────
+(function(){
+  _circuits.push({name:'AC Power Lab', comps:[], wires:[], uid:1, history:[], sel:null, acFreq:50});
+  _currentIdx = _circuits.length - 1;
+  comps=[]; wires=[]; jumpPoints=new Set(); uid=1; sel=null; _history=[];
+  const lc = (type, gx, gy, r, value, extra={}) => {
+    const [x1,y1,x2,y2] = terminals(type, gx*G, gy*G, r);
+    const c = {id:'c'+(uid++), type, px:gx*G, py:gy*G, rotation:r,
+               x1, y1, x2, y2, value: value ?? DEFS[type]?.value ?? 0};
+    if(type==='xfmr'){
+      const px2=gx*G, py2=gy*G;
+      if(r===0){c.x3=px2;c.y3=py2+2*G;c.x4=px2+4*G;c.y4=py2+2*G;}
+      else if(r===1){c.x3=px2+2*G;c.y3=py2;c.x4=px2+2*G;c.y4=py2+4*G;}
+      else if(r===2){c.x3=px2+4*G;c.y3=py2+2*G;c.x4=px2;c.y4=py2+2*G;}
+      else{c.x3=px2+2*G;c.y3=py2+4*G;c.x4=px2+2*G;c.y4=py2;}
+    }
+    Object.assign(c, extra);
+    comps.push(c); return c;
+  };
+  const lw = (x1,y1,x2,y2) => {
+    if(x1!==x2||y1!==y2) wires.push({id:'w'+(uid++),x1:x1*G,y1:y1*G,x2:x2*G,y2:y2*G});
+  };
+
+  // ── Demo 1: Transformer stepping 230V down to 11.5V (n = 0.05) ───────────
+  lc('V', 2, 2, 1, 230, {isAC:true});
+  lw(2,2, 4,2);
+  lc('xfmr', 4, 2, 0, 0.05);             // primary (4,2)/(4,4), secondary (8,2)/(8,4)
+  lw(4,4, 2,4);
+  lw(2,4, 2,5);
+  lc('GND', 2, 5, 0);
+  lw(8,2, 10,2);
+  lc('R', 10, 2, 1, 100);                // secondary load — reads ~11.5V
+  lw(8,4, 8,5);
+  lw(8,5, 10,5);
+  lc('GND', 8, 5, 0);
+
+  // ── Demo 2: RC low-pass — the capacitor shorts out high frequencies ──────
+  // ~9.5V out at 50Hz; raise the frequency (header) and watch it collapse.
+  lc('V', 14, 2, 1, 10, {isAC:true});
+  lw(14,2, 16,2);
+  lc('R', 16, 2, 0, 1000);
+  lc('C', 19, 2, 1, 1e-6);               // output node (19,2)
+  lw(14,5, 19,5);
+  lc('GND', 14, 5, 0);
+
+  // ── Demo 3: RL high-pass — the inductor blocks high frequencies ──────────
+  // ~3V out at 50Hz; raise the frequency and it climbs toward 10V.
+  lc('V', 24, 2, 1, 10, {isAC:true});
+  lw(24,2, 26,2);
+  lc('R', 26, 2, 0, 1000);
+  lc('L', 29, 2, 1, 1);                  // output node (29,2)
+  lw(24,5, 29,5);
+  lc('GND', 24, 5, 0);
+
+  // ── Demo 4: A capacitor passes AC — this bulb would be dark on DC ────────
+  lc('V', 2, 9, 1, 120, {isAC:true});
+  lw(2,9, 4,9);
+  lc('C', 4, 9, 0, 10e-6);
+  lc('bulb', 7, 9, 0, 100);
+  lw(10,9, 10,12);
+  lw(2,12, 10,12);
+  lc('GND', 2, 12, 0);
+
+  // ── Demo 5: Series RLC tuned to resonate at exactly 50Hz ─────────────────
+  // XL and XC cancel at 50Hz → maximum current. Change the frequency either
+  // way and the current drops off.
+  lc('V', 14, 9, 1, 10, {isAC:true});
+  lw(14,9, 16,9);
+  lc('R', 16, 9, 0, 10);
+  lc('L', 19, 9, 0, 0.1);
+  lc('C', 22, 9, 1, 100e-6);
+  lw(14,12, 22,12);
+  lc('GND', 14, 12, 0);
+
+  saveCurrentCircuit();
+})();
+
 // Switch back to first circuit
 loadCircuit(0);
 

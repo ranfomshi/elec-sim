@@ -64,7 +64,7 @@ SVG.addEventListener('mousemove',e=>{
         else if(r===2){c.x3=x1-1.5*G;c.y3=y1+G;}
         else{c.x3=x1-G;c.y3=y1-1.5*G;}
       }
-      if(c.type==='dpswitch'){
+      if(c.type==='dpswitch'||c.type==='relay'){
         if(r===0){c.x3=x1; c.y3=y1+G; c.x4=x2; c.y4=y2+G;}
         else if(r===1){c.x3=x1-G; c.y3=y1; c.x4=x2-G; c.y4=y2;}
         else if(r===2){c.x3=x1; c.y3=y1-G; c.x4=x2; c.y4=y2-G;}
@@ -436,6 +436,7 @@ function toSchema() {
       if((c.type==='socket_uk'||c.type==='switch_uk')&&c.x3!=null){o.x3=c.x3/G;o.y3=c.y3/G;}
       if(c.type==='plug'&&c.x3!=null){o.x3=c.x3/G;o.y3=c.y3/G;o.x4=c.x4/G;o.y4=c.y4/G;}
       if(c.type==='dpswitch'){o.closed=c.closed||false;if(c.x3!=null){o.x3=c.x3/G;o.y3=c.y3/G;o.x4=c.x4/G;o.y4=c.y4/G;}}
+      if(c.type==='relay'&&c.x3!=null){o.x3=c.x3/G;o.y3=c.y3/G;o.x4=c.x4/G;o.y4=c.y4/G;}
       if(c.type==='rcd') o.tripped=c.tripped||false;
       if(c.type==='intswitch') { o.intpos=c.intpos??0; if(c.x3!=null){o.x3=c.x3/G;o.y3=c.y3/G;o.x4=c.x4/G;o.y4=c.y4/G;} }
       if(c.type==='sw2'||c.type==='switch2_uk') { o.sw2pos=c.sw2pos??0; if(c.x3!=null){o.x3=c.x3/G;o.y3=c.y3/G;} }
@@ -502,6 +503,17 @@ function fromSchema(schema) {
     }
     if(c.type==='dpswitch'){
       comp.closed=c.closed||false;
+      if(c.x3!=null){comp.x3=c.x3*G;comp.y3=c.y3*G;comp.x4=c.x4*G;comp.y4=c.y4*G;}
+      else{
+        const r=c.rotation||0;
+        if(r===0){comp.x3=x1;comp.y3=y1+G;comp.x4=x2;comp.y4=y2+G;}
+        else if(r===1){comp.x3=x1-G;comp.y3=y1;comp.x4=x2-G;comp.y4=y2;}
+        else if(r===2){comp.x3=x1;comp.y3=y1-G;comp.x4=x2;comp.y4=y2-G;}
+        else{comp.x3=x1+G;comp.y3=y1;comp.x4=x2+G;comp.y4=y2;}
+      }
+    }
+    if(c.type==='relay'){
+      comp.relayOn=false;
       if(c.x3!=null){comp.x3=c.x3*G;comp.y3=c.y3*G;comp.x4=c.x4*G;comp.y4=c.y4*G;}
       else{
         const r=c.rotation||0;
