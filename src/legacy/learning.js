@@ -833,27 +833,27 @@ function renderCourseHome() {
     const btnLabel = allDone ? '✓ Review' : (started ? '▶ Continue' : '▶ Start');
     const btnColor = allDone ? '#34d399' : '#4da3ff';
     const borderColor = allDone ? co.color : '#28324a';
-    return `<div onclick="selectCourse(${ci})" style="cursor:pointer;background:#0f1420;border:1px solid ${allDone?co.color:'#28324a'};border-radius:8px;padding:8px 10px;margin-bottom:6px;transition:border-color 0.15s;box-shadow:0 1px 3px rgba(0,0,0,0.3)" onmouseover="this.style.borderColor='${co.color}'" onmouseout="this.style.borderColor='${allDone?co.color:'#28324a'}'">
+    return `<div onclick="selectCourse(${ci})" style="cursor:pointer;background:#0f1420;border:1px solid ${allDone?co.color:'#28324a'};border-radius:10px;padding:11px 13px;margin-bottom:8px;transition:border-color 0.15s;box-shadow:0 1px 3px rgba(0,0,0,0.3)" onmouseover="this.style.borderColor='${co.color}'" onmouseout="this.style.borderColor='${allDone?co.color:'#28324a'}'">
       <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
-        <span style="font-size:16px">${co.icon}</span>
-        <span style="color:#dce4f2;font-size:11px;font-weight:bold">${co.title}</span>
-        <span style="margin-left:auto;background:${btnColor};color:#fff;font-size:8px;padding:2px 6px;border-radius:3px;font-weight:bold;white-space:nowrap">${btnLabel}</span>
+        <span style="font-size:19px">${co.icon}</span>
+        <span style="color:#dce4f2;font-size:13.5px;font-weight:bold">${co.title}</span>
+        <span style="margin-left:auto;background:${btnColor};color:#fff;font-size:10px;padding:3px 8px;border-radius:99px;font-weight:bold;white-space:nowrap">${btnLabel}</span>
       </div>
-      <div style="color:#8e9cb8;font-size:9px;margin-bottom:5px">${co.desc}</div>
+      <div style="color:#8e9cb8;font-size:11.5px;line-height:1.5;margin-bottom:7px">${co.desc}</div>
       <div style="display:flex;align-items:center;gap:5px">
         <div style="flex:1;background:#19202f;border-radius:3px;height:4px;overflow:hidden">
           <div style="background:${co.color};height:4px;width:${pct}%;transition:width 0.3s"></div>
         </div>
-        <span style="color:#8e9cb8;font-size:9px;white-space:nowrap">${done}/${total}</span>
+        <span style="color:#8e9cb8;font-size:11px;white-space:nowrap">${done}/${total}</span>
       </div>
     </div>`;
   }).join('');
   inner.innerHTML = `
-    <div style="font-size:9px;color:#4da3ff;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">⚡ Choose a Course</div>
+    <div style="font-size:11px;font-weight:700;color:#4da3ff;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">⚡ Choose a Course</div>
     ${rows}
-    <div style="color:#5d6a85;font-size:9px;margin-top:8px;text-align:center">Click a course to see its lessons</div>
+    <div style="color:#5d6a85;font-size:11px;margin-top:10px;text-align:center">Click a course to see its lessons</div>
     <div style="border-top:1px solid #19202f;margin-top:14px;padding-top:10px">
-      <button onclick="resetCourseProgress()" style="background:rgba(239,77,77,0.08);border:1px solid rgba(239,77,77,0.35);color:#ff7b78;font-size:9px;padding:5px 8px;border-radius:99px;cursor:pointer;width:100%;font-family:inherit" onmouseover="this.style.background='rgba(239,77,77,0.18)'" onmouseout="this.style.background='rgba(239,77,77,0.08)'">↺ Reset all progress</button>
+      <button onclick="resetCourseProgress()" style="background:rgba(239,77,77,0.08);border:1px solid rgba(239,77,77,0.35);color:#ff7b78;font-size:11px;padding:7px 10px;border-radius:99px;cursor:pointer;width:100%;font-family:inherit" onmouseover="this.style.background='rgba(239,77,77,0.18)'" onmouseout="this.style.background='rgba(239,77,77,0.08)'">↺ Reset all progress</button>
     </div>
   `;
 }
@@ -879,10 +879,10 @@ function renderCourseOutline(ci) {
     const ch = CHALLENGES[chIdx];
     const done = _completed.has(chIdx);
     const active = _currentCourse === ci && _currentChallengeIdx === li;
-    return `<div onclick="loadChallenge(${ci},${li})" style="cursor:pointer;display:flex;align-items:flex-start;gap:7px;padding:6px 8px;border-radius:4px;margin-bottom:2px;background:${active?'rgba(77,163,255,0.08)':'transparent'};border:1px solid ${active?'#4da3ff':'transparent'}" onmouseover="this.style.background='rgba(77,163,255,0.05)'" onmouseout="this.style.background='${active?'rgba(77,163,255,0.08)':'transparent'}'">
-      <span style="font-size:12px;margin-top:1px;flex-shrink:0">${done?'✅':'⬜'}</span>
+    return `<div onclick="loadChallenge(${ci},${li})" style="cursor:pointer;display:flex;align-items:flex-start;gap:9px;padding:8px 10px;border-radius:7px;margin-bottom:3px;background:${active?'rgba(77,163,255,0.08)':'transparent'};border:1px solid ${active?'#4da3ff':'transparent'}" onmouseover="this.style.background='rgba(77,163,255,0.05)'" onmouseout="this.style.background='${active?'rgba(77,163,255,0.08)':'transparent'}'">
+      <span style="font-size:14px;margin-top:1px;flex-shrink:0">${done?'✅':'⬜'}</span>
       <div>
-        <div style="color:${done?'#34d399':'#dce4f2'};font-size:10px;font-weight:${active?'bold':'normal'}">${li+1}. ${ch.title}</div>
+        <div style="color:${done?'#34d399':'#dce4f2'};font-size:12.5px;line-height:1.45;font-weight:${active?'bold':'normal'}">${li+1}. ${ch.title}</div>
       </div>
     </div>`;
   }).join('');
@@ -890,16 +890,16 @@ function renderCourseOutline(ci) {
   const pct = Math.round((done / co.challenges.length) * 100);
   inner.innerHTML = `
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
-      <button onclick="renderCourseHome()" style="background:none;border:none;color:#4da3ff;cursor:pointer;font-size:14px;padding:0;line-height:1" title="Back to courses">←</button>
-      <span style="font-size:16px">${co.icon}</span>
-      <span style="color:#dce4f2;font-size:11px;font-weight:bold;flex:1">${co.title}</span>
+      <button onclick="renderCourseHome()" style="background:none;border:none;color:#4da3ff;cursor:pointer;font-size:17px;padding:0;line-height:1" title="Back to courses">←</button>
+      <span style="font-size:19px">${co.icon}</span>
+      <span style="color:#dce4f2;font-size:14px;font-weight:bold;flex:1">${co.title}</span>
     </div>
-    <div style="color:#5d6a85;font-size:9px;margin-bottom:6px">${co.desc}</div>
+    <div style="color:#8e9cb8;font-size:11.5px;line-height:1.5;margin-bottom:8px">${co.desc}</div>
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
       <div style="flex:1;background:#19202f;border-radius:3px;height:5px;overflow:hidden">
         <div style="background:${co.color};height:5px;width:${pct}%"></div>
       </div>
-      <span style="color:#5d6a85;font-size:9px;white-space:nowrap">${done}/${co.challenges.length} done</span>
+      <span style="color:#8e9cb8;font-size:11px;white-space:nowrap">${done}/${co.challenges.length} done</span>
     </div>
     <div style="border-top:1px solid #19202f;padding-top:8px">${lessonRows}</div>
   `;
@@ -915,23 +915,23 @@ function renderCoursePanel() {
   const lessonList = co.challenges.map((chIdx, li) => {
     const done2 = _completed.has(chIdx);
     const active2 = li === lessonIdx;
-    return `<div onclick="loadChallenge(${_currentCourse},${li})" title="${CHALLENGES[chIdx].title}" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:${active2?co.color:(done2?co.color+'22':'#19202f')};border:2px solid ${active2?co.color:(done2?co.color:'#28324a')};color:${active2?'#090c14':(done2?co.color:'#5d6a85')};font-size:9px;font-weight:bold;flex-shrink:0" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">${done2&&!active2?'✓':(li+1)}</div>`;
+    return `<div onclick="loadChallenge(${_currentCourse},${li})" title="${CHALLENGES[chIdx].title}" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;border-radius:50%;background:${active2?co.color:(done2?co.color+'22':'#19202f')};border:2px solid ${active2?co.color:(done2?co.color:'#28324a')};color:${active2?'#090c14':(done2?co.color:'#5d6a85')};font-size:11px;font-weight:bold;flex-shrink:0" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">${done2&&!active2?'✓':(li+1)}</div>`;
   }).join('');
   inner.innerHTML = `
     <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px">
-      <button onclick="renderCourseOutline(${_currentCourse})" style="background:none;border:none;color:#4da3ff;cursor:pointer;font-size:13px;padding:0;line-height:1" title="Back to outline">←</button>
-      <span style="font-size:14px">${co.icon}</span>
-      <span style="color:#8e9cb8;font-size:9px">${co.title}</span>
+      <button onclick="renderCourseOutline(${_currentCourse})" style="background:none;border:none;color:#4da3ff;cursor:pointer;font-size:17px;padding:0;line-height:1" title="Back to outline">←</button>
+      <span style="font-size:16px">${co.icon}</span>
+      <span style="color:#8e9cb8;font-size:11px">${co.title}</span>
     </div>
     <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;align-items:center">${lessonList}</div>
-    <div style="font-size:9px;color:#5d6a85;margin-bottom:8px">Lesson ${lessonIdx+1} of ${totalLessons}</div>
+    <div style="font-size:11px;color:#5d6a85;margin-bottom:9px">Lesson ${lessonIdx+1} of ${totalLessons}</div>
     <div class="ch-title">${ch.title}</div>
     <div class="ch-scenario">${ch.scenario}</div>
     <div id="ch-hints-area"></div>
     <button class="ch-hint-btn" onclick="showNextHint()">💡 Hint</button>
     <button class="ch-check-btn" onclick="checkChallenge()">✓ Check</button>
     <div id="ch-result" class="ch-result" style="display:none"></div>
-    ${lessonIdx > 0 ? `<button class="btn" onclick="loadChallenge(${_currentCourse},${lessonIdx-1})" style="margin-top:6px;font-size:10px">← Prev</button>` : ''}
+    ${lessonIdx > 0 ? `<button class="btn" onclick="loadChallenge(${_currentCourse},${lessonIdx-1})" style="margin-top:6px;font-size:11.5px">← Prev</button>` : ''}
   `;
 }
 
@@ -981,7 +981,7 @@ function closeExplainer() {
     loadChallenge(_currentCourse, _currentChallengeIdx + 1);
   } else {
     const inner = document.getElementById('course-inner');
-    if (inner) inner.innerHTML = `<div style="text-align:center;padding:20px"><div style="font-size:32px">${co.icon}</div><div style="color:${co.color};font-size:13px;font-weight:bold;margin-top:8px">Course Complete!</div><div style="font-size:10px;color:#8e9cb8;margin-top:6px">${co.title} — all lessons done.</div><button class="btn" onclick="renderCourseHome()" style="margin-top:12px;font-size:10px">← All Courses</button></div>`;
+    if (inner) inner.innerHTML = `<div style="text-align:center;padding:20px"><div style="font-size:32px">${co.icon}</div><div style="color:${co.color};font-size:16px;font-weight:bold;margin-top:8px">Course Complete!</div><div style="font-size:12px;color:#8e9cb8;margin-top:6px">${co.title} — all lessons done.</div><button class="btn" onclick="renderCourseHome()" style="margin-top:12px;font-size:12px">← All Courses</button></div>`;
   }
 }
 
