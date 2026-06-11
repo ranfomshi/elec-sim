@@ -14,7 +14,7 @@ let mode = 'select', comps = [], wires = [], sel = null;
 // rendered as a hop/jump instead of a junction dot. Default (absent) = real connection.
 let jumpPoints = new Set();
 let wireStart = null, rot = 0, uid = 1;
-let dragging = null, dragOff = {x:0,y:0}, _dragTermOld = null, _dragMoved = false, _dragWireBinds = null;
+let dragging = null, dragOff = {x:0,y:0}, _dragTermOld = null, _dragMoved = false, _dragWireBinds = null, _dragXings = null;
 function _getTerminals(c){
   const t=[{x:c.x1,y:c.y1},{x:c.x2,y:c.y2}];
   if(c.type==='cunit'&&c.mcbTerms) c.mcbTerms.forEach(mt=>t.push({x:mt.x,y:mt.y}));
@@ -648,7 +648,11 @@ function placeComp(type, px, py, r=0, extra={}) {
 }
 function placeWire(x1,y1,x2,y2){
   if(x1===x2&&y1===y2) return;
-  pushHistory(); wires.push({id:'w'+(uid++),x1,y1,x2,y2}); render(); markDirty();
+  pushHistory();
+  const xingsBefore=snapshotCrossings();
+  wires.push({id:'w'+(uid++),x1,y1,x2,y2});
+  applyNewCrossingHops(xingsBefore);
+  render(); markDirty();
 }
 // Recompute primary + extra terminals for an existing component after rotation.
 // Mirrors the extra-terminal logic from placeComp() without creating a new object.

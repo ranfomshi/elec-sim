@@ -549,7 +549,7 @@ header {
 .cl { stroke: #56627c; stroke-width: 2; stroke-linecap: round; fill: none; }
 .ct { fill: var(--warn); font-size: 9px; font-family: var(--font-mono); paint-order: stroke fill; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
 .rt { fill: var(--success); font-size: 9px; font-family: var(--font-mono); paint-order: stroke fill; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
-.sel-box { stroke: var(--accent); stroke-width: 1.5; fill: rgba(77, 163, 255, 0.06); stroke-dasharray: 4, 3; }
+.sel-box { stroke: var(--accent); stroke-width: 1.5; fill: rgba(77, 163, 255, 0.06); stroke-dasharray: 4, 3; pointer-events: none; }
 .nd { fill: var(--accent); pointer-events: none; }
 .xing-dot { fill: var(--text); stroke: var(--bg); stroke-width: 1; pointer-events: none; }
 .xing-hit { fill: transparent; stroke: transparent; cursor: pointer; }

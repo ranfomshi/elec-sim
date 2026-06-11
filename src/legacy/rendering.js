@@ -1609,7 +1609,7 @@ function renderComps(){
     }
 
     g.addEventListener('click',e=>{e.stopPropagation();if(mode==='select'){if(_tryStartWireFromTerminal(svgPt(e),false))return;selectComp(c.id);}});
-    g.addEventListener('mousedown',e=>{if(mode==='select'&&e.button===0){pushHistory();const p=svgPt(e);dragging=c.id;_dragMoved=false;dragOff={x:p.x-c.px,y:p.y-c.py};_dragTermOld=_getTerminals(c);_dragWireBinds=captureWireBinds(_dragTermOld);e.preventDefault();}});
+    g.addEventListener('mousedown',e=>{if(mode==='select'&&e.button===0){pushHistory();const p=svgPt(e);dragging=c.id;_dragMoved=false;dragOff={x:p.x-c.px,y:p.y-c.py};_dragTermOld=_getTerminals(c);_dragWireBinds=captureWireBinds(_dragTermOld);_dragXings=snapshotCrossings();e.preventDefault();}});
     layer.appendChild(g);
 
     // All overlays (labels, sim readouts, glows) — in absolute SVG coords.
@@ -1663,7 +1663,7 @@ function renderComps(){
         drawSymbol(g,c.type,c.x1,c.y1,c.x2,c.y2,{segVal:c.segVal??0});
         g.style.cursor=mode==='select'?'pointer':'default';
         g.addEventListener('click',e=>{e.stopPropagation();if(mode==='select'){if(_tryStartWireFromTerminal(svgPt(e),false))return;selectComp(c.id);}});
-        g.addEventListener('mousedown',e=>{if(mode==='select'&&e.button===0){pushHistory();const p=svgPt(e);dragging=c.id;_dragMoved=false;dragOff={x:p.x-c.px,y:p.y-c.py};_dragTermOld=_getTerminals(c);_dragWireBinds=captureWireBinds(_dragTermOld);e.preventDefault();}});
+        g.addEventListener('mousedown',e=>{if(mode==='select'&&e.button===0){pushHistory();const p=svgPt(e);dragging=c.id;_dragMoved=false;dragOff={x:p.x-c.px,y:p.y-c.py};_dragTermOld=_getTerminals(c);_dragWireBinds=captureWireBinds(_dragTermOld);_dragXings=snapshotCrossings();e.preventDefault();}});
         const t=mk('text',{x:c.x1+14,y:c.y1+58,'text-anchor':'middle',class:'rt',style:'font-size:9px'});
         t.textContent=fmtVal(c.simV,'V'); layer.appendChild(t);
       } else if(c.type==='buzzer'){

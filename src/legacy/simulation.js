@@ -121,6 +121,21 @@ function findWireCrossings(){
   return out;
 }
 
+function snapshotCrossings(){
+  return new Set(findWireCrossings().map(p=>nk(p.x,p.y)));
+}
+
+// X-crossings that appear as a side effect of moving a component or drawing a
+// wire default to a visual hop (not connected) — deliberate joins are made at
+// endpoints/terminals or by toggling the crossing dot. Hop flags left at
+// coordinates that no longer host a crossing are pruned so they can't silently
+// disconnect a future junction.
+function applyNewCrossingHops(before){
+  const now=snapshotCrossings();
+  now.forEach(k=>{ if(!before.has(k)) jumpPoints.add(k); });
+  jumpPoints.forEach(k=>{ if(!now.has(k)) jumpPoints.delete(k); });
+}
+
 // Toggle a crossing point between "real connection" (junction dot) and
 // "visual hop" (no electrical connection — drawn as one wire jumping over the other).
 function toggleCrossing(x,y){

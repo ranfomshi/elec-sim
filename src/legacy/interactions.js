@@ -143,7 +143,17 @@ SVG.addEventListener('mouseup',e=>{
   if(_panning&&(e.button===1||e.button===2||(e.button===0&&mode==='pan'))){
     _panning=false;SVG.style.cursor=mode==='pan'?'grab':'default';return;
   }
-  if(dragging){const moved=_dragMoved;dragging=null;_dragTermOld=null;_dragWireBinds=null;_dragMoved=false;if(moved)markDirty();}
+  if(dragging){
+    const moved=_dragMoved;
+    dragging=null;_dragTermOld=null;_dragWireBinds=null;_dragMoved=false;
+    if(moved){
+      // Connections settle on drop: crossings created by the move default to
+      // a hop (not connected) — deliberate joins happen at endpoints/terminals.
+      if(_dragXings) applyNewCrossingHops(_dragXings);
+      clearSim();render();markDirty();
+    }
+    _dragXings=null;
+  }
 });
 SVG.addEventListener('wheel',e=>{
   e.preventDefault();
