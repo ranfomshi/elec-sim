@@ -718,6 +718,53 @@ input[type='range']::-moz-range-track { background: var(--surface-3); height: 4p
 }
 .ch-next-btn:hover { filter: brightness(1.08); }
 
+/* theory lessons + quizzes */
+.th-body { margin-bottom: 4px; }
+.th-p { font-size: 13px; color: var(--text); line-height: 1.65; margin-bottom: 10px; }
+.th-p strong { color: #9ecbff; font-weight: 650; }
+
+.quiz-head {
+  font-size: 10px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  margin: 14px 0 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+.quiz-q { margin-bottom: 15px; }
+.quiz-question { font-size: 12.5px; font-weight: 650; color: var(--text); margin-bottom: 7px; line-height: 1.5; }
+.quiz-opt {
+  font-size: 12px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 11px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  line-height: 1.45;
+  transition: border-color var(--t-fast), background var(--t-fast), color var(--t-fast);
+}
+.quiz-opt:hover { border-color: var(--accent); color: var(--text); }
+.quiz-opt.selected { border-color: var(--accent); background: var(--accent-soft); color: var(--text); }
+.quiz-opt.correct { border-color: var(--success); background: rgba(52, 211, 153, 0.1); color: var(--success); }
+.quiz-opt.wrong { border-color: var(--danger); background: var(--danger-soft); color: #ff8a88; }
+
+.les-tag {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 1px 7px;
+  border-radius: 99px;
+  margin-left: 4px;
+  vertical-align: 1px;
+}
+.les-tag.th { background: rgba(167, 139, 250, 0.12); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.35); }
+.les-tag.pr { background: var(--accent-soft); color: var(--accent); border: 1px solid rgba(77, 163, 255, 0.35); }
+
 .progress-bar { height: 4px; background: var(--surface-3); border-radius: 99px; margin: 7px 0; overflow: hidden; }
 .progress-fill { height: 4px; background: linear-gradient(90deg, var(--accent), var(--accent-strong)); border-radius: 99px; transition: width 0.3s var(--ease); }
 

@@ -733,41 +733,561 @@ Plugging in an appliance: the plug connects to the socket Live (L), Neutral (N),
       takeaway: 'UK ring main: 2.5mm² cable, 32A MCB, 13A sockets. Each socket has two supply paths. Fused plugs (3A or 13A) protect individual appliances.',
     },
   },
+
+  // ════════════════════════════════════════════════════════════════════════
+  // Theory lessons (quiz-based, non-practical) — indices 14+
+  // Mapped to the C&G 2365 Level 2 units: Health & Safety, Principles of
+  // Electrical Science, Installations Technology, Installation of Wiring
+  // Systems — referencing BS 7671 (IET Wiring Regulations), the IET On-Site
+  // Guide, and the Electricity at Work Regulations 1989.
+  // ════════════════════════════════════════════════════════════════════════
+
+  // Ch 14 — What Is Electricity?
+  {
+    title: 'What Is Electricity?',
+    theory: true,
+    content: [
+      "Everything is made of atoms, and atoms contain <strong>electrons</strong> — tiny particles carrying a negative charge. In metals like copper, the outer electrons are loosely held and free to move. <strong>Electric current</strong> is the organised flow of these electrons through a material.",
+      "Current is measured in <strong>amperes (A)</strong> — one ampere is roughly six billion billion electrons passing a point every second. For electrons to flow, two things are needed: a source of <strong>electromotive force</strong> (a battery or generator providing voltage) and a <strong>closed circuit</strong> — an unbroken conductive loop from one terminal of the source to the other.",
+      "<strong>Voltage (V)</strong> is the electrical pressure pushing electrons around the circuit, measured in volts. Think of a water analogy: voltage is the pump pressure, current is the flow rate, and the pipes are the conductors.",
+      "Materials divide into <strong>conductors</strong> (copper, aluminium, brass — and also water and the human body) which allow current to flow, and <strong>insulators</strong> (PVC, rubber, glass, dry air) which resist it. Cable design uses both: copper cores to carry current, PVC sheathing to keep it where it belongs.",
+    ],
+    quiz: [
+      {q: 'What is electric current?', options: ['Stored electrical pressure', 'The organised flow of electrons through a conductor', 'The resistance of a material', 'Energy stored in an atom'], a: 1},
+      {q: 'What must a circuit have for current to flow?', options: ['A fuse and a switch', 'At least two lamps', 'A source of voltage and a complete (closed) loop', 'An earth connection'], a: 2},
+      {q: 'Which of these is a conductor?', options: ['PVC', 'Dry rubber', 'Glass', 'Copper'], a: 3},
+    ],
+    explainer: {
+      title: 'What Is Electricity?',
+      body: `Current is the flow of electrons, driven by voltage, through a closed conductive loop. No closed loop, no current — which is exactly why a switch works: it opens the loop.
+
+Conductors carry current; insulators contain it. Remember that water and the human body are conductors — this single fact underpins almost every safety rule you will learn.`,
+      takeaway: 'Current (amperes) = electron flow. Voltage (volts) = the pressure driving it. It only flows around a complete circuit of conductive material.',
+    },
+  },
+
+  // Ch 15 — Ohm's Law
+  {
+    title: "Ohm's Law: V = I × R",
+    theory: true,
+    content: [
+      "<strong>Resistance (R)</strong>, measured in ohms (Ω), is how strongly a material opposes current. Long thin wires have more resistance than short fat ones; heating elements are deliberately resistive; copper cable is deliberately not.",
+      "<strong>Ohm's Law</strong> ties the three quantities together: <strong>V = I × R</strong>. Rearranged: <strong>I = V ÷ R</strong> and <strong>R = V ÷ I</strong>. Cover the one you want in the V-I-R triangle and the layout tells you the formula — the floating triangle widget in this app does exactly that.",
+      "Example: a 230 V supply across a 115 Ω heating element drives I = 230 ÷ 115 = <strong>2 A</strong>. Double the resistance to 230 Ω and the current halves to 1 A. Voltage and current are proportional; current and resistance are inversely proportional.",
+      "Electricians use this constantly: predicting current draw, sizing protective devices, and recognising fault conditions — a near-zero resistance (short circuit) across 230 V gives an enormous current, which is why protective devices must operate fast.",
+    ],
+    quiz: [
+      {q: 'A 230 V supply is connected across 23 Ω. What current flows?', options: ['0.1 A', '10 A', '23 A', '5290 A'], a: 1},
+      {q: 'If resistance doubles and voltage stays the same, the current…', options: ['doubles', 'stays the same', 'halves', 'drops to zero'], a: 2},
+      {q: 'What voltage drives 2 A through a 6 Ω resistor?', options: ['3 V', '8 V', '12 V', '0.33 V'], a: 2},
+    ],
+    explainer: {
+      title: "Ohm's Law",
+      body: `V = I × R is the single most-used equation in electrical work. Given any two of voltage, current and resistance, you can always find the third.
+
+A short circuit is just Ohm's Law at the extreme: R approaches zero, so I approaches infinity — limited only by the supply and cable impedance. That is why fault protection exists.`,
+      takeaway: "Ohm's Law: V = I × R, I = V ÷ R, R = V ÷ I. Current is proportional to voltage and inversely proportional to resistance.",
+    },
+  },
+
+  // Ch 16 — Power & Energy
+  {
+    title: 'Power & Energy: P = V × I',
+    theory: true,
+    content: [
+      "<strong>Power (P)</strong> is the rate at which electrical energy is converted into heat, light or motion, measured in <strong>watts (W)</strong>. The fundamental formula is <strong>P = V × I</strong>. Combining it with Ohm's Law gives two more forms: <strong>P = I² × R</strong> and <strong>P = V² ÷ R</strong>.",
+      "Example: a 3 kW kettle on a 230 V supply draws I = 3000 ÷ 230 ≈ <strong>13 A</strong> — which is exactly why UK plug fuses top out at 13 A, and why a kettle should never share an adaptor with another heavy load.",
+      "P = I²R explains why cable size matters: current flowing through cable resistance dissipates heat in the cable itself. Doubling the current quadruples the heating — an overloaded cable gets dangerously hot long before its insulation visibly fails.",
+      "<strong>Energy</strong> is power sustained over time, billed in <strong>kilowatt-hours (kWh)</strong>: one kWh is 1 kW running for one hour. A 2 kW heater on for 3 hours uses 6 kWh — the units your electricity meter records.",
+    ],
+    quiz: [
+      {q: 'A 2.3 kW immersion heater runs on 230 V. What current does it draw?', options: ['1 A', '10 A', '23 A', '100 A'], a: 1},
+      {q: 'A 2 kW fire runs for 3 hours. How much energy is used?', options: ['1.5 kWh', '5 kWh', '6 kWh', '600 kWh'], a: 2},
+      {q: 'Which formula gives power when you know current and resistance but not voltage?', options: ['P = V × I', 'P = I² × R', 'P = V² ÷ R', 'V = I × R'], a: 1},
+    ],
+    explainer: {
+      title: 'Power & Energy',
+      body: `P = V × I sizes everything: appliance ratings, plug fuses, circuit breakers, cable selection. At UK mains voltage a useful rule of thumb is 1 kW ≈ 4.3 A.
+
+I²R heating is the hidden hazard — the same physics that makes a toaster glow makes an undersized cable a fire risk.`,
+      takeaway: 'P = V × I = I²R = V²/R. Energy = power × time, billed in kWh. At 230 V, roughly 4.3 A flows per kW.',
+    },
+  },
+
+  // Ch 17 — Series & Parallel Circuits
+  {
+    title: 'Series & Parallel Circuits',
+    theory: true,
+    content: [
+      "In a <strong>series</strong> circuit, components form a single loop: the <strong>same current</strong> flows through every component, the supply voltage <strong>divides</strong> across them, and resistances simply <strong>add</strong>: R = R1 + R2 + … One break anywhere stops everything — old fairy lights were the classic example.",
+      "In a <strong>parallel</strong> circuit, each component connects directly across the supply: every branch sees the <strong>full supply voltage</strong>, the current <strong>divides</strong> between branches, and total resistance is always <strong>less than the smallest branch</strong>. For two resistors: R = (R1 × R2) ÷ (R1 + R2). Two equal 10 Ω resistors in parallel give 5 Ω.",
+      "Domestic installations are wired in <strong>parallel</strong>: every socket and light receives the full 230 V, each load draws its own design current, and switching one off does not affect the others.",
+      "Series behaviour still matters on site: a loose terminal adds unwanted series resistance — it drops voltage, dissipates I²R heat right at the joint, and is a leading cause of scorched accessories.",
+    ],
+    quiz: [
+      {q: 'Two 10 Ω resistors in series total…', options: ['5 Ω', '10 Ω', '20 Ω', '100 Ω'], a: 2},
+      {q: 'Two 10 Ω resistors in parallel total…', options: ['5 Ω', '10 Ω', '20 Ω', '0 Ω'], a: 0},
+      {q: 'Why are domestic circuits wired in parallel?', options: ['It uses less cable', 'Each load gets the full supply voltage and works independently', 'It limits the current to safe values', 'Parallel wiring needs no earth'], a: 1},
+    ],
+    explainer: {
+      title: 'Series & Parallel',
+      body: `Series: one path — current common, voltage divides, resistance adds. Parallel: many paths — voltage common, current divides, total resistance falls.
+
+Houses are parallel so every load is independent at full voltage. Unintended series resistance (a loose connection) is a defect: it steals voltage and creates heat exactly where you do not want it.`,
+      takeaway: 'Series: R adds, same I, V divides. Parallel: same V, I divides, total R is below the smallest branch. Domestic wiring is parallel.',
+    },
+  },
+
+  // Ch 18 — AC, DC & the UK Supply
+  {
+    title: 'AC, DC & the UK Supply',
+    theory: true,
+    content: [
+      "<strong>Direct current (DC)</strong> flows one way only — batteries, solar panels, electronics. <strong>Alternating current (AC)</strong> reverses direction in a smooth sine wave. The UK grid alternates at <strong>50 hertz</strong> — fifty full cycles every second.",
+      "The UK declares <strong>230 V</strong> nominal (it was 240 V before European harmonisation, and measured supplies often still sit near 240). That 230 V is the <strong>RMS</strong> (root-mean-square) value — the effective value that delivers the same heating as DC. The actual sine wave peaks at about <strong>325 V</strong>.",
+      "Why AC for distribution? <strong>Transformers</strong>. They only work with alternating current, and they let the grid step voltage up to 400,000 V for efficient long-distance transmission (high voltage means low current, so low I²R cable losses) and back down to 230 V for homes.",
+      "A domestic single-phase supply arrives as two conductors — <strong>line</strong> and <strong>neutral</strong> — plus an earth facility. Larger premises take three-phase: three lines, 400 V between phases, 230 V from any phase to neutral.",
+    ],
+    quiz: [
+      {q: 'What is the frequency of the UK mains supply?', options: ['60 Hz', '50 Hz', '230 Hz', '13 Hz'], a: 1},
+      {q: 'The 230 V figure quoted for UK mains is…', options: ['the peak of the sine wave', 'the DC equivalent stored in the cable', 'the RMS (effective) value — the peak is about 325 V', 'the three-phase value'], a: 2},
+      {q: 'Why is AC used for the national grid?', options: ['AC is safer to touch than DC', 'Transformers can step AC voltage up and down, cutting transmission losses', 'AC travels faster down the cable', 'Generators cannot produce DC'], a: 1},
+    ],
+    explainer: {
+      title: 'AC, DC & the UK Supply',
+      body: `UK mains: 230 V RMS nominal, 50 Hz single-phase for homes, 400 V three-phase for bigger loads. RMS is the working value — but remember the wave peaks at ~325 V, which is what your insulation actually withstands.
+
+AC won the grid because transformers make voltage conversion almost lossless, and high-voltage transmission slashes I²R losses.`,
+      takeaway: 'UK supply: 230 V RMS at 50 Hz (peak ≈ 325 V). AC enables transformers; transformers enable the grid.',
+    },
+  },
+
+  // Ch 19 — The Law: EAWR 1989
+  {
+    title: 'The Law: Electricity at Work Regulations 1989',
+    theory: true,
+    content: [
+      "The <strong>Electricity at Work Regulations 1989 (EAWR)</strong> are <strong>statutory</strong> — criminal law, made under the Health and Safety at Work etc. Act 1974. They apply to every workplace electrical system and place duties on employers, employees and the self-employed alike: everyone must comply so far as matters are within their control.",
+      "Core requirements: electrical systems must be constructed and <strong>maintained to prevent danger</strong>; work activities must not give rise to danger; and equipment must be suitable for its environment.",
+      "<strong>Regulation 14</strong> is the one every electrician can recite: no work on or near <strong>live</strong> conductors unless it is <strong>unreasonable</strong> to work dead, it is <strong>reasonable</strong> to work live, AND suitable precautions are taken. Convenience and saving time never qualify — dead working is the default, every time.",
+      "<strong>BS 7671 (the IET Wiring Regulations)</strong> is different: it is a British Standard, <strong>non-statutory</strong> in itself. But compliance with BS 7671 is the accepted way to demonstrate you have satisfied the EAWR — which is why it is treated as mandatory in practice.",
+    ],
+    quiz: [
+      {q: 'What is the legal status of the EAWR 1989?', options: ['Guidance only', 'Statutory — breaching them is a criminal offence', 'A British Standard', 'An IET code of practice'], a: 1},
+      {q: 'Under Regulation 14, live working is permitted only when…', options: ['the job is small and quick', 'a second person is watching', 'it is unreasonable to work dead, reasonable to work live, and precautions are in place', 'the circuit is RCD protected'], a: 2},
+      {q: 'BS 7671 itself is…', options: ['statutory law', 'non-statutory, but compliance demonstrates EAWR compliance', 'only relevant to new builds', 'an EU regulation'], a: 1},
+    ],
+    explainer: {
+      title: 'EAWR 1989 & BS 7671',
+      body: `EAWR 1989 is the law: maintain systems to prevent danger, and work dead unless live working is genuinely justified and properly safeguarded.
+
+BS 7671 is the standard that tells you how. Follow it and you can demonstrate compliance with the law — which is why every UK installation is designed, installed and tested against it.`,
+      takeaway: 'EAWR 1989 = statutory duty, dead working by default (Reg 14). BS 7671 = the non-statutory standard used to prove compliance.',
+    },
+  },
+
+  // Ch 20 — Electric Shock & the Human Body
+  {
+    title: 'Electric Shock & the Human Body',
+    theory: true,
+    content: [
+      "It is <strong>current</strong>, not voltage, that injures: voltage just determines how much current your body resistance lets through. A few milliamps is a tingle; around 10–20 mA muscles clamp and you may be <strong>unable to let go</strong> (AC is worse than DC for this); above roughly 30–50 mA across the chest, <strong>ventricular fibrillation</strong> — the heart quivering uselessly — becomes likely. That is why additional protection RCDs trip at <strong>30 mA</strong> within 40 ms.",
+      "Body resistance varies hugely: dry intact skin may be 100 kΩ; wet or broken skin a few hundred ohms. The same 230 V contact can be a jolt one day and fatal the next. BS 7671 treats <strong>50 V AC</strong> as the conventional touch-voltage limit for dry conditions.",
+      "Shock is not the only harm: current causes deep <strong>burns</strong> along its path, and arc flash from a short circuit causes radiant burns and eye damage without any contact at all.",
+      "Finding someone receiving a shock: <strong>do not touch them</strong> — you become the next casualty. Isolate the supply first. If you cannot, push them clear with something non-conductive (dry wood, rolled clothing). Then call 999 and start CPR if they are not breathing normally.",
+    ],
+    quiz: [
+      {q: 'What actually causes injury in an electric shock?', options: ['Voltage across the skin', 'Current flowing through the body', 'The frequency alone', 'Static charge'], a: 1},
+      {q: 'Why are additional-protection RCDs rated at 30 mA?', options: ['It matches the 32 A MCB', 'Below the level likely to cause ventricular fibrillation', 'It is the maximum a cable can leak', 'It is one tenth of a plug fuse'], a: 1},
+      {q: 'You find a colleague rigid and in contact with a live conductor. First action?', options: ['Pull them off by the arm', 'Throw water to break the contact', 'Isolate the supply — never touch them while they are live', 'Start CPR immediately while they are still in contact'], a: 2},
+    ],
+    explainer: {
+      title: 'Electric Shock',
+      body: `Milliamps kill: ~10–20 mA freezes muscles, ~30–50 mA through the chest can stop the heart. The 30 mA RCD exists precisely to disconnect before fibrillation territory.
+
+Casualty drill: isolate first, never touch a live casualty, 999, CPR. Burns and arc flash injure too — shocks are not the whole story.`,
+      takeaway: 'Current kills, from tens of milliamps. 30 mA RCDs protect against fibrillation. Isolate before touching any shock casualty.',
+    },
+  },
+
+  // Ch 21 — Safe Isolation Procedure
+  {
+    title: 'Safe Isolation Procedure',
+    theory: true,
+    content: [
+      "<strong>Safe isolation</strong> is the formal procedure proving a circuit is dead before you touch it. It is the practical heart of dead working under EAWR Regulation 14, and it must be followed in full, every time — most fatal accidents in the trade trace back to skipping a step.",
+      "The sequence: <strong>1)</strong> Identify the circuit and obtain permission to isolate. <strong>2)</strong> Isolate — switch off and disconnect the means of supply. <strong>3)</strong> Secure the isolation: <strong>lock off</strong> the device with a unique key or multi-lock hasp that stays in your pocket, and fit warning signage. <strong>4)</strong> <strong>Prove</strong> your voltage indicator works on a known live source or proving unit. <strong>5)</strong> Test the circuit dead at the point of work — every combination: line–neutral, line–earth, neutral–earth. <strong>6)</strong> <strong>Re-prove</strong> the indicator on the known source — confirming it did not fail during the test.",
+      "The instrument matters: an <strong>approved two-pole voltage indicator</strong> meeting HSE Guidance Note <strong>GS38</strong> — finger guards, minimal exposed probe tips, fused leads. Never a neon screwdriver (unreliable), and not a multimeter (too easy to set wrongly and read a dead circuit on the wrong range).",
+      "Prove–test–prove is the unbreakable pattern: a voltage indicator that died between proving and testing would otherwise tell you a live circuit is dead.",
+    ],
+    quiz: [
+      {q: 'What is the correct order?', options: ['Test dead → isolate → lock off → prove tester', 'Isolate → lock off → prove tester → test dead → re-prove tester', 'Prove tester → test dead → isolate → sign', 'Lock off → test dead → isolate → prove'], a: 1},
+      {q: 'Why prove the voltage indicator both before AND after testing dead?', options: ['To warm the instrument up', 'Regulations require two readings for the certificate', 'To confirm the indicator was working during the dead test — a failed tester reads everything as dead', 'To discharge stored voltage'], a: 2},
+      {q: 'Which instrument is correct for proving dead?', options: ['A neon screwdriver', 'Any digital multimeter', 'An approved two-pole voltage indicator to GS38', 'A clamp meter'], a: 2},
+    ],
+    explainer: {
+      title: 'Safe Isolation',
+      body: `Identify → isolate → lock off with a unique key → prove the tester → test dead (L–N, L–E, N–E) → re-prove the tester. Signage up, key in your pocket, GS38 two-pole indicator in hand.
+
+The procedure has no optional steps. Prove–test–prove is what stands between you and a tester that failed at exactly the wrong moment.`,
+      takeaway: 'Safe isolation: isolate, lock off (unique key), prove–test–prove with a GS38 two-pole voltage indicator, testing all conductor combinations.',
+    },
+  },
+
+  // Ch 22 — PPE & Safe Working Practice
+  {
+    title: 'PPE & Safe Working Practice',
+    theory: true,
+    content: [
+      "The <strong>hierarchy of control</strong> puts personal protective equipment <strong>last</strong>: eliminate the hazard (work dead), reduce it, isolate it, control it procedurally — and only then rely on PPE for whatever risk remains. PPE protects one person, only if worn, only if maintained.",
+      "An electrician's core kit: <strong>insulated hand tools</strong> to BS EN 60900 (rated 1000 V, marked with the double-triangle symbol); a <strong>GS38 voltage indicator</strong> with fused leads; <strong>safety footwear</strong>; <strong>eye protection</strong> when drilling, chasing or anywhere arc flash is conceivable; and gloves appropriate to the task.",
+      "Habits that count as controls: remove <strong>metallic jewellery</strong> and watches (a ring across a busbar is a molten ring); barriers and warning signs around open boards; never leave an exposed live part unattended; keep the work area dry and lit.",
+      "Beyond electrical: safe use of <strong>steps and ladders</strong> (three points of contact, correct angle), dust control when chasing walls, and asbestos awareness in pre-2000 buildings — stop work and report if suspect materials are found.",
+    ],
+    quiz: [
+      {q: 'Where does PPE sit in the hierarchy of control?', options: ['First — always start with PPE', 'Last — after elimination, reduction, isolation and procedural controls', 'Second, after signage', 'It replaces the need for safe isolation'], a: 1},
+      {q: 'Insulated hand tools for electrical work are made to…', options: ['BS 1363', 'BS EN 60900, rated 1000 V', 'GS38', 'BS 7671 Part 6'], a: 1},
+      {q: 'Why remove rings and metal watches before electrical work?', options: ['They scratch accessories', 'Metal jewellery can bridge live parts and cause severe burns', 'They interfere with test instruments', 'Regulation 14 bans jewellery outright'], a: 1},
+    ],
+    explainer: {
+      title: 'PPE & Safe Working',
+      body: `PPE is the last line of defence, not the first: the hierarchy starts with eliminating the hazard — which in this trade means working dead.
+
+Insulated tools (BS EN 60900), GS38 tester, eye protection, no jewellery, barriers and signage: small disciplines that close off the most common accident routes.`,
+      takeaway: 'Hierarchy of control: PPE comes last. Insulated tools to BS EN 60900, GS38 tester, no metallic jewellery, barriers and signs.',
+    },
+  },
+
+  // Ch 23 — Inside the Consumer Unit
+  {
+    title: 'Inside the Consumer Unit',
+    theory: true,
+    content: [
+      "The <strong>consumer unit</strong> (CU) is the heart of a domestic installation: it receives the supply via the meter <strong>tails</strong>, provides the <strong>main switch</strong>, and distributes power to every final circuit through individual protective devices.",
+      "The main switch is a <strong>double-pole isolator</strong> — it breaks line AND neutral together, giving one place to make the whole installation dead. From it, a <strong>busbar</strong> runs along the row of protective devices, feeding each circuit 'way'. Neutrals and earths return to their respective terminal bars.",
+      "Modern boards are commonly <strong>split-load</strong> or all-RCBO: either circuits grouped under shared RCDs (so one earth fault does not black out the whole house — and circuits like lighting and freezers sit on different banks), or one RCBO per circuit for full independence.",
+      "Since Amendment 3 of the 17th Edition, domestic consumer units must have a <strong>non-combustible enclosure</strong> — in practice, steel — to contain any fire starting at a loose terminal. Boards increasingly also carry a <strong>surge protection device (SPD)</strong> protecting electronics from transient overvoltages.",
+    ],
+    quiz: [
+      {q: 'What does the CU main switch disconnect?', options: ['Line only', 'Neutral only', 'Both line and neutral (double-pole)', 'Earth and neutral'], a: 2},
+      {q: 'What does the busbar do?', options: ['Connects all earths together', 'Distributes the line supply along the row of protective devices', 'Limits the current to 100 A', 'Provides the earth electrode'], a: 1},
+      {q: 'Why are modern domestic CUs metal?', options: ['Easier to earth', 'Cheaper than plastic', 'A non-combustible enclosure contains fires starting at loose terminals', 'Metal blocks electromagnetic interference'], a: 2},
+    ],
+    explainer: {
+      title: 'The Consumer Unit',
+      body: `Tails in → double-pole main switch → busbar → one protective device per final circuit, with neutral and earth bars completing the returns.
+
+Split-load and all-RCBO designs limit how much of the house one fault can take down; the steel enclosure (Amendment 3) keeps a terminal fire inside the box.`,
+      takeaway: 'CU: DP main switch, busbar to one device per circuit, neutral and earth bars. Metal-clad by regulation; RCD/RCBO arrangement decides what a single fault disconnects.',
+    },
+  },
+
+  // Ch 24 — Protective Devices
+  {
+    title: 'Protective Devices: Fuses, MCBs, RCDs, RCBOs',
+    theory: true,
+    content: [
+      "<strong>Fuses</strong> (BS 88, BS 1362 in plugs) are the original protection: a calibrated wire that melts on overcurrent. Simple and reliable, but single-use and slow to replace.",
+      "<strong>MCBs</strong> (miniature circuit breakers) protect cables against <strong>overload</strong> (thermal element — slow, heat-driven) and <strong>short circuit</strong> (magnetic element — instant). Curve types set the instantaneous trip threshold: <strong>Type B</strong> trips at 3–5× rated current (domestic standard), <strong>Type C</strong> at 5–10× (motors, inductive loads), <strong>Type D</strong> at 10–20× (high-inrush industrial).",
+      "<strong>RCDs</strong> (residual current devices) protect <strong>people</strong>: they compare line and neutral current, and any imbalance means current is escaping — through a fault, or through someone. A 30 mA RCD disconnects fast enough to prevent fibrillation. RCDs do NOT detect overload — an RCD alone never protects the cable.",
+      "<strong>RCBOs</strong> combine MCB + RCD in one module, protecting a single circuit against overcurrent and earth leakage — so a fault on one circuit cannot trip the neighbours. <strong>SPDs</strong> clamp transient overvoltages (lightning, switching surges); <strong>AFDDs</strong> detect the signature of dangerous arcing in damaged cables.",
+    ],
+    quiz: [
+      {q: 'Which device protects a person from earth-leakage shock current?', options: ['MCB', 'Fuse', 'RCD', 'SPD'], a: 2},
+      {q: 'A Type B MCB trips instantly at…', options: ['1–2× rated current', '3–5× rated current', '5–10× rated current', '10–20× rated current'], a: 1},
+      {q: 'The advantage of RCBOs over a shared RCD is…', options: ['they are cheaper', 'an earth fault on one circuit only disconnects that circuit', 'they trip faster than 30 ms', 'no MCBs are needed in the board'], a: 1},
+    ],
+    explainer: {
+      title: 'Protective Devices',
+      body: `MCBs protect cables: thermal for overload, magnetic for short circuit (B = 3–5×, C = 5–10×, D = 10–20× In). RCDs protect people: 30 mA imbalance and they are out in milliseconds — but they see no overload at all.
+
+RCBO = both jobs in one module per circuit. SPD handles surges; AFDD listens for arcing.`,
+      takeaway: 'MCB = cable protection (B/C/D curves). RCD = people protection (30 mA). RCBO = both per circuit. Neither replaces the other.',
+    },
+  },
+
+  // Ch 25 — Cables: Twin & Earth
+  {
+    title: 'Cables: Twin & Earth',
+    theory: true,
+    content: [
+      "The standard cable of UK domestic wiring is flat <strong>twin and earth</strong> (6242Y): two insulated conductors — line (brown) and neutral (blue) — plus a bare <strong>circuit protective conductor (CPC)</strong> between them, all inside a grey or white PVC sheath.",
+      "The bare CPC must be sleeved <strong>green/yellow</strong> wherever it is exposed at accessories. Note the CPC is one size smaller than the live conductors in most T&E (e.g. 2.5 mm² cable carries a 1.5 mm² CPC) — it carries fault current briefly, not load current continuously.",
+      "Common sizes: <strong>1.0/1.5 mm²</strong> lighting; <strong>2.5 mm²</strong> socket circuits; <strong>4–6 mm²</strong> cookers and small showers; <strong>10 mm²</strong> large showers. Meter tails are typically 25 mm² double-insulated singles.",
+      "A cable's current-carrying capacity is not fixed — it must be <strong>derated</strong> for how it is installed: buried in insulation, grouped with other cables, or in high ambient temperature, it sheds heat poorly and carries less. The IET On-Site Guide tables turn these factors into practical cable choices.",
+    ],
+    quiz: [
+      {q: 'A typical UK ring final circuit is wired in…', options: ['1.0 mm² T&E', '2.5 mm² T&E', '6 mm² T&E', '25 mm² tails'], a: 1},
+      {q: 'The bare CPC in twin and earth must be…', options: ['left bare for ventilation', 'sleeved green/yellow where exposed at accessories', 'sleeved blue', 'cut back flush with the sheath'], a: 1},
+      {q: 'Which factor reduces a cable\'s current-carrying capacity?', options: ['Painting the wall it runs in', 'Running it through thermal insulation', 'Connecting it to an RCBO', 'Using a metal back box'], a: 1},
+    ],
+    explainer: {
+      title: 'Twin & Earth',
+      body: `6242Y T&E: brown line, blue neutral, bare CPC (sleeve it green/yellow). Sizes follow the job: 1.0/1.5 lighting, 2.5 sockets, 4–10 for cookers and showers.
+
+Ratings are conditional — insulation, grouping and ambient temperature all derate a cable. The On-Site Guide tables exist so you never guess.`,
+      takeaway: 'T&E: brown/blue + bare CPC (sleeved G/Y). 1.0–1.5 lighting, 2.5 sockets, 6–10 showers — always derated for installation conditions.',
+    },
+  },
+
+  // Ch 26 — Radial vs Ring Final Circuits
+  {
+    title: 'Radial vs Ring Final Circuits',
+    theory: true,
+    content: [
+      "A <strong>radial</strong> circuit is the simple case: cable runs from the protective device to the first point, on to the next, and stops. Lighting circuits, cooker circuits, shower circuits — almost everything is a radial. Socket radials: <strong>2.5 mm² on a 20 A</strong> device, or <strong>4 mm² on a 32 A</strong>.",
+      "The <strong>ring final circuit</strong> is the British speciality: a 2.5 mm² cable leaves the board, loops through every socket, and <strong>returns to the same terminals</strong>. Current reaches each socket by two parallel paths, sharing the load — which is how 2.5 mm² cable can sit behind a <strong>32 A</strong> MCB. It was devised post-war to deliver more sockets per tonne of scarce copper.",
+      "<strong>Spurs</strong>: a non-fused spur (one single 2.5 mm² branch) may feed one socket outlet from each ring point; further or longer branches need a <strong>fused connection unit</strong> (FCU) to protect the spur cable.",
+      "The ring's weakness is invisibility: if the loop <strong>breaks</strong>, every socket still works — but the remaining single 2.5 mm² leg now carries current it was never sized for, behind a 32 A device that will not notice. This is why ring continuity is a mandatory dead test at every inspection.",
+    ],
+    quiz: [
+      {q: 'A standard UK ring final uses…', options: ['2.5 mm² cable on a 32 A device', '1.5 mm² cable on a 32 A device', '4 mm² cable on a 20 A device', '2.5 mm² cable on a 6 A device'], a: 0},
+      {q: 'Why is a broken ring dangerous even though all sockets still work?', options: ['The RCD stops working', 'Sockets lose their earth', 'One 2.5 mm² leg can carry the full load, overloading the cable unnoticed behind the 32 A MCB', 'The voltage at the sockets drops to 115 V'], a: 2},
+      {q: 'A 2.5 mm² socket radial is protected by at most…', options: ['6 A', '20 A', '32 A', '40 A'], a: 1},
+    ],
+    explainer: {
+      title: 'Radial vs Ring',
+      body: `Radial: one run, sized simply (2.5 mm² → 20 A, 4 mm² → 32 A). Ring: a 2.5 mm² loop back to the same device, two parallel paths sharing the load, 32 A protection.
+
+A broken ring fails silently — every socket works while one leg quietly overloads. That is exactly why ring continuity testing is mandatory.`,
+      takeaway: 'Ring final: 2.5 mm² loop on 32 A, two paths to every socket. Radial: single run, 20 A (2.5 mm²) or 32 A (4 mm²). Broken rings hide — test continuity.',
+    },
+  },
+
+  // Ch 27 — Lighting Circuit Design
+  {
+    title: 'Lighting Circuit Design',
+    theory: true,
+    content: [
+      "Domestic lighting circuits are <strong>radials</strong> in <strong>1.0 or 1.5 mm²</strong> T&E, protected at <strong>6 A</strong> (Type B) — ample for modern LED loads. Practice splits a house across at least two circuits so one fault never darkens the whole dwelling.",
+      "The classic arrangement is <strong>loop-in at the ceiling rose</strong>: the permanent line loops from rose to rose; at each rose, a <strong>switch drop</strong> takes the line down to the wall switch and returns a <strong>switched line</strong> to feed the lampholder. Neutral stays at the rose — the switch needs no neutral (though smart switches are changing that habit).",
+      "In a twin and earth switch drop, the blue conductor is used as the switched line — it must be <strong>over-sleeved brown</strong> at both ends to declare what it really is.",
+      "The golden rule of switching: switches break the <strong>line</strong> conductor, never the neutral. A neutral-switched light goes out — but its fitting stays at 230 V, waiting for whoever changes the lamp. That is a polarity defect, and it is tested for.",
+    ],
+    quiz: [
+      {q: 'A typical domestic lighting circuit is protected by…', options: ['a 32 A Type B MCB', 'a 6 A Type B MCB', 'a 13 A fuse', 'a 40 A RCBO'], a: 1},
+      {q: 'In loop-in wiring, what does the wall switch receive and return?', options: ['Neutral down, earth back', 'Permanent line down, switched line back to the lamp', 'Both line and neutral to the switch', 'Switched neutral to the rose'], a: 1},
+      {q: 'The blue conductor used as a switched line in a T&E switch drop must be…', options: ['left blue — colour does not matter', 'sleeved green/yellow', 'over-sleeved brown at both ends', 'replaced with single brown cable'], a: 2},
+    ],
+    explainer: {
+      title: 'Lighting Circuits',
+      body: `1.0/1.5 mm² radials on 6 A devices, looped-in at the roses, with switch drops breaking the line conductor only. Blue used as switched line gets brown sleeving at both ends.
+
+Switch the line, never the neutral — a neutral-switched fitting is dark but still live, which is precisely what polarity testing exists to catch.`,
+      takeaway: 'Lighting: 1.0/1.5 mm² radial on 6 A. Loop-in at the rose, switch drop breaks the LINE, blue switched-line sleeved brown.',
+    },
+  },
+
+  // Ch 28 — Earthing Systems
+  {
+    title: 'Earthing Systems: TN-S, TN-C-S, TT',
+    theory: true,
+    content: [
+      "<strong>Earthing</strong> gives fault current a deliberate low-impedance path back to the source, so a line-to-earth fault draws a current large enough to trip the protective device fast — <strong>Automatic Disconnection of Supply (ADS)</strong>, the core protective measure of BS 7671.",
+      "<strong>TN-S</strong>: the distributor provides a separate earth — historically the lead sheath of the supply cable. Line, neutral and earth arrive as distinct conductors. Typical external earth loop impedance (Ze) up to about <strong>0.8 Ω</strong>.",
+      "<strong>TN-C-S</strong> (also called <strong>PME</strong> — protective multiple earthing): the supply combines neutral and earth in one <strong>PEN conductor</strong>, split at the cutout into separate N and E. The most common system for newer UK supplies; typical Ze up to <strong>0.35 Ω</strong>. Its caveat: a lost PEN conductor can put supply neutral current onto everything earthed — why PME has special bonding demands and is restricted for caravans and EV chargers.",
+      "<strong>TT</strong>: no distributor earth at all — the installation drives its own <strong>earth electrode</strong>. Electrode resistance is high (tens to hundreds of ohms), far too high for an MCB to see fault current, so <strong>RCD protection is essential</strong> for ADS on a TT system. Common for rural and overhead supplies.",
+    ],
+    quiz: [
+      {q: 'PME is another name for which system?', options: ['TN-S', 'TN-C-S', 'TT', 'IT'], a: 1},
+      {q: 'Why is an RCD essential on a TT system?', options: ['TT supplies are DC', 'The electrode earth path is too high-impedance for an MCB to trip on an earth fault', 'TT systems have no neutral', 'It is only needed for outdoor sockets'], a: 1},
+      {q: 'The purpose of earthing is to…', options: ['absorb lightning strikes', 'give fault current a low-impedance return path so protection disconnects quickly (ADS)', 'reduce energy bills', 'stabilise the 50 Hz frequency'], a: 1},
+    ],
+    explainer: {
+      title: 'Earthing Systems',
+      body: `ADS needs a fault-current return path: TN-S gets it from a separate distributor earth (Ze ≤ ~0.8 Ω), TN-C-S/PME from the combined PEN (Ze ≤ ~0.35 Ω), TT from your own electrode — too high for MCBs, so RCDs do the disconnecting.
+
+Know your system before designing anything: it decides bonding sizes, RCD strategy and what Zs values you must achieve.`,
+      takeaway: 'TN-S: separate supply earth. TN-C-S/PME: combined PEN, split at the cutout. TT: own electrode + RCDs essential. Earthing exists to make ADS work.',
+    },
+  },
+
+  // Ch 29 — Protective Bonding
+  {
+    title: 'Protective Bonding',
+    theory: true,
+    content: [
+      "<strong>Earthing</strong> and <strong>bonding</strong> are different jobs. Earthing clears faults: it gives fault current a path that trips the device. <strong>Bonding</strong> prevents shocks during a fault: it connects metalwork together so everything you can touch simultaneously sits at the <strong>same potential</strong> — no dangerous voltage between your two hands.",
+      "<strong>Main protective bonding</strong> connects <strong>extraneous-conductive-parts</strong> — metal parts entering from outside that may import earth potential, classically incoming metal gas, water and oil pipes — to the <strong>Main Earthing Terminal</strong>. On a PME supply the conductor is typically <strong>10 mm²</strong> copper, connected within 600 mm of the service entry, with a 'Safety Electrical Connection — Do Not Remove' label.",
+      "<strong>Supplementary bonding</strong> is local equipotential bonding in special locations — bathrooms being the classic — linking exposed and extraneous metalwork. Under current regulations it may be <strong>omitted</strong> in a bathroom if all circuits are 30 mA RCD-protected, disconnection times are met, and main bonding is in place.",
+      "What does NOT need bonding: isolated metalwork that cannot introduce a potential — a towel rail on plastic pipes, a metal window frame in a wooden wall. Bonding them adds risk paths rather than removing them.",
+    ],
+    quiz: [
+      {q: 'The purpose of bonding is to…', options: ['carry load current back to the CU', 'hold touchable metalwork at the same potential during a fault', 'replace the CPC in old installations', 'increase fault current'], a: 1},
+      {q: 'Main bonding on a typical PME domestic supply uses…', options: ['1.0 mm² conductor', '4 mm² conductor', '10 mm² conductor', '25 mm² conductor'], a: 2},
+      {q: 'Which is an extraneous-conductive-part requiring main bonding?', options: ['A plastic incoming water main', 'A metal gas pipe entering from the ground', 'A free-standing metal lamp', 'A wooden door frame'], a: 1},
+    ],
+    explainer: {
+      title: 'Bonding',
+      body: `Earthing trips devices; bonding equalises potential so a fault cannot put a voltage across your body. Main bonding ties incoming metal services (gas, water, oil) to the MET — 10 mm² on typical PME supplies, labelled, near the point of entry.
+
+Supplementary bathroom bonding can be omitted only when the RCD, disconnection-time and main-bonding conditions are all met.`,
+      takeaway: 'Bonding = equipotential, not fault clearance. Main bonding: incoming metal services to the MET (10 mm² on PME). Supplementary bonding in bathrooms unless the RCD conditions allow omission.',
+    },
+  },
+
+  // Ch 30 — The Dead Test Sequence
+  {
+    title: 'Inspection & Testing: The Dead Test Sequence',
+    theory: true,
+    content: [
+      "Every new circuit gets <strong>initial verification</strong> under BS 7671 Part 6 before it is ever energised: detailed <strong>inspection</strong> first (with the supply off), then the <strong>dead tests</strong>, and only then energisation and the live tests. Results are recorded against design values on the certificate.",
+      "The dead tests run in a fixed, logical order: <strong>1) Continuity of protective conductors</strong> (every CPC and bonding conductor actually connects) → <strong>2) Continuity of ring final conductors</strong> (the ring really is a ring) → <strong>3) Insulation resistance</strong> (no leakage paths between conductors) → <strong>4) Polarity</strong> (everything switched and fused in the line conductor).",
+      "The order matters because each test underwrites the next: there is no point insulation-testing a circuit whose conductors may be broken or cross-connected, and polarity confirmation by continuity depends on the CPC results already proven.",
+      "Only after the dead tests pass is the circuit energised for the <strong>live tests</strong>: earth fault loop impedance (Ze, Zs), prospective fault current, and RCD operation. Dead first, live last — never the reverse.",
+    ],
+    quiz: [
+      {q: 'When are the dead tests performed?', options: ['After the circuit has run for 24 hours', 'Before the circuit is ever energised', 'Only when a fault is suspected', 'Live tests come first, then dead tests'], a: 1},
+      {q: 'Which dead test comes FIRST?', options: ['Insulation resistance', 'Polarity', 'Continuity of protective conductors', 'RCD trip time'], a: 2},
+      {q: 'Why must polarity be confirmed before energising?', options: ['It calibrates the meter', 'Reversed polarity leaves accessories live when switched off — energising would create immediate danger', 'It is only needed for three-phase', 'To warm up the conductors'], a: 1},
+    ],
+    explainer: {
+      title: 'The Dead Test Sequence',
+      body: `Inspect first, then test dead in order: protective-conductor continuity → ring continuity → insulation resistance → polarity. Each result makes the next test meaningful. Only then energise and run the live tests (Ze/Zs, PFC, RCD).
+
+A circuit goes live only after it has proven, on paper, that it is safe to do so.`,
+      takeaway: 'Dead tests, in order: CPC continuity → ring continuity → insulation resistance → polarity. Then energise. Then live tests.',
+    },
+  },
+
+  // Ch 31 — Continuity Testing (R1+R2)
+  {
+    title: 'Continuity Testing (R1+R2)',
+    theory: true,
+    content: [
+      "Continuity testing proves every protective conductor is actually connected, end to end, with acceptably low resistance. The instrument is a <strong>low-resistance ohmmeter</strong> with a test current of at least <strong>200 mA</strong> — and you <strong>null the leads</strong> first so their resistance does not pollute readings.",
+      "The standard method is <strong>R1+R2</strong>: temporarily <strong>link line to CPC at the consumer unit</strong>, then measure between line and earth terminals at each point on the circuit. The reading is R1 (line conductor) + R2 (CPC) to that point — rising as you move further from the board, highest at the far end.",
+      "That highest R1+R2 value is gold: added to the external impedance Ze it predicts <strong>Zs = Ze + (R1+R2)</strong>, the earth fault loop impedance that decides whether the MCB will disconnect in time. Measured dead, confirmed live later.",
+      "<strong>Ring finals</strong> get their own three-step routine: measure each conductor <strong>end-to-end</strong> (line, neutral, CPC — values should be similar, CPC slightly higher), then <strong>cross-connect</strong> line and neutral and verify substantially equal readings at every socket — proving the loop is complete with no breaks and no interconnects.",
+    ],
+    quiz: [
+      {q: 'What does an R1+R2 reading represent?', options: ['The insulation resistance of the cable', 'The combined resistance of the line conductor and CPC to that point', 'The earth electrode resistance', 'The RCD trip current'], a: 1},
+      {q: 'How is the R1+R2 test set up?', options: ['Linking line to neutral at the far end', 'Linking line to CPC at the consumer unit, measuring L–E at each point', 'Injecting 500 V between conductors', 'Measuring at the meter tails'], a: 1},
+      {q: 'Where on the circuit is the highest R1+R2 reading expected?', options: ['At the consumer unit', 'At the point electrically furthest from the board', 'At the earth bar', 'Readings are identical everywhere'], a: 1},
+    ],
+    explainer: {
+      title: 'Continuity & R1+R2',
+      body: `Null the leads, link L–CPC at the board, measure L–E at every point: that is R1+R2, peaking at the furthest point. It feeds straight into Zs = Ze + (R1+R2), the number that proves ADS will work.
+
+Rings add the end-to-end and cross-connect steps — the only way to prove the loop is genuinely unbroken.`,
+      takeaway: 'R1+R2: link L–CPC at the CU, measure L–E at each point with a 200 mA low-ohm meter. Highest reading + Ze predicts Zs.',
+    },
+  },
+
+  // Ch 32 — Insulation Resistance Testing
+  {
+    title: 'Insulation Resistance Testing',
+    theory: true,
+    content: [
+      "Insulation resistance (IR) testing proves the insulation between conductors is intact — no tracking paths, nicked cores or moisture giving current somewhere to leak. The tester applies a high DC voltage and reads the resistance in <strong>megohms (MΩ)</strong>.",
+      "For 230/400 V circuits the test voltage is <strong>500 V DC</strong>, and the minimum acceptable result is <strong>1.0 MΩ</strong> — though a healthy new circuit reads in the hundreds of megohms, and anything under about 2 MΩ deserves investigation even though it technically passes.",
+      "Preparation is most of the skill: circuit isolated; <strong>lamps removed</strong>, electronic and vulnerable equipment (dimmers, controls, smart devices) <strong>disconnected</strong> — 500 V destroys electronics; switches closed so the whole circuit is included. Then test between the live conductors joined together and earth (and between live conductors on initial verification of a new, unloaded install).",
+      "Interpreting results: a hard zero is a short or a forgotten load; a low-but-passing reading suggests moisture or damaged insulation. And after testing, conductors can hold charge from the DC test voltage — discharge before touching.",
+    ],
+    quiz: [
+      {q: 'What test voltage is used for IR testing on 230 V circuits?', options: ['9 V DC', '50 V AC', '500 V DC', '230 V AC'], a: 2},
+      {q: 'The minimum acceptable insulation resistance is…', options: ['1.0 Ω', '0.05 MΩ', '1.0 MΩ', '500 MΩ exactly'], a: 2},
+      {q: 'Before IR testing you must…', options: ['close the main switch and test live', 'disconnect electronic equipment and remove lamps — 500 V will damage them', 'connect all loads so they are tested too', 'earth the line conductor'], a: 1},
+    ],
+    explainer: {
+      title: 'Insulation Resistance',
+      body: `500 V DC, minimum 1 MΩ — but expect hundreds on healthy circuits and investigate anything marginal. Test with the circuit dead, lamps out, electronics disconnected, switches closed.
+
+A failed IR test found dead is a fire and shock risk that never got the chance to happen.`,
+      takeaway: 'IR test: 500 V DC, ≥1 MΩ minimum (investigate < 2 MΩ). Disconnect electronics and remove lamps first.',
+    },
+  },
+
+  // Ch 33 — Polarity Testing
+  {
+    title: 'Polarity Testing',
+    theory: true,
+    content: [
+      "Polarity testing confirms every conductor is connected where it should be: all single-pole switches, MCBs and fuses in the <strong>line</strong> conductor only; the centre contact of every Edison-screw lampholder on the <strong>switched line</strong>; and line, neutral and earth landed on the correct terminals of every socket.",
+      "Why it matters: a light switch in the neutral still turns the lamp off — but the fitting remains at 230 V with the switch off. A reversed socket puts appliance switches and fuses in the neutral. Everything looks fine and works fine, while being silently dangerous: polarity faults are invisible without testing.",
+      "Dead, polarity falls out of the continuity tests: with the L–CPC link in place, an R1+R2 reading through a closed switch proves the switch is in the line side; readings at each accessory confirm terminal-by-terminal correctness.",
+      "After energising, polarity is <strong>confirmed live</strong> with an approved voltage indicator: 230 V from L to N and L to E, 0 V from N to E (approximately), at the origin and at points throughout — including that the correct socket terminal is the live one.",
+    ],
+    quiz: [
+      {q: 'Single-pole switches and fuses must be connected in…', options: ['the neutral conductor', 'the line conductor only', 'the CPC', 'either conductor'], a: 1},
+      {q: 'Why is a switch in the neutral dangerous when the light still works?', options: ['It wastes energy', 'The fitting stays at 230 V even when switched off', 'It trips the RCD constantly', 'The lamp burns out faster'], a: 1},
+      {q: 'On an Edison-screw lampholder, the centre contact must connect to…', options: ['neutral', 'earth', 'the switched line', 'either — ES holders are unpolarised'], a: 2},
+    ],
+    explainer: {
+      title: 'Polarity',
+      body: `Line is the conductor that gets switched, fused and broken — always. Polarity testing proves it: dead via the continuity readings, then confirmed live with a two-pole indicator once energised.
+
+A polarity fault is the most deceptive defect in the trade: everything works, and everything is wrong.`,
+      takeaway: 'Polarity: switches/fuses in LINE only, ES centre contact on switched line, sockets terminated correctly. Proven dead, confirmed live.',
+    },
+  },
 ];
 
 // Course catalogue — each course references CHALLENGES by index
 const COURSES = [
   {
-    id: 'beginner',
-    title: 'Complete Beginner',
-    desc: 'No prior knowledge needed — start from absolute scratch.',
-    icon: '🔌',
+    id: 'science',
+    title: 'Electrical Science',
+    desc: 'Charge, Ohm\u2019s law, power, series & parallel, AC theory \u2014 the Principles of Electrical Science unit.',
+    icon: '\ud83c\udf93',
     color: '#34d399',
-    challenges: [0, 1, 6, 7, 8, 3, 13, 9, 5, 2],
+    challenges: [14, 0, 15, 1, 16, 17, 18],
+  },
+  {
+    id: 'safety',
+    title: 'Health & Safety',
+    desc: 'EAWR 1989, electric shock, safe isolation and PPE \u2014 the must-knows before any practical work.',
+    icon: '\ud83e\uddba',
+    color: '#f97316',
+    challenges: [19, 20, 21, 22],
+  },
+  {
+    id: 'components',
+    title: 'Components & Protection',
+    desc: 'Consumer units, MCBs, RCDs, RCBOs and cable selection.',
+    icon: '\ud83d\udd0c',
+    color: '#60a5fa',
+    challenges: [23, 8, 24, 5, 9, 25, 7],
   },
   {
     id: 'lighting',
     title: 'Lighting Circuits',
-    desc: 'One-way, two-way and intermediate switching.',
-    icon: '💡',
+    desc: 'Lighting design, one-way, two-way and intermediate switching.',
+    icon: '\ud83d\udca1',
     color: '#e5c07b',
-    challenges: [0, 6, 10, 11],
+    challenges: [27, 6, 10, 11],
   },
   {
-    id: 'advanced',
-    title: 'Advanced / Trade',
-    desc: 'For qualified or experienced electricians.',
-    icon: '⚡',
-    color: '#60a5fa',
-    challenges: [3, 5, 8, 9, 4, 10, 11],
+    id: 'design',
+    title: 'Circuit Design & Installation',
+    desc: 'Radial and ring final circuits, earthing systems and protective bonding.',
+    icon: '\ud83c\udfe0',
+    color: '#a78bfa',
+    challenges: [26, 3, 13, 28, 29],
+  },
+  {
+    id: 'testing',
+    title: 'Inspection & Testing',
+    desc: 'The dead tests \u2014 continuity, insulation resistance and polarity \u2014 performed before a circuit is ever energised.',
+    icon: '\ud83e\uddea',
+    color: '#22d3ee',
+    challenges: [30, 31, 32, 33],
   },
   {
     id: 'faultfinding',
     title: 'Fault Finding',
     desc: 'Systematic diagnosis of common electrical faults.',
-    icon: '🔍',
-    color: '#f97316',
+    icon: '\ud83d\udd0d',
+    color: '#ef4d4d',
     challenges: [2, 12],
+  },
+  {
+    id: 'advanced',
+    title: 'Advanced / Trade',
+    desc: 'For qualified or experienced electricians.',
+    icon: '\u26a1',
+    color: '#4da3ff',
+    challenges: [3, 5, 8, 9, 4, 10, 11],
   },
 ];
 
@@ -804,10 +1324,13 @@ function toggleCourse() {
 
 function loadChallenge(courseIdx, lessonIdx) {
   // courseIdx = index in COURSES, lessonIdx = index within course's challenge list
+  const co = COURSES[courseIdx];
+  const challengeIdx = co && co.challenges[lessonIdx];
+  if (challengeIdx == null || !CHALLENGES[challengeIdx]) { renderCourseHome(); return; }
   _currentCourse = courseIdx;
   _currentChallengeIdx = lessonIdx;
-  const challengeIdx = COURSES[courseIdx].challenges[lessonIdx];
   _currentChallenge = challengeIdx;
+  _quizSel = {};
   _hintsShown = 0;
   _challengePassed = false;
   _mmRed = null; _mmBlack = null; _mmActiveProbe = null;
@@ -817,7 +1340,9 @@ function loadChallenge(courseIdx, lessonIdx) {
   SVG.style.cursor = '';
   renderProbes();
   refreshMMReading();
-  CHALLENGES[challengeIdx].setup();
+  const ch = CHALLENGES[challengeIdx];
+  if (ch.setup) ch.setup();
+  else if (ch.theory) fromSchema({components: [], wires: []});
   renderCoursePanel();
 }
 
@@ -882,7 +1407,7 @@ function renderCourseOutline(ci) {
     return `<div onclick="loadChallenge(${ci},${li})" style="cursor:pointer;display:flex;align-items:flex-start;gap:9px;padding:8px 10px;border-radius:7px;margin-bottom:3px;background:${active?'rgba(77,163,255,0.08)':'transparent'};border:1px solid ${active?'#4da3ff':'transparent'}" onmouseover="this.style.background='rgba(77,163,255,0.05)'" onmouseout="this.style.background='${active?'rgba(77,163,255,0.08)':'transparent'}'">
       <span style="font-size:14px;margin-top:1px;flex-shrink:0">${done?'✅':'⬜'}</span>
       <div>
-        <div style="color:${done?'#34d399':'#dce4f2'};font-size:12.5px;line-height:1.45;font-weight:${active?'bold':'normal'}">${li+1}. ${ch.title}</div>
+        <div style="color:${done?'#34d399':'#dce4f2'};font-size:12.5px;line-height:1.45;font-weight:${active?'bold':'normal'}">${li+1}. ${ch.title} <span class="les-tag ${ch.theory?'th':'pr'}">${ch.theory?'theory':'practical'}</span></div>
       </div>
     </div>`;
   }).join('');
@@ -917,22 +1442,37 @@ function renderCoursePanel() {
     const active2 = li === lessonIdx;
     return `<div onclick="loadChallenge(${_currentCourse},${li})" title="${CHALLENGES[chIdx].title}" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;border-radius:50%;background:${active2?co.color:(done2?co.color+'22':'#19202f')};border:2px solid ${active2?co.color:(done2?co.color:'#28324a')};color:${active2?'#090c14':(done2?co.color:'#5d6a85')};font-size:11px;font-weight:bold;flex-shrink:0" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">${done2&&!active2?'✓':(li+1)}</div>`;
   }).join('');
-  inner.innerHTML = `
+  const header = `
     <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px">
       <button onclick="renderCourseOutline(${_currentCourse})" style="background:none;border:none;color:#4da3ff;cursor:pointer;font-size:17px;padding:0;line-height:1" title="Back to outline">←</button>
       <span style="font-size:16px">${co.icon}</span>
       <span style="color:#8e9cb8;font-size:11px">${co.title}</span>
     </div>
     <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;align-items:center">${lessonList}</div>
-    <div style="font-size:11px;color:#5d6a85;margin-bottom:9px">Lesson ${lessonIdx+1} of ${totalLessons}</div>
-    <div class="ch-title">${ch.title}</div>
-    <div class="ch-scenario">${ch.scenario}</div>
-    <div id="ch-hints-area"></div>
-    <button class="ch-hint-btn" onclick="showNextHint()">💡 Hint</button>
-    <button class="ch-check-btn" onclick="checkChallenge()">✓ Check</button>
-    <div id="ch-result" class="ch-result" style="display:none"></div>
-    ${lessonIdx > 0 ? `<button class="btn" onclick="loadChallenge(${_currentCourse},${lessonIdx-1})" style="margin-top:6px;font-size:11.5px">← Prev</button>` : ''}
-  `;
+    <div style="font-size:11px;color:#5d6a85;margin-bottom:9px">Lesson ${lessonIdx+1} of ${totalLessons} · ${ch.theory?'Theory':'Practical'}</div>
+    <div class="ch-title">${ch.title}</div>`;
+  const prevBtn = lessonIdx > 0 ? `<button class="btn" onclick="loadChallenge(${_currentCourse},${lessonIdx-1})" style="margin-top:6px;font-size:11.5px">← Prev</button>` : '';
+  if (ch.theory) {
+    const content = ch.content.map(p => `<p class="th-p">${p}</p>`).join('');
+    const quiz = ch.quiz.map((q, qi) => `
+      <div class="quiz-q">
+        <div class="quiz-question">${qi+1}. ${q.q}</div>
+        ${q.options.map((opt, oi) => `<div class="quiz-opt" id="qopt-${qi}-${oi}" onclick="selectQuizOpt(${qi},${oi})">${opt}</div>`).join('')}
+      </div>`).join('');
+    inner.innerHTML = header + `
+      <div class="th-body">${content}</div>
+      <div class="quiz-head">Check your understanding</div>
+      ${quiz}
+      <button class="ch-check-btn" onclick="checkChallenge()">✓ Check Answers</button>
+      <div id="ch-result" class="ch-result" style="display:none"></div>` + prevBtn;
+  } else {
+    inner.innerHTML = header + `
+      <div class="ch-scenario">${ch.scenario}</div>
+      <div id="ch-hints-area"></div>
+      <button class="ch-hint-btn" onclick="showNextHint()">💡 Hint</button>
+      <button class="ch-check-btn" onclick="checkChallenge()">✓ Check</button>
+      <div id="ch-result" class="ch-result" style="display:none"></div>` + prevBtn;
+  }
 }
 
 function showNextHint() {
@@ -949,9 +1489,36 @@ function showNextHint() {
   }
 }
 
+let _quizSel = {};
+function selectQuizOpt(qi, oi) {
+  const ch = CHALLENGES[_currentChallenge];
+  if (!ch.theory) return;
+  _quizSel[qi] = oi;
+  ch.quiz[qi].options.forEach((_, j) => {
+    const el = document.getElementById(`qopt-${qi}-${j}`);
+    if (el) { el.classList.toggle('selected', j === oi); el.classList.remove('wrong', 'correct'); }
+  });
+}
+
+function _validateQuiz(ch) {
+  const total = ch.quiz.length;
+  let unanswered = 0, correct = 0;
+  ch.quiz.forEach((q, qi) => {
+    const sel = _quizSel[qi];
+    if (sel == null) { unanswered++; return; }
+    const ok = sel === q.a;
+    if (ok) correct++;
+    const el = document.getElementById(`qopt-${qi}-${sel}`);
+    if (el) el.classList.add(ok ? 'correct' : 'wrong');
+  });
+  if (unanswered) return {pass: false, msg: `Answer all ${total} questions — ${unanswered} still blank.`};
+  if (correct === total) return {pass: true, msg: `All ${total} answers correct!`};
+  return {pass: false, msg: `${correct}/${total} correct — review the highlighted answers and try again.`};
+}
+
 function checkChallenge() {
   const ch = CHALLENGES[_currentChallenge];
-  const res = ch.validate();
+  const res = ch.theory ? _validateQuiz(ch) : ch.validate();
   const el = document.getElementById('ch-result');
   el.style.display = 'block';
   if (res.pass) {
