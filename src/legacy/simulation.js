@@ -245,7 +245,7 @@ function buildNodeMap(){
     if(c.type==='switch2g_uk'&&c.x3!=null){find(nk(c.x3,c.y3));if(c.x4!=null)find(nk(c.x4,c.y4));}
     if(c.type==='switch3g_uk'&&c.x3!=null){find(nk(c.x3,c.y3));if(c.x4!=null)find(nk(c.x4,c.y4));if(c.x5!=null)find(nk(c.x5,c.y5));if(c.x6!=null)find(nk(c.x6,c.y6));}
     if(c.type==='dpswitch'&&c.x3!=null){find(nk(c.x3,c.y3));if(c.x4!=null)find(nk(c.x4,c.y4));}
-    if(c.type==='relay'&&c.x3!=null){find(nk(c.x3,c.y3));if(c.x4!=null)find(nk(c.x4,c.y4));}
+    if((c.type==='relay'||c.type==='inverter')&&c.x3!=null){find(nk(c.x3,c.y3));if(c.x4!=null)find(nk(c.x4,c.y4));}
     if(c.type==='3ph'&&c.x3!=null){find(nk(c.x3,c.y3));find(nk(c.x4,c.y4));}
     if(c.type==='xfmr'&&c.x3!=null){find(nk(c.x3,c.y3));find(nk(c.x4,c.y4));}
     if(c.type==='plug'&&c.x3!=null){
@@ -282,7 +282,7 @@ function buildNodeMap(){
     if(c.type==='switch2g_uk'&&c.x3!=null){nodeId(nk(c.x3,c.y3));if(c.x4!=null)nodeId(nk(c.x4,c.y4));}
     if(c.type==='switch3g_uk'&&c.x3!=null){nodeId(nk(c.x3,c.y3));if(c.x4!=null)nodeId(nk(c.x4,c.y4));if(c.x5!=null)nodeId(nk(c.x5,c.y5));if(c.x6!=null)nodeId(nk(c.x6,c.y6));}
     if(c.type==='dpswitch'&&c.x3!=null){nodeId(nk(c.x3,c.y3));if(c.x4!=null)nodeId(nk(c.x4,c.y4));}
-    if(c.type==='relay'&&c.x3!=null){nodeId(nk(c.x3,c.y3));if(c.x4!=null)nodeId(nk(c.x4,c.y4));}
+    if((c.type==='relay'||c.type==='inverter')&&c.x3!=null){nodeId(nk(c.x3,c.y3));if(c.x4!=null)nodeId(nk(c.x4,c.y4));}
     if(c.type==='3ph'&&c.x3!=null){nodeId(nk(c.x3,c.y3));nodeId(nk(c.x4,c.y4));}
     if(c.type==='xfmr'&&c.x3!=null){nodeId(nk(c.x3,c.y3));nodeId(nk(c.x4,c.y4));}
     if(c.type==='plug'&&c.x3!=null){nodeId(nk(c.x3,c.y3));nodeId(nk(c.x4,c.y4));}
@@ -359,6 +359,7 @@ function clearSim(){
   comps.forEach(c=>{delete c.simV;delete c.simI;delete c.simPower;delete c.damaged;delete c.blown;
     delete c.ledOn; delete c.buzzerOn; delete c.diodeState; delete c.gateOut; delete c.segVal;
     if(c.type==='relay') c.relayOn=false;
+    if(c.type==='inverter') c.invOn=false;
     delete c.acV; delete c.acI; delete c.acVph; delete c.acIph;
     if(c.type==='cunit'&&c.mcbTerms) c.mcbTerms.forEach(mt=>{mt.blown=false;mt.simI=null;});});
   Object.keys(_flowParticles).forEach(k=>delete _flowParticles[k]);
@@ -510,6 +511,39 @@ function simulate(){
           const nd2=c.x4!=null?ni(nk(c.x4,c.y4)):-1;
           if(nc2>=0&&nd2>=0){A[nc2][nc2]+=g9;A[nd2][nd2]+=g9;A[nc2][nd2]-=g9;A[nd2][nc2]-=g9;}
         }
+      } else if(c.type==='solar'){
+        // PV panel: Norton source — Voc scaled by sunlight behind ~3Ω internal
+        // resistance, so the output sags under load and dies as the sun drops.
+        const Vs=(c.value??18)*(c.sun??1), Rint=3;
+        stamp(1/Rint);
+        if(na>=0) b[na]+=Vs/Rint;
+        if(nb>=0) b[nb]-=Vs/Rint;
+      } else if(c.type==='battery'){
+        // Battery: Norton source behind 0.1Ω. Negative terminal current at the
+        // results stage means the circuit is charging it.
+        const Vs=c.value??12, Rint=0.1;
+        stamp(1/Rint);
+        if(na>=0) b[na]+=Vs/Rint;
+        if(nb>=0) b[nb]-=Vs/Rint;
+      } else if(c.type==='inverter'){
+        // DC in x1(+)↔x3(−); AC out x2(L)↔x4(N). Runs when the previous
+        // iteration's DC input reached 10V — state iterated like the relay's.
+        const nIn2=c.x3!=null?ni(nk(c.x3,c.y3)):-1;   // DC −
+        const nOut2=c.x4!=null?ni(nk(c.x4,c.y4)):-1;  // AC N
+        const gIn=c.invOn?1/5:1/500;                  // ~29W draw running, ~0.3W standby
+        if(na>=0){A[na][na]+=gIn;} if(nIn2>=0){A[nIn2][nIn2]+=gIn;}
+        if(na>=0&&nIn2>=0){A[na][nIn2]-=gIn;A[nIn2][na]-=gIn;}
+        if(c.invOn){
+          const gO=1, Vo=c.value??230; // output as Norton: Vo behind 1Ω
+          if(nb>=0){A[nb][nb]+=gO; b[nb]+=Vo*gO;}
+          if(nOut2>=0){A[nOut2][nOut2]+=gO; b[nOut2]-=Vo*gO;}
+          if(nb>=0&&nOut2>=0){A[nb][nOut2]-=gO;A[nOut2][nb]-=gO;}
+        } else if(nb>=0&&nOut2>=0){
+          const gb=1e-9; // unpowered output stays non-singular
+          A[nb][nb]+=gb;A[nOut2][nOut2]+=gb;A[nb][nOut2]-=gb;A[nOut2][nb]-=gb;
+        }
+        // Weak N–earth bond references the output island so it never floats
+        if(nOut2>=0) A[nOut2][nOut2]+=1e-6;
       } else if(c.type==='sw2'||c.type==='switch2_uk'){
         // Two-way switch: stamp 0V source between COM and active terminal
         const k=sw2Off+sw2srcs.indexOf(c);
@@ -713,14 +747,20 @@ function simulate(){
       if(diodeState[c.id]!==newState){ diodeState[c.id]=newState; diodeChanged=true; }
     });
 
-    // Update relay contact states from coil voltages
+    // Update relay contact / inverter run states from their control voltages
     let relayChanged=false;
     comps.forEach(c=>{
-      if(c.type!=='relay') return;
-      const vA2=nodeVoltages[nodeId(nk(c.x1,c.y1))]??0;
-      const vB2=nodeVoltages[nodeId(nk(c.x2,c.y2))]??0;
-      const on=Math.abs(vA2-vB2)>=(c.value??5)-0.05;
-      if((c.relayOn??false)!==on){ c.relayOn=on; relayChanged=true; }
+      if(c.type==='relay'){
+        const vA2=nodeVoltages[nodeId(nk(c.x1,c.y1))]??0;
+        const vB2=nodeVoltages[nodeId(nk(c.x2,c.y2))]??0;
+        const on=Math.abs(vA2-vB2)>=(c.value??5)-0.05;
+        if((c.relayOn??false)!==on){ c.relayOn=on; relayChanged=true; }
+      } else if(c.type==='inverter'){
+        const vA2=nodeVoltages[nodeId(nk(c.x1,c.y1))]??0;
+        const vB2=c.x3!=null?(nodeVoltages[nodeId(nk(c.x3,c.y3))]??0):0;
+        const on=(vA2-vB2)>=10-0.05;
+        if((c.invOn??false)!==on){ c.invOn=on; relayChanged=true; }
+      }
     });
 
     // Check fuse currents; blow any that exceed rating
@@ -752,7 +792,7 @@ function simulate(){
     if(c.type==='switch2g_uk'&&c.x3!=null){mapPt(c.x3,c.y3);if(c.x4!=null)mapPt(c.x4,c.y4);}
     if(c.type==='switch3g_uk'&&c.x3!=null){mapPt(c.x3,c.y3);if(c.x4!=null)mapPt(c.x4,c.y4);if(c.x5!=null)mapPt(c.x5,c.y5);if(c.x6!=null)mapPt(c.x6,c.y6);}
     if(c.type==='dpswitch'&&c.x3!=null){mapPt(c.x3,c.y3);if(c.x4!=null)mapPt(c.x4,c.y4);}
-    if(c.type==='relay'&&c.x3!=null){mapPt(c.x3,c.y3);if(c.x4!=null)mapPt(c.x4,c.y4);}
+    if((c.type==='relay'||c.type==='inverter')&&c.x3!=null){mapPt(c.x3,c.y3);if(c.x4!=null)mapPt(c.x4,c.y4);}
     if(c.type==='3ph'&&c.x3!=null){mapPt(c.x3,c.y3);mapPt(c.x4,c.y4);}
     if(c.type==='xfmr'&&c.x3!=null){mapPt(c.x3,c.y3);mapPt(c.x4,c.y4);}
   });
@@ -837,6 +877,23 @@ function simulate(){
     } else if(c.type==='relay'){
       c.simV=vd; // vd = coil voltage (x1−x2)
       resArr.push({label:`Relay (${c.relayOn?'energised':'released'})`,v:vd,i:Math.abs(vd)/170});
+    } else if(c.type==='solar'){
+      const Vs=(c.value??18)*(c.sun??1);
+      c.simV=vd; c.simI=(Vs-vd)/3; c.simPower=Math.abs(vd*c.simI);
+      resArr.push({label:`Solar ☀${Math.round((c.sun??1)*100)}% (${fmtVal(Vs,'V')} oc)`,v:vd,i:c.simI});
+    } else if(c.type==='battery'){
+      const Vs=c.value??12;
+      c.simV=vd; c.simI=(Vs-vd)/0.1; // + = discharging, − = being charged
+      const bState=c.simI<-0.005?`CHARGING at ${fmtVal(-c.simI,'A')}`:c.simI>0.005?`supplying ${fmtVal(c.simI,'A')}`:'idle';
+      resArr.push({label:`Battery ${fmtVal(Vs,'V')} (${bState})`,v:vd,i:c.simI});
+    } else if(c.type==='inverter'){
+      const nIn2=c.x3!=null?nodeId(nk(c.x3,c.y3)):0;
+      const nOut2=c.x4!=null?nodeId(nk(c.x4,c.y4)):0;
+      const vIn=vA-(nodeVoltages[nIn2]??0);
+      const vOut=vB-(nodeVoltages[nOut2]??0);
+      c.simV=vIn; c.simI=vIn*(c.invOn?1/5:1/500);
+      const outI=c.invOn?((c.value??230)-vOut)/1:0;
+      resArr.push({label:`Inverter (${c.invOn?'RUNNING':'standby'}) ${c.invOn?`out ${fmtVal(vOut,'V')}`:''}`,v:vIn,i:c.invOn?outI:c.simI});
     } else if(c.type==='sw2'||c.type==='switch2_uk'){
       const si2=sw2srcs2.indexOf(c);
       const sw2Off2=nodeN+vsrcs2.length+fsrcs2.length+swsrcs2.length;
@@ -1183,6 +1240,20 @@ function simulateAC(_acPass){
         const nd2=c.x4!=null?ni(nk(c.x4,c.y4)):-1;
         if(nc2>=0&&nd2>=0) stampC(Cmk(1e9))(nc2,nd2);
       }
+    } else if(c.type==='solar'){
+      // DC source — no AC contribution; appears as its 3Ω internal resistance
+      stampC(Cmk(1/3))(na,nb);
+    } else if(c.type==='battery'){
+      // DC source — appears as its 0.1Ω internal resistance to AC
+      stampC(Cmk(1/0.1))(na,nb);
+    } else if(c.type==='inverter'){
+      // DC-input device: inert in the AC phasor solve (standby input load,
+      // weakly-bonded output so nothing floats)
+      const nIn2=c.x3!=null?ni(nk(c.x3,c.y3)):-1;
+      const nOut2=c.x4!=null?ni(nk(c.x4,c.y4)):-1;
+      stampC(Cmk(1/500))(na,nIn2);
+      stampC(Cmk(1e-9))(nb,nOut2);
+      if(nOut2>=0) addA(nOut2,nOut2,Cmk(1e-6));
     } else if(c.type==='sw2'||c.type==='switch2_uk'){
       // Two-way switch: short between COM and active terminal
       const pos2=c.sw2pos??0;
@@ -1288,7 +1359,7 @@ function simulateAC(_acPass){
     if(c.type==='switch2g_uk'&&c.x3!=null){mapPt2(c.x3,c.y3);if(c.x4!=null)mapPt2(c.x4,c.y4);}
     if(c.type==='switch3g_uk'&&c.x3!=null){mapPt2(c.x3,c.y3);if(c.x4!=null)mapPt2(c.x4,c.y4);if(c.x5!=null)mapPt2(c.x5,c.y5);if(c.x6!=null)mapPt2(c.x6,c.y6);}
     if(c.type==='dpswitch'&&c.x3!=null){mapPt2(c.x3,c.y3);if(c.x4!=null)mapPt2(c.x4,c.y4);}
-    if(c.type==='relay'&&c.x3!=null){mapPt2(c.x3,c.y3);if(c.x4!=null)mapPt2(c.x4,c.y4);}
+    if((c.type==='relay'||c.type==='inverter')&&c.x3!=null){mapPt2(c.x3,c.y3);if(c.x4!=null)mapPt2(c.x4,c.y4);}
     if(c.type==='3ph'&&c.x3!=null){mapPt2(c.x3,c.y3);mapPt2(c.x4,c.y4);}
     if(c.type==='xfmr'&&c.x3!=null){mapPt2(c.x3,c.y3);mapPt2(c.x4,c.y4);}
   });
@@ -1403,6 +1474,12 @@ function simulateAC(_acPass){
     } else if(c.type==='relay'){
       c.simV=mag;
       resArr.push({label:`Relay (${c.relayOn?'energised':'released'})`,acV:mag,acVph:ph});
+    } else if(c.type==='solar'||c.type==='battery'){
+      c.simV=mag;
+      resArr.push({label:`${c.type==='solar'?'Solar':'Battery'} (DC source — inactive in AC)`,acV:mag,acVph:ph});
+    } else if(c.type==='inverter'){
+      c.simV=mag;
+      resArr.push({label:'Inverter (DC mode only)',acV:mag,acVph:ph});
     } else if(c.type==='meter'){
       c.acV=mag; c.simV=mag; c.simI=mag*1000; c.acI=c.simI; c.acIph=ph;
       resArr.push({label:'Meter',acV:mag,acVph:ph,acI:c.acI,acIph:ph});

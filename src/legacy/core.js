@@ -89,6 +89,9 @@ const DEFS = {
   NOT:  {value:0,    unit:'',  label:'NOT Gate'},
   nmos: {value:2.0, unit:'V', label:'N-MOSFET (Vth)'},
   relay:{value:5.0, unit:'V', label:'Relay (Pull-in V)'},
+  solar:{value:18,  unit:'V', label:'Solar Panel (Voc)'},
+  battery:{value:12,unit:'V', label:'Battery'},
+  inverter:{value:230,unit:'V',label:'Inverter (AC out)'},
   // New components
   '3ph':  {value:230, unit:'V', label:'3-Phase Source'},
   motor:  {value:1500,unit:'W', label:'AC Motor'},
@@ -490,6 +493,9 @@ function setMode(m) {
     'place-rcd':'Click to place RCD. Acts as wire when not tripped; click to trip/reset. R=rotate.',
     'place-dpswitch':'Click to place double-pole switch (main isolator). Click to open/close. R=rotate.',
     'place-relay':'Click to place relay. Energise the coil (top pair) past its pull-in voltage and the contact (bottom pair) closes — a tiny signal switching a separate, bigger circuit. R=rotate.',
+    'place-solar':'Click to place solar panel (DC source, + on x1 side). Output scales with the sunlight slider in the properties panel; ~3Ω internal resistance. R=rotate.',
+    'place-battery':'Click to place battery (DC source, + on x1 side, 0.1Ω internal). Charges when the circuit pushes its terminal voltage above the cell voltage. R=rotate.',
+    'place-inverter':'Click to place inverter. DC in on the left pair (+top, −bottom); when the input reaches 10V DC the right pair outputs 230V AC-equivalent. R=rotate.',
     'place-meter':'Click to place energy meter (modelled as near-zero resistance). R=rotate.',
     'place-intswitch':'Click to place intermediate switch (4-terminal crossing). Click to toggle. R=rotate.',
     'place-switch2_uk':'Click to place UK 2-way plate switch (COM/L1/L2). Use between two-way pairs for staircase wiring. R=rotate.',
@@ -632,6 +638,16 @@ function placeComp(type, px, py, r=0, extra={}) {
     else if(r===2){c.x3=c.x1; c.y3=c.y1-G; c.x4=c.x2; c.y4=c.y2-G;}
     else{c.x3=c.x1+G; c.y3=c.y1; c.x4=c.x2+G; c.y4=c.y2;}
   }
+  if(type==='inverter') {
+    c.invOn=false;
+    // DC in = x1(+)/x3(−) on the left, AC out = x2(L)/x4(N) on the right —
+    // same dual-rail geometry as dpswitch/relay
+    if(r===0){c.x3=c.x1; c.y3=c.y1+G; c.x4=c.x2; c.y4=c.y2+G;}
+    else if(r===1){c.x3=c.x1-G; c.y3=c.y1; c.x4=c.x2-G; c.y4=c.y2;}
+    else if(r===2){c.x3=c.x1; c.y3=c.y1-G; c.x4=c.x2; c.y4=c.y2-G;}
+    else{c.x3=c.x1+G; c.y3=c.y1; c.x4=c.x2+G; c.y4=c.y2;}
+  }
+  if(type==='solar') c.sun=1;
   if(type==='pullcord') c.closed=false;
   if(type==='fcu') c.blown=false;
   // V/I sources: default phaseDeg=0, isAC=false (DC by default)
@@ -728,7 +744,7 @@ function recomputeExtraTerminals(c){
     else if(r===2){c.x3=px+4*G;c.y3=py+2*G;c.x4=px;  c.y4=py+2*G;}
     else{c.x3=px+2*G;c.y3=py+4*G;c.x4=px+2*G;c.y4=py;}
   }
-  if(c.type==='dpswitch'||c.type==='relay'){
+  if(c.type==='dpswitch'||c.type==='relay'||c.type==='inverter'){
     if(r===0){c.x3=c.x1;   c.y3=c.y1+G;c.x4=c.x2;   c.y4=c.y2+G;}
     else if(r===1){c.x3=c.x1-G;c.y3=c.y1;  c.x4=c.x2-G;c.y4=c.y2;}
     else if(r===2){c.x3=c.x1;   c.y3=c.y1-G;c.x4=c.x2;   c.y4=c.y2-G;}
@@ -864,6 +880,50 @@ function showProps(id) {
     <div class="prop-row"><label>Pull-in voltage (V)</label>
     <input type="number" id="pv" value="${c.value}" step="0.5" min="0.5"/></div>
     ${c.simV!=null?`<div style="color:#e3ad33;font-size:10px;margin-bottom:4px">Coil V = ${fmtVal(c.simV,'V')}</div>`:''}
+    <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
+    document.getElementById('pv').addEventListener('input', ()=>applyProp(id));
+    return;
+  }
+  if(c.type==='solar'){
+    const sun=c.sun??1;
+    el.innerHTML=`<div style="color:#8e9cb8;font-size:10px">Solar Panel (PV)</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:6px">DC source — output scales with sunlight. ~3Ω internal resistance, + terminal on the x1 side.</div>
+    <div class="prop-row"><label>Open-circuit V (full sun)</label>
+    <input type="number" id="pv" value="${c.value}" step="1" min="1"/></div>
+    <div class="prop-row"><label>Sunlight ☀</label></div>
+    <input type="range" id="sun-slider" min="0" max="1" step="0.01" value="${sun}" style="width:100%"/>
+    <div style="color:#fbbf24;font-size:10px;margin-bottom:4px">Sun: <b id="sun-pct">${Math.round(sun*100)}%</b> → ${(c.value*sun).toFixed(1)}V open-circuit</div>
+    ${c.simV!=null?`<div style="color:#e3ad33;font-size:10px;margin-bottom:4px">V = ${fmtVal(c.simV,'V')}${c.simI!=null?` · I = ${fmtVal(c.simI,'A')}`:''}</div>`:''}
+    <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
+    document.getElementById('pv').addEventListener('input', ()=>applyProp(id));
+    const sunSl=document.getElementById('sun-slider');
+    sunSl.addEventListener('input', ()=>{
+      c.sun=parseFloat(sunSl.value);
+      document.getElementById('sun-pct').textContent=Math.round(c.sun*100)+'%';
+      clearSim(); render(); simulate(); markDirty();
+    });
+    return;
+  }
+  if(c.type==='battery'){
+    const chg=c.simI!=null?(c.simI<-0.005?'charging':c.simI>0.005?'supplying':'idle'):null;
+    const bcol=chg==='charging'?'#34d399':chg==='supplying'?'#e3ad33':'#5d6a85';
+    el.innerHTML=`<div style="color:#8e9cb8;font-size:10px">Battery</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:6px">0.1Ω internal resistance, + terminal on the x1 side. Charges when the circuit holds its terminals above the cell voltage.</div>
+    <div class="prop-row"><label>Cell voltage (V)</label>
+    <input type="number" id="pv" value="${c.value}" step="1" min="1"/></div>
+    ${chg?`<div style="color:${bcol};font-size:12px;font-weight:bold;margin:6px 0">${chg==='charging'?`CHARGING at ${fmtVal(-c.simI,'A')}`:chg==='supplying'?`Supplying ${fmtVal(c.simI,'A')}`:'Idle'}</div>`:''}
+    <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
+    document.getElementById('pv').addEventListener('input', ()=>applyProp(id));
+    return;
+  }
+  if(c.type==='inverter'){
+    const ivcol=c.invOn?'#34d399':'#5d6a85';
+    el.innerHTML=`<div style="color:#8e9cb8;font-size:10px">Inverter (DC → AC)</div>
+    <div style="color:#8e9cb8;font-size:9px;margin-bottom:6px">DC in on the left pair (+ top, − bottom). Needs ≥10V DC to run; output pair delivers the AC voltage (RMS-equivalent) behind 1Ω.</div>
+    <div style="color:${ivcol};font-size:13px;font-weight:bold;margin:6px 0">${c.invOn?'RUNNING — AC output live':'STANDBY — needs ≥10V DC in'}</div>
+    <div class="prop-row"><label>AC output (V)</label>
+    <input type="number" id="pv" value="${c.value}" step="10" min="1"/></div>
+    ${c.simV!=null?`<div style="color:#e3ad33;font-size:10px;margin-bottom:4px">DC in = ${fmtVal(c.simV,'V')}</div>`:''}
     <button class="btn danger" onclick="delComp('${id}')">Delete</button>`;
     document.getElementById('pv').addEventListener('input', ()=>applyProp(id));
     return;
@@ -1361,6 +1421,6 @@ function labelSide(c){
 function perpOff(type){
   // Approximate half-size of component body perpendicular to its axis (px)
   return {bulb:24,V:24,I:24,diode:18,LED:18,zener:18,R:10,C:12,L:15,fuse:8,pot:18,sw:14,sw2:20,
-          '3ph':28,motor:24,xfmr:20,load3:14}[type]??12;
+          '3ph':28,motor:24,xfmr:20,load3:14,solar:20,battery:20,inverter:22}[type]??12;
 }
 

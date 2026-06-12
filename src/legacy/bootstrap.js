@@ -777,6 +777,86 @@ loadHouseView();
   saveCurrentCircuit();
 })();
 
+// ── Solar Lab tab: PV panels, battery storage, inverter, off-grid AC ────────
+(function(){
+  _circuits.push({name:'Solar Lab', comps:[], wires:[], uid:1, history:[], sel:null, acFreq:50});
+  _currentIdx = _circuits.length - 1;
+  comps=[]; wires=[]; jumpPoints=new Set(); uid=1; sel=null; _history=[];
+  const lc = (type, gx, gy, r, value, extra={}) => {
+    const [x1,y1,x2,y2] = terminals(type, gx*G, gy*G, r);
+    const c = {id:'c'+(uid++), type, px:gx*G, py:gy*G, rotation:r,
+               x1, y1, x2, y2, value: value ?? DEFS[type]?.value ?? 0};
+    if(type==='inverter'){
+      c.invOn=false;
+      if(r===0){c.x3=c.x1;c.y3=c.y1+G;c.x4=c.x2;c.y4=c.y2+G;}
+      else if(r===1){c.x3=c.x1-G;c.y3=c.y1;c.x4=c.x2-G;c.y4=c.y2;}
+      else if(r===2){c.x3=c.x1;c.y3=c.y1-G;c.x4=c.x2;c.y4=c.y2-G;}
+      else{c.x3=c.x1+G;c.y3=c.y1;c.x4=c.x2+G;c.y4=c.y2;}
+    }
+    if(type==='solar') c.sun=1;
+    if(type==='sw') c.closed = extra.closed ?? false;
+    Object.assign(c, extra);
+    comps.push(c); return c;
+  };
+  const lw = (x1,y1,x2,y2) => {
+    if(x1!==x2||y1!==y2) wires.push({id:'w'+(uid++),x1:x1*G,y1:y1*G,x2:x2*G,y2:y2*G});
+  };
+
+  // ── Demo 1: Off-grid solar system (top) ──────────────────────────────────
+  // Panel charges the battery through a blocking diode (stops the battery
+  // back-feeding the panel at night — drag the sun slider to 0 to see why it's
+  // there). The inverter steps the ~12V DC bus up to 230V AC for the lamp.
+  // Open the switch and the panel's spare power charges the battery instead.
+  lc('solar', 2, 2, 2, 18);              // r=2 → + terminal at (5,2), facing the bus
+  lc('diode', 5, 2, 0, 0.7);             // blocking diode: panel → bus only
+  lw(8,2, 9,2);
+  lw(9,2, 9,5);                          // + bus
+  lc('battery', 4, 5, 2, 12);            // r=2 → + at (7,5)
+  lw(7,5, 9,5);
+  lc('sw', 9, 3, 0, 0, {closed:true});   // inverter feed switch
+  lw(12,3, 14,3);
+  lc('inverter', 14, 3, 0, 230);         // DC+ (14,3), DC− (14,4) → L (17,3), N (17,4)
+  lw(17,3, 19,3);
+  lc('bulb', 19, 3, 0, 240);             // 230V mains lamp (~220W)
+  lw(22,3, 22,6);
+  lw(17,6, 22,6);
+  lw(17,4, 17,6);                        // N return
+  lw(2,2, 1,2);
+  lw(1,2, 1,8);                          // − bus
+  lw(1,5, 4,5);
+  lw(14,4, 13,4);
+  lw(13,4, 13,8);
+  lw(1,8, 13,8);
+  lc('GND', 1, 8, 0);
+
+  // ── Demo 2: Sunlight slider (bottom-left) ────────────────────────────────
+  // Panel directly driving a 24Ω bulb. Select the panel and drag the ☀ slider
+  // — the bulb dims as the clouds roll in.
+  lc('solar', 3, 11, 0, 18);             // + at (3,11)
+  lw(6,11, 8,11);
+  lw(8,11, 8,14);
+  lw(6,14, 8,14);
+  lc('bulb', 3, 14, 0, 24);
+  lw(1,14, 3,14);
+  lw(1,11, 1,14);
+  lw(1,11, 3,11);
+  lc('GND', 8, 14, 0);                   // earth the − rail so readings are +ve
+
+  // ── Demo 3: Panels in series (bottom-right) ──────────────────────────────
+  // Two 18V panels in series make a 36V string — same trick real rooftop
+  // arrays use to keep current (and cable size) down.
+  lc('solar', 12, 11, 2, 18);            // r=2 → − at (12,11) on the earthed rail
+  lw(15,11, 16,11);
+  lc('solar', 16, 11, 2, 18);
+  lw(19,11, 21,11);
+  lc('R', 21, 11, 1, 100);               // string load — reads ~34V
+  lw(12,14, 21,14);
+  lw(12,11, 12,14);
+  lc('GND', 12, 14, 0);
+
+  saveCurrentCircuit();
+})();
+
 // Switch back to first circuit
 loadCircuit(0);
 

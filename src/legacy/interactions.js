@@ -64,7 +64,7 @@ SVG.addEventListener('mousemove',e=>{
         else if(r===2){c.x3=x1-1.5*G;c.y3=y1+G;}
         else{c.x3=x1-G;c.y3=y1-1.5*G;}
       }
-      if(c.type==='dpswitch'||c.type==='relay'){
+      if(c.type==='dpswitch'||c.type==='relay'||c.type==='inverter'){
         if(r===0){c.x3=x1; c.y3=y1+G; c.x4=x2; c.y4=y2+G;}
         else if(r===1){c.x3=x1-G; c.y3=y1; c.x4=x2-G; c.y4=y2;}
         else if(r===2){c.x3=x1; c.y3=y1-G; c.x4=x2; c.y4=y2-G;}
@@ -437,6 +437,8 @@ function toSchema() {
       if(c.type==='plug'&&c.x3!=null){o.x3=c.x3/G;o.y3=c.y3/G;o.x4=c.x4/G;o.y4=c.y4/G;}
       if(c.type==='dpswitch'){o.closed=c.closed||false;if(c.x3!=null){o.x3=c.x3/G;o.y3=c.y3/G;o.x4=c.x4/G;o.y4=c.y4/G;}}
       if(c.type==='relay'&&c.x3!=null){o.x3=c.x3/G;o.y3=c.y3/G;o.x4=c.x4/G;o.y4=c.y4/G;}
+      if(c.type==='inverter'&&c.x3!=null){o.x3=c.x3/G;o.y3=c.y3/G;o.x4=c.x4/G;o.y4=c.y4/G;}
+      if(c.type==='solar') o.sun=c.sun??1;
       if(c.type==='rcd') o.tripped=c.tripped||false;
       if(c.type==='intswitch') { o.intpos=c.intpos??0; if(c.x3!=null){o.x3=c.x3/G;o.y3=c.y3/G;o.x4=c.x4/G;o.y4=c.y4/G;} }
       if(c.type==='sw2'||c.type==='switch2_uk') { o.sw2pos=c.sw2pos??0; if(c.x3!=null){o.x3=c.x3/G;o.y3=c.y3/G;} }
@@ -512,8 +514,8 @@ function fromSchema(schema) {
         else{comp.x3=x1+G;comp.y3=y1;comp.x4=x2+G;comp.y4=y2;}
       }
     }
-    if(c.type==='relay'){
-      comp.relayOn=false;
+    if(c.type==='relay'||c.type==='inverter'){
+      if(c.type==='relay') comp.relayOn=false; else comp.invOn=false;
       if(c.x3!=null){comp.x3=c.x3*G;comp.y3=c.y3*G;comp.x4=c.x4*G;comp.y4=c.y4*G;}
       else{
         const r=c.rotation||0;
@@ -523,6 +525,7 @@ function fromSchema(schema) {
         else{comp.x3=x1+G;comp.y3=y1;comp.x4=x2+G;comp.y4=y2;}
       }
     }
+    if(c.type==='solar') comp.sun=c.sun??1;
     if(c.type==='rcd') comp.tripped=c.tripped||false;
     if(c.type==='intswitch'){
       comp.intpos=c.intpos??0;

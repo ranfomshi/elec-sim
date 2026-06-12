@@ -1372,6 +1372,60 @@ function drawSymbol(g, type, x1, y1, x2, y2, extra={}) {
     g.appendChild(mk('line',{x1:G*1.5,y1:9,x2:G*1.5,y2:rlOn?G-4:G-16,stroke:accent,'stroke-width':1.2,'stroke-dasharray':'2,3'}));
     const rlt=mk('text',{x:G*1.5,y:-17,'text-anchor':'middle',style:`fill:${rlOn?'#d97706':'#5d6a85'};font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold`});
     rlt.textContent='RELAY'; g.appendChild(rlt);
+  } else if(type==='solar'){
+    const sun=extra?.sun??1;
+    const pw=bw, px0=(L-pw)/2;
+    g.appendChild(mk('line',{x1:0,y1:0,x2:px0,y2:0,class:'cl'}));
+    g.appendChild(mk('line',{x1:px0+pw,y1:0,x2:L,y2:0,class:'cl'}));
+    // Panel body — cells brighten with sunlight
+    g.appendChild(mk('rect',{x:px0,y:-14,width:pw,height:28,rx:2,fill:'#0c1a3a',stroke:'#3b82f6','stroke-width':1.5}));
+    const cw=pw/3, chh=14;
+    for(let ci=0;ci<3;ci++)for(let cj=0;cj<2;cj++)
+      g.appendChild(mk('rect',{x:px0+ci*cw+1.5,y:-14+cj*chh+1.5,width:cw-3,height:chh-3,rx:1,
+        fill:`rgba(59,130,246,${0.15+0.55*sun})`,stroke:'#1d4ed8','stroke-width':0.5}));
+    // Sun with rays above the panel, dimming with the slider
+    const sunOp=0.25+0.75*sun, scx=px0+pw/2, scy=-24;
+    g.appendChild(mk('circle',{cx:scx,cy:scy,r:4,fill:'#fbbf24',opacity:sunOp}));
+    for(let ri=0;ri<8;ri++){const a=ri*Math.PI/4;
+      g.appendChild(mk('line',{x1:scx+Math.cos(a)*6,y1:scy+Math.sin(a)*6,x2:scx+Math.cos(a)*9,y2:scy+Math.sin(a)*9,
+        stroke:'#fbbf24','stroke-width':1.2,opacity:sunOp}));}
+    const sp=mk('text',{x:px0-3,y:-7,'text-anchor':'end',style:'fill:#dce4f2;font-size:10px;font-family:monospace'});
+    sp.textContent='+'; g.appendChild(sp);
+  } else if(type==='battery'){
+    // Two-cell battery: alternating long/short plates, + on the x1 side
+    const cellGap=7, x0=mid-cellGap*1.5;
+    g.appendChild(mk('line',{x1:0,y1:0,x2:x0,y2:0,class:'cl'}));
+    g.appendChild(mk('line',{x1:x0+cellGap*3,y1:0,x2:L,y2:0,class:'cl'}));
+    [[0,14],[1,7],[2,14],[3,7]].forEach(([i,hh])=>{
+      g.appendChild(mk('line',{x1:x0+i*cellGap,y1:-hh,x2:x0+i*cellGap,y2:hh,class:'cl','stroke-width':hh===7?3:1.5}));
+    });
+    const bp=mk('text',{x:x0-4,y:-8,'text-anchor':'end',style:'fill:#dce4f2;font-size:11px;font-family:monospace'});
+    bp.textContent='+'; g.appendChild(bp);
+    const bm=mk('text',{x:x0+cellGap*3+4,y:-8,style:'fill:#dce4f2;font-size:11px;font-family:monospace'});
+    bm.textContent='−'; g.appendChild(bm);
+  } else if(type==='inverter'){
+    const ivOn=extra?.invOn??false;
+    const bxL=G*0.5, bxR=G*2.5;
+    const accent=ivOn?'#22c55e':'#94a3b8';
+    // Leads: DC in (left, x1 top / x3 bottom), AC out (right, x2 top / x4 bottom)
+    g.appendChild(mk('line',{x1:0,y1:0,x2:bxL,y2:0,class:'cl'}));
+    g.appendChild(mk('line',{x1:bxR,y1:0,x2:L,y2:0,class:'cl'}));
+    g.appendChild(mk('line',{x1:0,y1:G,x2:bxL,y2:G,class:'cl'}));
+    g.appendChild(mk('line',{x1:bxR,y1:G,x2:L,y2:G,class:'cl'}));
+    g.appendChild(mk('rect',{x:bxL,y:-14,width:bxR-bxL,height:G+28,rx:3,stroke:ivOn?'#22c55e':'#c0c0c0','stroke-width':1.5,fill:'#f5f5f5'}));
+    // Diagonal divider, DC marks top-left, sine bottom-right
+    g.appendChild(mk('line',{x1:bxL+3,y1:G+11,x2:bxR-3,y2:-11,stroke:'#8e9cb8','stroke-width':1}));
+    g.appendChild(mk('line',{x1:bxL+6,y1:-6,x2:bxL+22,y2:-6,stroke:'#475569','stroke-width':1.6}));
+    g.appendChild(mk('line',{x1:bxL+6,y1:-1,x2:bxL+22,y2:-1,stroke:'#475569','stroke-width':1.4,'stroke-dasharray':'3,2'}));
+    const sy=G+5;
+    g.appendChild(mk('path',{d:`M ${bxR-24} ${sy} q 4 -8 8 0 q 4 8 8 0`,fill:'none',stroke:accent,'stroke-width':1.6}));
+    const ivt=mk('text',{x:(bxL+bxR)/2,y:-17,'text-anchor':'middle',style:`fill:${ivOn?'#16a34a':'#5d6a85'};font-size:7px;font-family:JetBrains Mono Variable, ui-monospace, monospace;font-weight:bold`});
+    ivt.textContent='INVERTER'; g.appendChild(ivt);
+    // DC polarity marks on the input leads
+    const ivp=mk('text',{x:3,y:-5,style:'fill:#8e9cb8;font-size:9px;font-family:monospace'});
+    ivp.textContent='+'; g.appendChild(ivp);
+    const ivm=mk('text',{x:3,y:G-5,style:'fill:#8e9cb8;font-size:9px;font-family:monospace'});
+    ivm.textContent='−'; g.appendChild(ivm);
   } else if(type==='rcd'){
     const rcdTripped=extra?.tripped??false;
     const rcdbw=bw*0.8, rcdx=(L-rcdbw)/2;
@@ -1593,7 +1647,7 @@ function renderComps(){
     if((c.type==='shower'||c.type==='cooker'||c.type==='kettle'||c.type==='toaster'||c.type==='tv'||c.type==='fridge'||c.type==='fan')&&c.on===false){
       g.style.opacity='0.4';
     }
-    drawSymbol(g,c.type,c.x1,c.y1,c.x2,c.y2,{pos:c.pos??0.5,ledColor:c.ledColor,closed:c.closed,x3:c.x3,y3:c.y3,x4:c.x4,y4:c.y4,x5:c.x5,y5:c.y5,x6:c.x6,y6:c.y6,segVal:c.segVal??0,sw2pos:c.sw2pos,intpos:c.intpos??0,gang1:c.gang1??0,gang2:c.gang2??0,gang3:c.gang3??0,simPower:c.simPower,blown:c.blown,tripped:c.tripped,ratingLabel:c.value,slots:c.slots??6,cuDP:c.cuDP??true,cuRCD:c.cuRCD??true,cuRCDma:c.cuRCDma??30,cuSPD:c.cuSPD??false,cuMCBs:c.cuMCBs??[],cuMCBTerms:c.mcbTerms??[],mosfetOn:c.mosfetOn??false,relayOn:c.relayOn??false});
+    drawSymbol(g,c.type,c.x1,c.y1,c.x2,c.y2,{pos:c.pos??0.5,ledColor:c.ledColor,closed:c.closed,x3:c.x3,y3:c.y3,x4:c.x4,y4:c.y4,x5:c.x5,y5:c.y5,x6:c.x6,y6:c.y6,segVal:c.segVal??0,sw2pos:c.sw2pos,intpos:c.intpos??0,gang1:c.gang1??0,gang2:c.gang2??0,gang3:c.gang3??0,simPower:c.simPower,blown:c.blown,tripped:c.tripped,ratingLabel:c.value,slots:c.slots??6,cuDP:c.cuDP??true,cuRCD:c.cuRCD??true,cuRCDma:c.cuRCDma??30,cuSPD:c.cuSPD??false,cuMCBs:c.cuMCBs??[],cuMCBTerms:c.mcbTerms??[],mosfetOn:c.mosfetOn??false,relayOn:c.relayOn??false,invOn:c.invOn??false,sun:c.sun??1});
 
     // Hit region — large enough to grab without hovering on thin drawn lines
     {
@@ -1602,7 +1656,7 @@ function renderComps(){
       const isCUnit=c.type==='cunit';
       const isTall=c.type==='seg7'||c.type==='buzzer';
       const isWide=c.type==='3ph'||c.type==='xfmr';
-      const hasEarth=c.type==='socket_uk'||c.type==='switch_uk'||c.type==='dpswitch'||c.type==='relay';
+      const hasEarth=c.type==='socket_uk'||c.type==='switch_uk'||c.type==='dpswitch'||c.type==='relay'||c.type==='inverter';
       const pad=16; // px padding beyond visual bounds on each side
       if(isCUnit){
         // CU: landscape — (numMCBs+2)*G wide, 4*G tall. Box top-left = (c.px, c.py).
@@ -1717,6 +1771,17 @@ function renderComps(){
         const p0=lp(0);
         const t=mk('text',{x:p0.x,y:p0.y,'text-anchor':p0.a,class:'rt',style:`fill:${stateCol};font-size:9px`});
         t.textContent=c.relayOn?'ENERGISED':'released'; layer.appendChild(t);
+      } else if(c.type==='inverter'){
+        const stateCol=c.invOn?'#34d399':'#5d6a85';
+        const p0=lp(0);
+        const t=mk('text',{x:p0.x,y:p0.y,'text-anchor':p0.a,class:'rt',style:`fill:${stateCol};font-size:9px`});
+        t.textContent=c.invOn?'RUNNING':'standby'; layer.appendChild(t);
+      } else if(c.type==='battery'&&c.simI!=null){
+        const chg=c.simI<-0.005, sup=c.simI>0.005;
+        const p0=lp(0);
+        const t=mk('text',{x:p0.x,y:p0.y,'text-anchor':p0.a,class:'rt',style:`fill:${chg?'#34d399':sup?'#e3ad33':'#5d6a85'};font-size:9px`});
+        t.textContent=chg?`⚡ charging ${fmtVal(-c.simI,'A')}`:sup?`${fmtVal(c.simI,'A')} out`:'idle';
+        layer.appendChild(t);
       } else if(c.type==='sw'||c.type==='switch_uk'||c.type==='dpswitch'||c.type==='pullcord'){
         const stateLabel=c.closed?'CLOSED':'OPEN';
         const stateCol=c.closed?'#34d399':'#5d6a85';
@@ -1844,7 +1909,7 @@ function renderComps(){
       const _isCU=c.type==='cunit';
       const _isTall=c.type==='seg7'||c.type==='buzzer';
       const _isWide=c.type==='3ph'||c.type==='xfmr';
-      const _hasE=c.type==='socket_uk'||c.type==='switch_uk'||c.type==='dpswitch'||c.type==='relay';
+      const _hasE=c.type==='socket_uk'||c.type==='switch_uk'||c.type==='dpswitch'||c.type==='relay'||c.type==='inverter';
       let sx,sy,sw,sh;
       if(_isCU){
         const cuSlots2=c.slots??6;
@@ -1901,7 +1966,7 @@ function renderNodes(){
     if((c.type==='AND'||c.type==='OR'||c.type==='nmos')&&c.x3!=null) addPt(c.x3,c.y3);
     if((c.type==='sw2'||c.type==='switch2_uk')&&c.x3!=null) addPt(c.x3,c.y3);
     if((c.type==='intswitch'||c.type==='switchint_uk')&&c.x3!=null){addPt(c.x3,c.y3);if(c.x4!=null)addPt(c.x4,c.y4);}
-    if(c.type==='relay'&&c.x3!=null){addPt(c.x3,c.y3);if(c.x4!=null)addPt(c.x4,c.y4);}
+    if((c.type==='relay'||c.type==='inverter')&&c.x3!=null){addPt(c.x3,c.y3);if(c.x4!=null)addPt(c.x4,c.y4);}
     if((c.type==='switch2g_uk')&&c.x3!=null){addPt(c.x3,c.y3);if(c.x4!=null)addPt(c.x4,c.y4);}
     if((c.type==='switch3g_uk')&&c.x3!=null){addPt(c.x3,c.y3);if(c.x4!=null)addPt(c.x4,c.y4);if(c.x5!=null)addPt(c.x5,c.y5);if(c.x6!=null)addPt(c.x6,c.y6);}
     if((c.type==='3ph'||c.type==='xfmr')&&c.x3!=null){addPt(c.x3,c.y3);}
@@ -1935,7 +2000,7 @@ function renderNodes(){
   comps.forEach(c=>{
     const terms=[{x:c.x1,y:c.y1},{x:c.x2,y:c.y2}];
     if((c.type==='sw2'||c.type==='nmos')&&c.x3!=null) terms.push({x:c.x3,y:c.y3});
-    if((c.type==='relay'||c.type==='dpswitch')&&c.x3!=null){terms.push({x:c.x3,y:c.y3});if(c.x4!=null)terms.push({x:c.x4,y:c.y4});}
+    if((c.type==='relay'||c.type==='dpswitch'||c.type==='inverter')&&c.x3!=null){terms.push({x:c.x3,y:c.y3});if(c.x4!=null)terms.push({x:c.x4,y:c.y4});}
     if((c.type==='intswitch'||c.type==='switchint_uk'||c.type==='switch2g_uk')&&c.x3!=null){terms.push({x:c.x3,y:c.y3});if(c.x4!=null)terms.push({x:c.x4,y:c.y4});}
     if(c.type==='switch3g_uk'&&c.x3!=null){terms.push({x:c.x3,y:c.y3});if(c.x4!=null)terms.push({x:c.x4,y:c.y4});if(c.x5!=null)terms.push({x:c.x5,y:c.y5});if(c.x6!=null)terms.push({x:c.x6,y:c.y6});}
     const singleTerm=c.type==='GND'||c.type==='probe'||c.type==='seg7';
