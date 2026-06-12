@@ -355,7 +355,7 @@ function _stopAllBuzz() {
 function clearSim(){
   stopBulbAnim();
   _stopAllBuzz();
-  window.simNodeV=null; window.simVoltages=null; window.simVoltagesC=null; window.flowWireDir=null;window.flowWireI=null;
+  window.simNodeV=null; window.simVoltages=null; window.simVoltagesC=null; window.flowWireDir=null;window.flowWireI=null;window.flowWireAC=null;
   comps.forEach(c=>{delete c.simV;delete c.simI;delete c.simPower;delete c.damaged;delete c.blown;
     delete c.ledOn; delete c.buzzerOn; delete c.diodeState; delete c.gateOut; delete c.segVal;
     if(c.type==='relay') c.relayOn=false;
@@ -375,7 +375,7 @@ function simulate(){
   // Reset sim state
   stopBulbAnim();
   _stopAllBuzz();
-  window.simNodeV=null; window.simVoltages=null; window.simVoltagesC=null; window.flowWireDir=null;window.flowWireI=null;
+  window.simNodeV=null; window.simVoltages=null; window.simVoltagesC=null; window.flowWireDir=null;window.flowWireI=null;window.flowWireAC=null;
   _particles.length=0;
   comps.forEach(c=>{delete c.simV;delete c.simI;delete c.simPower;delete c.damaged;delete c.blown;
     delete c.ledOn; delete c.buzzerOn; delete c.diodeState; delete c.gateOut; delete c.segVal;
@@ -809,6 +809,15 @@ function simulate(){
   const fsrcs2=comps.filter(c=>(c.type==='fuse'||c.type==='mcb')&&!c.blown);
   const swsrcs2=comps.filter(c=>(c.type==='sw'||c.type==='switch_uk')&&c.closed);
   const sw2srcs2=comps.filter(c=>c.type==='sw2'||c.type==='switch2_uk');
+  // Diode/zener source-row offsets, matching the solve matrix layout exactly
+  // (the matrix counts fcu fuses, pullcord switches and gate rows too)
+  const _fsrcsM=comps.filter(c=>(c.type==='fuse'||c.type==='mcb'||c.type==='fcu')&&!c.blown);
+  const _swsrcsM=comps.filter(c=>(c.type==='sw'||c.type==='switch_uk'||c.type==='pullcord')&&c.closed);
+  const _gateSrcsM=comps.filter(c=>c.type==='AND'||c.type==='OR'||c.type==='NOT');
+  const _fwdDiodesM=comps.filter(c=>(c.type==='diode'||c.type==='zener')&&diodeState[c.id]==='forward');
+  const _bkdnZenersM=comps.filter(c=>c.type==='zener'&&diodeState[c.id]==='breakdown');
+  const _fwdDOffM=nodeN+vsrcs2.length+_fsrcsM.length+_swsrcsM.length+sw2srcs2.length+_gateSrcsM.length;
+  const _bkdnOffM=_fwdDOffM+_fwdDiodesM.length;
   const resArr=[];
   comps.forEach(c=>{
     const nA=nodeId(nk(c.x1,c.y1));
@@ -891,9 +900,9 @@ function simulate(){
       const nOut2=c.x4!=null?nodeId(nk(c.x4,c.y4)):0;
       const vIn=vA-(nodeVoltages[nIn2]??0);
       const vOut=vB-(nodeVoltages[nOut2]??0);
-      c.simV=vIn; c.simI=vIn*(c.invOn?1/5:1/500);
-      const outI=c.invOn?((c.value??230)-vOut)/1:0;
-      resArr.push({label:`Inverter (${c.invOn?'RUNNING':'standby'}) ${c.invOn?`out ${fmtVal(vOut,'V')}`:''}`,v:vIn,i:c.invOn?outI:c.simI});
+      c.simV=vIn; c.invIin=vIn*(c.invOn?1/5:1/500); c.simI=c.invIin;
+      c.invIout=c.invOn?((c.value??230)-vOut)/1:0;
+      resArr.push({label:`Inverter (${c.invOn?'RUNNING':'standby'}) ${c.invOn?`out ${fmtVal(vOut,'V')} ~AC`:''}`,v:vIn,i:c.invOn?c.invIout:c.invIin});
     } else if(c.type==='sw2'||c.type==='switch2_uk'){
       const si2=sw2srcs2.indexOf(c);
       const sw2Off2=nodeN+vsrcs2.length+fsrcs2.length+swsrcs2.length;
@@ -909,13 +918,18 @@ function simulate(){
       resArr.push({label:`LED (${c.ledColor||'red'}) ${c.ledOn?'ON':'off'}`,v:vd,i:c.simI});
     } else if(c.type==='diode'){
       c.simV=vd; c.diodeState=diodeState[c.id]||'reverse';
-      c.simI=c.diodeState==='forward'?(vd-0.7)/1:0;
+      // Forward model is a 0.7V source in parallel with 1Ω: device current is
+      // the source-row current plus the 1Ω share — (vd−0.7)/1 alone reads ~0
+      const fdi=_fwdDiodesM.indexOf(c);
+      c.simI=c.diodeState==='forward'?((fdi>=0&&x?x[_fwdDOffM+fdi]:0)+vd/1):0;
       resArr.push({label:`Diode [${c.diodeState}]`,v:vd,i:c.simI});
     } else if(c.type==='zener'){
       c.simV=vd; c.diodeState=diodeState[c.id]||'reverse';
       if(c.diodeState==='reverse-breakdown') c.diodeState='reverse-breakdown';
       if(diodeState[c.id]==='breakdown') c.diodeState='reverse-breakdown';
-      c.simI=c.diodeState==='forward'?(vd-0.7)/1:c.diodeState==='reverse-breakdown'?(vd+c.value)/1:0;
+      const fzi=_fwdDiodesM.indexOf(c), bzi=_bkdnZenersM.indexOf(c);
+      c.simI=c.diodeState==='forward'?((fzi>=0&&x?x[_fwdDOffM+fzi]:0)+vd/1)
+            :c.diodeState==='reverse-breakdown'?((bzi>=0&&x?x[_bkdnOffM+bzi]:0)+vd/1):0;
       resArr.push({label:`Zener ${fmtVal(c.value,'V')} [${c.diodeState}]`,v:vd,i:c.simI});
     } else if(c.type==='probe'){
       c.simV=nodeVoltages[nA]??0; c.simI=null;
@@ -1018,12 +1032,33 @@ function simulate(){
 
   // Build per-wire flow direction via BFS from component terminal seeds
   {
-    const _ftSrc=new Set(['V','battery','3ph','xfmr','acV','supply']);
+    const _ftSrc=new Set(['V','3ph','xfmr','acV','supply']);
     // terminal map: point → [{sign, simI}]
+    // Convention: sign=+1 (x1) with simI>0 means current flows INTO the
+    // terminal (load convention, x1→x2 through the component).
     const _ftm={};
     const ftAdd=(px,py,isX2,si)=>{const k=nk(px,py);if(!_ftm[k])_ftm[k]=[];_ftm[k].push({sign:isX2?-1:1,simI:si??0});};
     comps.forEach(c=>{
-      if(_ftSrc.has(c.type)||c.x1==null||c.x2==null)return;
+      if(c.x1==null||c.x2==null)return;
+      if(c.type==='solar'||c.type==='battery'){
+        // Source convention: simI>0 means current EXITS the + terminal (x1),
+        // so seed with the signs flipped relative to a load. A charging
+        // battery (simI<0) then correctly shows current flowing into +.
+        const si=c.simI??0;
+        ftAdd(c.x1,c.y1,true,si);ftAdd(c.x2,c.y2,false,si);
+        return;
+      }
+      if(c.type==='inverter'){
+        // DC loop: current in at x1(+), back out at x3(−).
+        // AC loop: current out at x2(L), returning at x4(N).
+        const iin=c.invIin??0, iout=c.invIout??0;
+        ftAdd(c.x1,c.y1,false,iin);
+        if(c.x3!=null)ftAdd(c.x3,c.y3,true,iin);
+        ftAdd(c.x2,c.y2,true,iout);
+        if(c.x4!=null)ftAdd(c.x4,c.y4,false,iout);
+        return;
+      }
+      if(_ftSrc.has(c.type))return;
       const si=c.simI??0;
       ftAdd(c.x1,c.y1,false,si);ftAdd(c.x2,c.y2,true,si);
       if(c.type==='cunit'&&c.mcbTerms)c.mcbTerms.forEach(mt=>ftAdd(mt.x,mt.y,true,mt.simI??0));
@@ -1059,6 +1094,20 @@ function simulate(){
       });
     }
     window.flowWireDir=_wdir;window.flowWireI=_wI;
+
+    // Wires on a running inverter's output nets carry AC — the flow renderer
+    // oscillates their electrons instead of circulating them.
+    const _wAC={};
+    const acNodes=new Set();
+    comps.forEach(c=>{
+      if(c.type!=='inverter'||!c.invOn)return;
+      acNodes.add(nodeId(nk(c.x2,c.y2)));
+      if(c.x4!=null)acNodes.add(nodeId(nk(c.x4,c.y4)));
+    });
+    if(acNodes.size)wires.forEach(w=>{
+      if(acNodes.has(nodeId(nk(w.x1,w.y1)))||acNodes.has(nodeId(nk(w.x2,w.y2))))_wAC[w.id]=true;
+    });
+    window.flowWireAC=_wAC;
   }
 
   // Restore full component/wire lists before rendering so floating elements are visible
@@ -1078,7 +1127,7 @@ function simulate(){
 function simulateAC(_acPass){
   stopBulbAnim();
   _stopAllBuzz();
-  window.simNodeV=null; window.simVoltages=null; window.simVoltagesC=null; window.flowWireDir=null;window.flowWireI=null;
+  window.simNodeV=null; window.simVoltages=null; window.simVoltagesC=null; window.flowWireDir=null;window.flowWireI=null;window.flowWireAC=null;
   _particles.length=0;
   comps.forEach(c=>{delete c.simV;delete c.simI;delete c.simPower;delete c.damaged;delete c.blown;
     delete c.ledOn; delete c.buzzerOn; delete c.diodeState; delete c.gateOut; delete c.segVal;

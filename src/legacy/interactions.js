@@ -381,23 +381,27 @@ function _bulbTick(ts) {
 
       const _fwd = window.flowWireDir || {};
       const _fwI = window.flowWireI  || {};
+      const _fwAC = window.flowWireAC || {};
       wires.forEach(w => {
         const I = _fwI[w.id];
         if(!I || I < 0.01) return;
         const dir = _fwd[w.id] ?? 1;
+        // A wire is AC if the whole solve is AC, or it sits on a running
+        // inverter's output net inside an otherwise-DC circuit
+        const isAC = _acMode || _fwAC[w.id];
 
         const dx = w.x2-w.x1, dy = w.y2-w.y1;
         const len = Math.sqrt(dx*dx+dy*dy)||1;
         const speed = Math.min(2.0, 0.3 + I * 3) * (G/len);
         // AC: electrons oscillate back and forth — use slow visual frequency so it's visible
-        const acFactor = _acMode ? Math.sin(2 * Math.PI * 0.5 * ts * 0.001) : 1;
+        const acFactor = isAC ? Math.sin(2 * Math.PI * 0.5 * ts * 0.001) : 1;
 
         if(!_flowParticles[w.id]) {
           _flowParticles[w.id] = [0.1,0.35,0.6,0.85].map(t=>({t}));
         }
         _flowParticles[w.id].forEach(p => {
           p.t += dir * acFactor * speed * dt;
-          if(_acMode){ p.t = Math.max(0, Math.min(1, p.t)); } // AC: clamp so particles oscillate in place
+          if(isAC){ p.t = Math.max(0, Math.min(1, p.t)); } // AC: clamp so particles oscillate in place
           else { if(p.t > 1) p.t -= 1; if(p.t < 0) p.t += 1; } // DC: wrap so particles circulate
           const px = w.x1 + p.t * dx;
           const py = w.y1 + p.t * dy;
@@ -405,7 +409,7 @@ function _bulbTick(ts) {
           c.setAttribute('cx', px.toFixed(1));
           c.setAttribute('cy', py.toFixed(1));
           c.setAttribute('r', '3');
-          c.setAttribute('fill', _acMode ? '#f59e0b' : '#4da3ff');
+          c.setAttribute('fill', isAC ? '#f59e0b' : '#4da3ff');
           c.setAttribute('opacity', '0.75');
           c.setAttribute('pointer-events','none');
           flowLayer.appendChild(c);
